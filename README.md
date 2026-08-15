@@ -31,3 +31,31 @@ Sweet+ does not promise an interview or offer. It helps candidates understand wh
 - CloudWatch and Sentry
 
 The initial architecture is a modular monolith: one deployable application with clear domain boundaries and asynchronous workers for long-running operations.
+
+## Local development
+
+Requirements:
+
+- Node.js 22
+- npm 10
+
+Set up and run the application:
+
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Then open `http://localhost:3000`.
+
+## Quality checks
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run test:e2e
+npm run format:check
+npm run build
+```

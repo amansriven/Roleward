@@ -102,28 +102,28 @@ Priority labels:
 
 ### Home: Today in Sweet+
 
-| Priority | Feature |
-| --- | --- |
-| P0 | Today's recommended preparation actions |
-| P0 | Active application and nearest deadline |
-| P0 | Resume, technical, and behavioral readiness summaries |
-| P0 | Continue-preparing primary action |
-| P1 | Weekly plan and completion history |
-| P1 | Preparation streak with forgiving recovery rules |
-| P2 | Calendar synchronization and reminders |
+| Priority | Feature                                               |
+| -------- | ----------------------------------------------------- |
+| P0       | Today's recommended preparation actions               |
+| P0       | Active application and nearest deadline               |
+| P0       | Resume, technical, and behavioral readiness summaries |
+| P0       | Continue-preparing primary action                     |
+| P1       | Weekly plan and completion history                    |
+| P1       | Preparation streak with forgiving recovery rules      |
+| P2       | Calendar synchronization and reminders                |
 
 ### Applications
 
-| Priority | Feature |
-| --- | --- |
-| P0 | Create a job workspace by pasting a description |
-| P0 | Extract and confirm job requirements |
-| P0 | Track application status and deadline |
-| P0 | Display a job-specific preparation checklist |
-| P0 | Connect a tailored resume, coding plan, and behavioral plan |
-| P1 | Save job URL and immutable description snapshots |
-| P1 | Interview timeline and notes |
-| P2 | Job-board import integrations |
+| Priority | Feature                                                     |
+| -------- | ----------------------------------------------------------- |
+| P0       | Create a job workspace by pasting a description             |
+| P0       | Extract and confirm job requirements                        |
+| P0       | Track application status and deadline                       |
+| P0       | Display a job-specific preparation checklist                |
+| P0       | Connect a tailored resume, coding plan, and behavioral plan |
+| P1       | Save job URL and immutable description snapshots            |
+| P1       | Interview timeline and notes                                |
+| P2       | Job-board import integrations                               |
 
 ### Resume Kitchen
 
@@ -133,22 +133,22 @@ Core metaphor:
 - Recipe: target-job requirements
 - Dish: tailored resume
 
-| Priority | Feature |
-| --- | --- |
-| P0 | Upload PDF or DOCX base resume |
-| P0 | Extract structured resume content |
-| P0 | Let the user correct and verify extracted evidence |
-| P0 | Match requirements to evidence |
-| P0 | Identify missing or weak evidence |
-| P0 | Suggest truthful bullet revisions |
-| P0 | Show original, suggestion, rationale, requirement, and evidence |
-| P0 | Save a tailored resume version per application |
-| P1 | Resume editor and section ordering |
-| P1 | PDF and DOCX export |
-| P1 | Version comparison and restoration |
-| P1 | Formatting and readability checks |
-| P2 | Multiple resume templates |
-| P2 | Portfolio and GitHub evidence import |
+| Priority | Feature                                                         |
+| -------- | --------------------------------------------------------------- |
+| P0       | Upload PDF or DOCX base resume                                  |
+| P0       | Extract structured resume content                               |
+| P0       | Let the user correct and verify extracted evidence              |
+| P0       | Match requirements to evidence                                  |
+| P0       | Identify missing or weak evidence                               |
+| P0       | Suggest truthful bullet revisions                               |
+| P0       | Show original, suggestion, rationale, requirement, and evidence |
+| P0       | Save a tailored resume version per application                  |
+| P1       | Resume editor and section ordering                              |
+| P1       | PDF and DOCX export                                             |
+| P1       | Version comparison and restoration                              |
+| P1       | Formatting and readability checks                               |
+| P2       | Multiple resume templates                                       |
+| P2       | Portfolio and GitHub evidence import                            |
 
 Resume feedback dimensions:
 
@@ -169,23 +169,23 @@ Practice modes:
 - Interview: timed simulation with follow-up questions
 - Review: revisit weak patterns through spaced repetition
 
-| Priority | Feature |
-| --- | --- |
-| P0 | Curated problem bank |
-| P0 | Python, JavaScript/TypeScript, and Java support |
-| P0 | In-browser editor |
-| P0 | Secure, isolated test execution |
-| P0 | Progressive hints |
-| P0 | Attempt history and test results |
-| P0 | Complexity and edge-case reflection |
-| P0 | Post-attempt feedback |
-| P1 | Conversational AI interviewer |
-| P1 | Timed interview mode |
-| P1 | Adaptive follow-up variations |
-| P1 | Personalized topic plan based on a target role |
-| P1 | Pattern- and mistake-level progress tracking |
-| P2 | System design practice |
-| P2 | Company-tagged practice where legally appropriate |
+| Priority | Feature                                           |
+| -------- | ------------------------------------------------- |
+| P0       | Curated problem bank                              |
+| P0       | Python, JavaScript/TypeScript, and Java support   |
+| P0       | In-browser editor                                 |
+| P0       | Secure, isolated test execution                   |
+| P0       | Progressive hints                                 |
+| P0       | Attempt history and test results                  |
+| P0       | Complexity and edge-case reflection               |
+| P0       | Post-attempt feedback                             |
+| P1       | Conversational AI interviewer                     |
+| P1       | Timed interview mode                              |
+| P1       | Adaptive follow-up variations                     |
+| P1       | Personalized topic plan based on a target role    |
+| P1       | Pattern- and mistake-level progress tracking      |
+| P2       | System design practice                            |
+| P2       | Company-tagged practice where legally appropriate |
 
 Guru evaluates separate dimensions:
 
@@ -205,19 +205,19 @@ Progression:
 
 `Stage Fright -> Finding Your Voice -> Rehearsal Mode -> Under the Spotlight -> Stage Ready`
 
-| Priority | Feature |
-| --- | --- |
-| P0 | Story Bank |
-| P0 | Guided story capture from real experiences |
-| P0 | Story Coverage Map |
-| P0 | Text-based behavioral rehearsal |
-| P0 | STAR-based structure feedback without forcing a script |
-| P0 | Suggested follow-up questions |
-| P1 | Uninterrupted Spotlight mock interview |
-| P1 | Adaptive questions based on target-job competencies |
-| P1 | Stage progression based on demonstrated coverage |
-| P2 | Voice interviews and transcript review |
-| P2 | Delivery signals such as pace and filler words |
+| Priority | Feature                                                |
+| -------- | ------------------------------------------------------ |
+| P0       | Story Bank                                             |
+| P0       | Guided story capture from real experiences             |
+| P0       | Story Coverage Map                                     |
+| P0       | Text-based behavioral rehearsal                        |
+| P0       | STAR-based structure feedback without forcing a script |
+| P0       | Suggested follow-up questions                          |
+| P1       | Uninterrupted Spotlight mock interview                 |
+| P1       | Adaptive questions based on target-job competencies    |
+| P1       | Stage progression based on demonstrated coverage       |
+| P2       | Voice interviews and transcript review                 |
+| P2       | Delivery signals such as pace and filler words         |
 
 Story coverage competencies:
 

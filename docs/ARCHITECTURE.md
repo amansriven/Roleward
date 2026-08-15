@@ -34,21 +34,21 @@ flowchart LR
 
 ## 3. Proposed technology choices
 
-| Concern | Initial choice | Reason |
-| --- | --- | --- |
-| Web application | Next.js + TypeScript | One language and deployable application for UI and server logic |
-| Components | Tailwind CSS + shadcn/ui | Fast, accessible component foundation with full design control |
-| Hosting | AWS Amplify Hosting | Managed Next.js hosting that can use existing AWS credits |
-| Authentication | Amazon Cognito | Managed identity within the AWS account |
-| Relational data | PostgreSQL on Amazon RDS | Natural fit for connected candidate, job, attempt, and evidence data |
-| Database access | Drizzle ORM | Typed schema and migrations close to SQL |
-| Object storage | Amazon S3 | Private resume and export storage |
-| Queue | Amazon SQS | Durable asynchronous job handoff and retries |
-| Workers | AWS Lambda | Event-driven document and AI processing |
-| AI integration | Vercel AI SDK + OpenAI API | Streaming and schema-oriented AI integration |
-| Code execution | E2B | Isolated execution for untrusted candidate submissions |
-| Observability | Sentry + CloudWatch | Application errors, infrastructure logs, and operational alerts |
-| Infrastructure | AWS CDK | Version-controlled AWS resources in TypeScript |
+| Concern         | Initial choice             | Reason                                                               |
+| --------------- | -------------------------- | -------------------------------------------------------------------- |
+| Web application | Next.js + TypeScript       | One language and deployable application for UI and server logic      |
+| Components      | Tailwind CSS + shadcn/ui   | Fast, accessible component foundation with full design control       |
+| Hosting         | AWS Amplify Hosting        | Managed Next.js hosting that can use existing AWS credits            |
+| Authentication  | Amazon Cognito             | Managed identity within the AWS account                              |
+| Relational data | PostgreSQL on Amazon RDS   | Natural fit for connected candidate, job, attempt, and evidence data |
+| Database access | Drizzle ORM                | Typed schema and migrations close to SQL                             |
+| Object storage  | Amazon S3                  | Private resume and export storage                                    |
+| Queue           | Amazon SQS                 | Durable asynchronous job handoff and retries                         |
+| Workers         | AWS Lambda                 | Event-driven document and AI processing                              |
+| AI integration  | Vercel AI SDK + OpenAI API | Streaming and schema-oriented AI integration                         |
+| Code execution  | E2B                        | Isolated execution for untrusted candidate submissions               |
+| Observability   | Sentry + CloudWatch        | Application errors, infrastructure logs, and operational alerts      |
+| Infrastructure  | AWS CDK                    | Version-controlled AWS resources in TypeScript                       |
 
 ## 4. Domain modules
 

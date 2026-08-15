@@ -1,0 +1,36 @@
+# dependencies
+/node_modules
+
+# Next.js
+/.next
+/out
+
+# production
+/build
+/dist
+
+# testing
+/coverage
+/playwright-report
+/test-results
+
+# local environment files
+.env
+.env*.local
+
+# platform and editor files
+.DS_Store
+*.pem
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# AWS CDK
+cdk.out
