@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,15 +10,15 @@ import { Label } from "@/components/ui/label";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [message, setMessage] = useState("");
+  const router = useRouter();
   const signup = mode === "signup";
   return (
     <form
       className="mt-8 space-y-5"
       onSubmit={(event) => {
         event.preventDefault();
-        setMessage(
-          "This UI preview is ready for Cognito in the authentication milestone.",
-        );
+        setMessage("Opening your workspace…");
+        router.push("/dashboard");
       }}
     >
       {signup && (
