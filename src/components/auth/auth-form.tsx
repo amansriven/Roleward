@@ -18,7 +18,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       onSubmit={(event) => {
         event.preventDefault();
         setMessage("Opening your workspace…");
-        router.push("/dashboard");
+        router.push(signup ? "/onboarding" : "/dashboard");
       }}
     >
       {signup && (
