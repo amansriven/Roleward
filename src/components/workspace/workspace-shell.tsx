@@ -6,6 +6,7 @@ import {
   Code2,
   Home,
   Menu,
+  LogOut,
   MessageSquareText,
   Plus,
   Settings,
@@ -16,6 +17,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
+import { endSession } from "@/components/auth/auth-actions";
 import { cn } from "@/lib/utils";
 import {
   getActiveApplication,
@@ -164,10 +166,19 @@ function Sidebar({ close }: { close?: () => void }) {
           <div className="bg-amber/12 text-amber flex size-8 items-center justify-center rounded-full">
             <UserRound className="size-3.5" />
           </div>
-          <div>
-            <p className="text-xs font-medium">Aman</p>
-            <p className="text-dust text-[10px]">New-grad track</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium">Your workspace</p>
+            <p className="text-dust text-[10px]">Cognito protected</p>
           </div>
+          <form action={endSession}>
+            <button
+              aria-label="Log out"
+              className="text-dust hover:text-linen"
+              type="submit"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </div>
       </div>
     </aside>

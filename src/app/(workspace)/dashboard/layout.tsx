@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+export default async function DashboardLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const session = await auth();
+  if (!session?.user) redirect("/login?next=/dashboard");
   return <WorkspaceShell>{children}</WorkspaceShell>;
 }

@@ -42,5 +42,11 @@ test("product and authentication routes are available", async ({ page }) => {
   await expect(page.locator("h1")).toContainText(
     "Create your Sweet+ workspace",
   );
-  await expect(page.getByLabel("Email")).toBeVisible();
+  if (process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID) {
+    await expect(page.getByLabel("Email")).toBeVisible();
+  } else {
+    await expect(
+      page.getByText("Cognito configuration required"),
+    ).toBeVisible();
+  }
 });

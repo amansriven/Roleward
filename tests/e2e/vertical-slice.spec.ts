@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.skip(
+  process.env.RUN_COGNITO_E2E !== "true",
+  "Requires a dedicated Cognito test pool with auto-confirmed users",
+);
+
 test("candidate reaches a live dashboard from signup, evidence, and a target job", async ({
   page,
 }) => {
