@@ -1,4 +1,4 @@
-import { Apple, LockKeyhole } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { authConfigured } from "@/auth";
 import { beginManagedLogin } from "@/components/auth/auth-actions";
@@ -48,7 +48,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             value="apple"
             type="submit"
           >
-            <Apple className="size-[18px]" /> Apple
+            <AppleMark /> Apple
           </button>
         </div>
       </form>
@@ -91,6 +91,18 @@ function GoogleMark() {
         d="M12 5.94c1.47 0 2.79.5 3.82 1.49l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.63C7.18 7.71 9.39 5.94 12 5.94Z"
         fill="#EA4335"
       />
+    </svg>
+  );
+}
+
+function AppleMark() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-[18px] w-[15px] fill-current"
+      viewBox="0 0 384 512"
+    >
+      <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.7-26.7-47-41.4-84.7-44.3-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.5 4 184.8 4 272.8 4 298.8 8.8 325.7 18.4 353c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.7-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.6-88-61.6-90.2Zm-58.2-164.2c27.5-32.6 25-62.3 24.2-73-24.3 1.4-52.4 16.5-68.4 35.1-17.6 19.9-27.9 44.5-25.7 72.4 26.3 2 50.3-11.5 69.9-34.5Z" />
     </svg>
   );
 }
