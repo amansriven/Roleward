@@ -72,7 +72,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         token.picture = user.image;
       }
       if (profile) {
-        if (typeof profile.name === "string") token.name = profile.name;
+        const givenName =
+          typeof profile.given_name === "string" ? profile.given_name : "";
+        const familyName =
+          typeof profile.family_name === "string" ? profile.family_name : "";
+        const fullName = [givenName, familyName].filter(Boolean).join(" ");
+        if (typeof profile.name === "string" && profile.name.trim())
+          token.name = profile.name;
+        else if (fullName) token.name = fullName;
         if (typeof profile.email === "string") token.email = profile.email;
         if (typeof profile.picture === "string")
           token.picture = profile.picture;
