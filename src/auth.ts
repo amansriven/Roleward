@@ -15,6 +15,7 @@ const authConfigured = Boolean(
 );
 
 export { authConfigured };
+export const appleAuthEnabled = process.env.AUTH_APPLE_ENABLED === "true";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,

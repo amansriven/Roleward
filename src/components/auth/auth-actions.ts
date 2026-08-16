@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { authConfigured, signIn, signOut } from "@/auth";
+import { appleAuthEnabled, authConfigured, signIn, signOut } from "@/auth";
 
 export async function beginManagedLogin(formData: FormData) {
   if (!authConfigured) redirect("/login?error=configuration");
@@ -9,6 +9,8 @@ export async function beginManagedLogin(formData: FormData) {
   const redirectTo = requested.startsWith("/") ? requested : "/dashboard";
   const mode = formData.get("mode") === "signup" ? "signup" : "login";
   const provider = String(formData.get("provider") || "email");
+  if (provider === "apple" && !appleAuthEnabled)
+    redirect("/login?error=apple-unavailable");
   const authorizationParams: Record<string, string> = {};
 
   if (mode === "signup") authorizationParams.screen_hint = "signup";

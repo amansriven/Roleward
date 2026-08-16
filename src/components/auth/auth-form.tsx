@@ -1,6 +1,6 @@
 import { LockKeyhole } from "lucide-react";
 import Link from "next/link";
-import { authConfigured } from "@/auth";
+import { appleAuthEnabled, authConfigured } from "@/auth";
 import { beginManagedLogin } from "@/components/auth/auth-actions";
 import { EmailAuthForm } from "@/components/auth/email-auth-form";
 
@@ -33,7 +33,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           value={signup ? "/onboarding" : "/dashboard"}
         />
         <input type="hidden" name="mode" value={mode} />
-        <div className="grid grid-cols-2 gap-3">
+        <div className={appleAuthEnabled ? "grid grid-cols-2 gap-3" : "grid"}>
           <button
             className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
             name="provider"
@@ -42,14 +42,16 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           >
             <GoogleMark /> Google
           </button>
-          <button
-            className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
-            name="provider"
-            value="apple"
-            type="submit"
-          >
-            <AppleMark /> Apple
-          </button>
+          {appleAuthEnabled && (
+            <button
+              className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
+              name="provider"
+              value="apple"
+              type="submit"
+            >
+              <AppleMark /> Apple
+            </button>
+          )}
         </div>
       </form>
       <div className="mt-5 flex items-start gap-3">
