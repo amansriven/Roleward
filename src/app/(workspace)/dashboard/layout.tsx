@@ -9,5 +9,5 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login?next=/dashboard");
-  return <WorkspaceShell>{children}</WorkspaceShell>;
+  return <WorkspaceShell user={session.user}>{children}</WorkspaceShell>;
 }

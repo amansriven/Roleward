@@ -93,7 +93,42 @@ function ActiveTarget({ card = false }: { card?: boolean }) {
   );
 }
 
-function Sidebar({ close }: { close?: () => void }) {
+type WorkspaceUser = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+function initials(user: WorkspaceUser) {
+  const source = user.name || user.email || "Sweet+";
+  return source
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function UserAvatar({ user }: { user: WorkspaceUser }) {
+  if (user.image)
+    return (
+      // Provider avatars can come from several trusted OAuth CDNs.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        alt=""
+        className="size-8 rounded-full object-cover ring-1 ring-white/10"
+        referrerPolicy="no-referrer"
+        src={user.image}
+      />
+    );
+  return (
+    <div className="bg-amber/12 text-amber flex size-8 items-center justify-center rounded-full text-[10px] font-semibold">
+      {initials(user) || <UserRound className="size-3.5" />}
+    </div>
+  );
+}
+
+function Sidebar({ close, user }: { close?: () => void; user: WorkspaceUser }) {
   const pathname = usePathname();
   return (
     <aside className="bg-workshop/95 border-iron/60 flex h-full w-[252px] shrink-0 flex-col border-r px-4 py-5">
@@ -163,12 +198,14 @@ function Sidebar({ close }: { close?: () => void }) {
           <Settings className="size-4" /> Settings
         </Link>
         <div className="mt-2 flex items-center gap-3 px-3 py-2">
-          <div className="bg-amber/12 text-amber flex size-8 items-center justify-center rounded-full">
-            <UserRound className="size-3.5" />
-          </div>
+          <UserAvatar user={user} />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium">Your workspace</p>
-            <p className="text-dust text-[10px]">Cognito protected</p>
+            <p className="truncate text-xs font-medium">
+              {user.name || user.email?.split("@")[0] || "Your workspace"}
+            </p>
+            <p className="text-dust truncate text-[10px]">
+              {user.email || "Cognito protected"}
+            </p>
           </div>
           <form action={endSession}>
             <button
@@ -185,12 +222,18 @@ function Sidebar({ close }: { close?: () => void }) {
   );
 }
 
-export function WorkspaceShell({ children }: { children: ReactNode }) {
+export function WorkspaceShell({
+  children,
+  user,
+}: {
+  children: ReactNode;
+  user: WorkspaceUser;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <div className="bg-night flex min-h-screen [background-image:radial-gradient(circle_at_72%_0%,rgba(232,166,75,.045),transparent_32%)]">
       <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">
-        <Sidebar />
+        <Sidebar user={user} />
       </div>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -200,7 +243,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             onClick={() => setOpen(false)}
           />
           <div className="relative h-full w-fit">
-            <Sidebar close={() => setOpen(false)} />
+            <Sidebar close={() => setOpen(false)} user={user} />
           </div>
         </div>
       )}

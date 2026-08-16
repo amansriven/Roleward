@@ -63,12 +63,29 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     : [],
   callbacks: {
     authorized: ({ auth: session }) => Boolean(session?.user),
-    jwt: ({ token, profile }) => {
+    jwt: ({ token, profile, user }) => {
       if (profile?.sub) token.sub = profile.sub;
+      if (user) {
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
+      }
+      if (profile) {
+        if (typeof profile.name === "string") token.name = profile.name;
+        if (typeof profile.email === "string") token.email = profile.email;
+        if (typeof profile.picture === "string")
+          token.picture = profile.picture;
+      }
       return token;
     },
     session: ({ session, token }) => {
-      if (session.user && token.sub) session.user.id = token.sub;
+      if (session.user) {
+        if (token.sub) session.user.id = token.sub;
+        if (typeof token.name === "string") session.user.name = token.name;
+        if (typeof token.email === "string") session.user.email = token.email;
+        if (typeof token.picture === "string")
+          session.user.image = token.picture;
+      }
       return session;
     },
   },

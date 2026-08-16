@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { AuthForm } from "@/components/auth/auth-form";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = { title: "Log in" };
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; verified?: string; reset?: string }>;
+}) {
+  const session = await auth();
+  if (session?.user) redirect("/dashboard");
+  const params = await searchParams;
   return (
     <div className="grid w-full items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(400px,480px)] lg:gap-20">
       <section className="hidden max-w-xl lg:block">
@@ -32,6 +41,21 @@ export default function LoginPage() {
         <p className="text-canvas mt-3 text-sm leading-6">
           Choose the same method you used when creating your account.
         </p>
+        {params.error && (
+          <p
+            className="border-kiln/30 bg-kiln/10 text-kiln mt-5 rounded-xl border px-4 py-3 text-sm"
+            role="alert"
+          >
+            We couldn’t finish that sign-in. Please try again.
+          </p>
+        )}
+        {(params.verified || params.reset) && (
+          <p className="border-sage/30 bg-sage/10 text-sage mt-5 rounded-xl border px-4 py-3 text-sm">
+            {params.verified
+              ? "Email verified. You can log in now."
+              : "Password updated. You can log in now."}
+          </p>
+        )}
         <AuthForm mode="login" />
       </section>
     </div>
