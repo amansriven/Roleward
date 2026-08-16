@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bell,
   BriefcaseBusiness,
   ChefHat,
   Code2,
@@ -9,45 +8,93 @@ import {
   Menu,
   MessageSquareText,
   Plus,
-  Search,
   Settings,
-  Sparkles,
   UserRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
-
+import { useEffect, useState, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
+import {
+  getActiveApplication,
+  loadWorkspace,
+} from "@/modules/workspace/repository";
 
 const navigation = [
-  { label: "Today", href: "/dashboard", icon: Home },
+  { label: "Home", note: "Your next step", href: "/dashboard", icon: Home },
   {
     label: "Applications",
+    note: "Jobs you’re preparing for",
     href: "/dashboard/applications",
     icon: BriefcaseBusiness,
   },
   {
-    label: "Resume Kitchen",
+    label: "Resume",
+    note: "Resume Kitchen",
     href: "/dashboard/resume-kitchen",
     icon: ChefHat,
     color: "text-copper",
   },
-  { label: "Guru", href: "/dashboard/guru", icon: Code2, color: "text-cobalt" },
   {
-    label: "Stage Fright",
+    label: "Coding",
+    note: "Guru practice",
+    href: "/dashboard/guru",
+    icon: Code2,
+    color: "text-cobalt",
+  },
+  {
+    label: "Stories",
+    note: "Stage Fright practice",
     href: "/dashboard/stage-fright",
     icon: MessageSquareText,
     color: "text-plum",
   },
 ] as const;
 
+function ActiveTarget({ card = false }: { card?: boolean }) {
+  const [label, setLabel] = useState("No active application");
+  const [deadline, setDeadline] = useState(
+    "Add a role to personalize your plan",
+  );
+  useEffect(() => {
+    queueMicrotask(() => {
+      const app = getActiveApplication(loadWorkspace(localStorage));
+      if (app) {
+        setLabel(app.companyName + " · " + app.roleTitle);
+        setDeadline(
+          app.deadline
+            ? "Deadline " + app.deadline
+            : app.requirements.length + " requirements confirmed",
+        );
+      }
+    });
+  }, []);
+  if (!card)
+    return (
+      <span className="text-dust hidden max-w-64 truncate text-xs sm:block">
+        {label}
+      </span>
+    );
+  return (
+    <div className="border-iron/60 bg-night/35 mb-3 rounded-xl border p-3">
+      <p className="text-dust text-[10px]">Preparing for</p>
+      <Link
+        href="/dashboard/applications"
+        className="hover:text-amber mt-1 block truncate text-sm font-medium"
+      >
+        {label}
+      </Link>
+      <p className="text-sage mt-2 text-[10px]">{deadline}</p>
+    </div>
+  );
+}
+
 function Sidebar({ close }: { close?: () => void }) {
   const pathname = usePathname();
   return (
-    <aside className="bg-workshop border-iron/80 flex h-full w-[268px] shrink-0 flex-col border-r px-4 py-5">
+    <aside className="bg-workshop/95 border-iron/60 flex h-full w-[252px] shrink-0 flex-col border-r px-4 py-5">
       <div className="flex items-center justify-between px-2">
         <Logo />
         {close && (
@@ -60,28 +107,7 @@ function Sidebar({ close }: { close?: () => void }) {
           </button>
         )}
       </div>
-      <div className="mt-8 px-2">
-        <p className="text-dust font-mono text-[10px] tracking-[.12em] uppercase">
-          Active target
-        </p>
-        <Link
-          href="/dashboard/applications"
-          className="border-iron bg-night/55 hover:border-canvas/50 mt-2 block rounded-xl border p-3 transition-colors"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold">Software Engineer</p>
-              <p className="text-canvas mt-1 text-xs">Stripe · New grad</p>
-            </div>
-            <span className="bg-sage mt-1 size-2 rounded-full shadow-[0_0_12px_rgba(121,168,151,.7)]" />
-          </div>
-          <div className="bg-iron mt-3 h-1 overflow-hidden rounded-full">
-            <div className="bg-amber h-full w-[68%] rounded-full" />
-          </div>
-          <p className="text-dust mt-2 text-[11px]">68% preparation complete</p>
-        </Link>
-      </div>
-      <nav className="mt-6 space-y-1" aria-label="Workspace navigation">
+      <nav className="mt-9 space-y-1.5" aria-label="Workspace navigation">
         {navigation.map((item) => {
           const active =
             item.href === "/dashboard"
@@ -93,36 +119,54 @@ function Sidebar({ close }: { close?: () => void }) {
               href={item.href}
               onClick={close}
               className={cn(
-                "text-canvas hover:bg-linen/[.04] hover:text-linen flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-                active && "bg-linen/[.07] text-linen",
+                "group flex items-center gap-3 rounded-xl px-3 py-3 transition-colors",
+                active
+                  ? "bg-linen/[.075] text-linen"
+                  : "text-canvas hover:bg-linen/[.035] hover:text-linen",
               )}
             >
-              <item.icon
+              <span
                 className={cn(
-                  "size-[18px]",
-                  "color" in item ? item.color : undefined,
-                  active && !("color" in item) && "text-amber",
+                  "bg-linen/[.035] flex size-8 shrink-0 items-center justify-center rounded-lg",
+                  active && "bg-linen/[.07]",
                 )}
-              />
-              {item.label}
+              >
+                <item.icon
+                  className={cn(
+                    "size-4",
+                    "color" in item
+                      ? item.color
+                      : active
+                        ? "text-amber"
+                        : "text-canvas",
+                  )}
+                />
+              </span>
+              <span>
+                <span className="block text-sm font-medium">{item.label}</span>
+                <span className="text-dust mt-0.5 block text-[10px]">
+                  {item.note}
+                </span>
+              </span>
             </Link>
           );
         })}
       </nav>
-      <div className="border-iron/70 mt-auto space-y-1 border-t pt-4">
+      <div className="mt-auto">
+        <ActiveTarget card />
         <Link
           href="/dashboard/settings"
-          className="text-canvas hover:bg-linen/[.04] flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm"
+          className="text-canvas hover:bg-linen/[.035] flex items-center gap-3 rounded-lg px-3 py-2 text-xs"
         >
-          <Settings className="size-[18px]" /> Settings
+          <Settings className="size-4" /> Settings
         </Link>
-        <div className="flex items-center gap-3 px-3 pt-3">
-          <div className="bg-amber/15 text-amber flex size-9 items-center justify-center rounded-full">
-            <UserRound className="size-4" />
+        <div className="mt-2 flex items-center gap-3 px-3 py-2">
+          <div className="bg-amber/12 text-amber flex size-8 items-center justify-center rounded-full">
+            <UserRound className="size-3.5" />
           </div>
           <div>
-            <p className="text-sm font-medium">Aman</p>
-            <p className="text-dust text-[11px]">New-grad track</p>
+            <p className="text-xs font-medium">Aman</p>
+            <p className="text-dust text-[10px]">New-grad track</p>
           </div>
         </div>
       </div>
@@ -133,7 +177,7 @@ function Sidebar({ close }: { close?: () => void }) {
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="bg-night flex min-h-screen">
+    <div className="bg-night flex min-h-screen [background-image:radial-gradient(circle_at_72%_0%,rgba(232,166,75,.045),transparent_32%)]">
       <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">
         <Sidebar />
       </div>
@@ -149,8 +193,8 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
-      <div className="min-w-0 flex-1 lg:pl-[268px]">
-        <header className="bg-night/85 border-iron/70 sticky top-0 z-30 flex h-16 items-center justify-between border-b px-4 backdrop-blur-xl sm:px-7">
+      <div className="min-w-0 flex-1 lg:pl-[252px]">
+        <header className="bg-night/82 border-iron/50 sticky top-0 z-30 flex h-16 items-center border-b px-4 backdrop-blur-xl sm:px-7">
           <button
             className="text-canvas lg:hidden"
             onClick={() => setOpen(true)}
@@ -158,31 +202,17 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           >
             <Menu className="size-5" />
           </button>
-          <div className="text-dust hidden items-center gap-2 text-sm sm:flex">
-            <Search className="size-4" />
-            <span>Search your workspace</span>
-            <kbd className="border-iron ml-2 rounded border px-1.5 py-0.5 font-mono text-[10px]">
-              ⌘ K
-            </kbd>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-3">
+            <ActiveTarget />
             <Link
-              href="/dashboard/applications"
-              className="text-canvas hover:text-linen border-iron hidden items-center gap-2 rounded-lg border px-3 py-2 text-xs sm:flex"
+              href="/dashboard/applications/new"
+              className="border-iron bg-workshop hover:border-canvas/50 text-canvas flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs"
             >
-              <Plus className="size-3.5" /> Add application
+              <Plus className="size-3.5" /> New application
             </Link>
-            <button
-              className="text-canvas hover:text-linen relative flex size-9 items-center justify-center"
-              aria-label="Notifications"
-            >
-              <Bell className="size-[18px]" />
-              <span className="bg-amber absolute top-1.5 right-1.5 size-1.5 rounded-full" />
-            </button>
-            <Sparkles className="text-amber size-4" />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-7 lg:px-9 lg:py-9">
+        <main className="mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-7 lg:px-10 lg:py-10">
           {children}
         </main>
       </div>

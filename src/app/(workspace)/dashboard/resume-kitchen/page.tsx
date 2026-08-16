@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CheckCircle2, FileText, ShieldCheck, Sparkles } from "lucide-react";
 import {
   CheckItem,
@@ -14,9 +15,20 @@ export default function ResumeKitchenPage() {
         title="Tailor with proof, not guesswork."
         copy="Your verified experience is the pantry. Stripe’s requirements are the recipe. Review every suggested change before it reaches your tailored résumé."
         action={
-          <button className="tool-button text-night min-h-10 rounded-lg px-4 text-sm font-semibold">
-            Tailor for Stripe
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/evidence"
+              className="text-canvas hover:text-linen text-xs"
+            >
+              View evidence
+            </Link>
+            <Link
+              href="/dashboard/resume-kitchen/intake"
+              className="tool-button text-night inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold"
+            >
+              Import résumé
+            </Link>
+          </div>
         }
       />
       <div className="grid gap-4 sm:grid-cols-3">
