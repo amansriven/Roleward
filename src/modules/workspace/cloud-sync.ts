@@ -71,7 +71,7 @@ async function writeCloud(workspace: WorkspaceSnapshot, version: number) {
 
 export async function hydrateCloudWorkspace(storage: Storage) {
   const cloud = await readCloud();
-  if (!cloud) return "local" as const;
+  if (!cloud) return "unconfigured" as const;
   cloudVersion = cloud.version;
   const local = loadWorkspace(storage);
   const merged = mergeForMigration(cloud.workspace, local);

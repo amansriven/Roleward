@@ -9,12 +9,14 @@ import {
 import { workspaceUpdatedEvent } from "@/modules/workspace/repository";
 
 export function WorkspaceSync() {
-  const [state, setState] = useState<"loading" | "cloud" | "local">("loading");
+  const [state, setState] = useState<
+    "loading" | "cloud" | "unconfigured" | "error"
+  >("loading");
   useEffect(() => {
     let active = true;
     void hydrateCloudWorkspace(localStorage)
       .then((mode) => active && setState(mode))
-      .catch(() => active && setState("local"));
+      .catch(() => active && setState("error"));
     const save = (event: Event) => {
       if ((event as CustomEvent).detail?.source === "cloud") return;
       scheduleCloudWorkspaceSave(localStorage);
@@ -31,9 +33,11 @@ export function WorkspaceSync() {
       title={
         state === "cloud"
           ? "Workspace synced to AWS"
-          : state === "local"
-            ? "Using this device until AWS storage is configured"
-            : "Opening cloud workspace"
+          : state === "unconfigured"
+            ? "AWS workspace variables are missing from this deployment"
+            : state === "error"
+              ? "AWS workspace request failed; check the table, region, and IAM permissions"
+              : "Opening cloud workspace"
       }
     >
       {state === "loading" ? (
@@ -47,7 +51,9 @@ export function WorkspaceSync() {
         ? "Syncing"
         : state === "cloud"
           ? "Synced"
-          : "This device"}
+          : state === "unconfigured"
+            ? "AWS setup needed"
+            : "Sync error"}
     </span>
   );
 }
