@@ -80,7 +80,7 @@ Avoid building Resume Kitchen, Guru, and Stage Fright as three disconnected appl
 ### Build
 
 - Base resume representation
-- Recipe Card for a target job
+- Recipe Card for target roles
 - Evidence-backed bullet suggestions
 - Suggestion review: accept, edit, or reject
 - Tailored version per application
