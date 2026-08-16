@@ -15,6 +15,7 @@ import {
   getActiveApplication,
   loadWorkspace,
   recommendActions,
+  workspaceUpdatedEvent,
   type WorkspaceSnapshot,
 } from "@/modules/workspace/repository";
 
@@ -26,7 +27,10 @@ const actionColors = {
 export function LiveDashboard() {
   const [workspace, setWorkspace] = useState<WorkspaceSnapshot | null>(null);
   useEffect(() => {
-    queueMicrotask(() => setWorkspace(loadWorkspace(localStorage)));
+    const refresh = () => setWorkspace(loadWorkspace(localStorage));
+    queueMicrotask(refresh);
+    window.addEventListener(workspaceUpdatedEvent, refresh);
+    return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
   }, []);
   if (!workspace)
     return (

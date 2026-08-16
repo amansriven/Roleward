@@ -4,7 +4,9 @@ import {
   loadWorkspace,
   recommendActions,
   saveApplication,
+  saveWorkspaceSnapshot,
   setActiveApplication,
+  workspaceSnapshotSchema,
 } from "./repository";
 
 function memoryStorage() {
@@ -40,5 +42,16 @@ describe("workspace repository", () => {
     expect(recommendActions(loadWorkspace(storage))[0]?.id).toBe(
       "confirm-evidence",
     );
+  });
+  it("round-trips a validated workspace snapshot", () => {
+    const storage = memoryStorage();
+    const snapshot = workspaceSnapshotSchema.parse({
+      profile: null,
+      evidence: [],
+      applications: [application("cloud")],
+      activeApplicationId: "cloud",
+    });
+    saveWorkspaceSnapshot(storage, snapshot);
+    expect(loadWorkspace(storage)).toEqual(snapshot);
   });
 });

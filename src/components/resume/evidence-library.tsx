@@ -4,17 +4,20 @@ import { CheckCircle2, Database, FileText, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { EvidenceItem } from "@/modules/evidence/schema";
+import { workspaceUpdatedEvent } from "@/modules/workspace/repository";
 
 export function EvidenceLibrary() {
   const [items, setItems] = useState<EvidenceItem[] | null>(null);
   useEffect(() => {
-    queueMicrotask(() =>
+    const refresh = () =>
       setItems(
         JSON.parse(
           localStorage.getItem("sweet-plus:evidence-library") ?? "[]",
         ) as EvidenceItem[],
-      ),
-    );
+      );
+    queueMicrotask(refresh);
+    window.addEventListener(workspaceUpdatedEvent, refresh);
+    return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
   }, []);
   if (items === null)
     return (

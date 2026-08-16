@@ -26,6 +26,7 @@ import {
   type ResumeDocument,
 } from "@/modules/resume-kitchen/intake";
 import { createSampleExtraction } from "@/modules/resume-kitchen/sample-extraction";
+import { uploadPrivateFile } from "@/modules/uploads/client";
 
 type Step = "upload" | "processing" | "review" | "complete";
 const storageKey = "sweet-plus:evidence-library";
@@ -48,6 +49,7 @@ export function ResumeIntakeFlow() {
     setStep("processing");
     try {
       const contentHash = await hashFile(file);
+      const storageKey = await uploadPrivateFile(file, "resume");
       const existingHash = localStorage.getItem("sweet-plus:resume-hash");
       if (existingHash === contentHash) {
         setError(
@@ -60,6 +62,7 @@ export function ResumeIntakeFlow() {
         mediaType: file.type,
         sizeBytes: file.size,
         contentHash,
+        storageKey: storageKey ?? undefined,
         status: "review_required",
         createdAt: new Date().toISOString(),
       });

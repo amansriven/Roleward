@@ -18,10 +18,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { endSession } from "@/components/auth/auth-actions";
+import { WorkspaceSync } from "@/components/workspace/workspace-sync";
 import { cn } from "@/lib/utils";
 import {
   getActiveApplication,
   loadWorkspace,
+  workspaceUpdatedEvent,
 } from "@/modules/workspace/repository";
 
 const navigation = [
@@ -61,7 +63,7 @@ function ActiveTarget({ card = false }: { card?: boolean }) {
     "Add a role to personalize your plan",
   );
   useEffect(() => {
-    queueMicrotask(() => {
+    const refresh = () => {
       const app = getActiveApplication(loadWorkspace(localStorage));
       if (app) {
         setLabel(app.companyName + " · " + app.roleTitle);
@@ -71,7 +73,10 @@ function ActiveTarget({ card = false }: { card?: boolean }) {
             : app.requirements.length + " requirements confirmed",
         );
       }
-    });
+    };
+    queueMicrotask(refresh);
+    window.addEventListener(workspaceUpdatedEvent, refresh);
+    return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
   }, []);
   if (!card)
     return (
@@ -257,6 +262,7 @@ export function WorkspaceShell({
             <Menu className="size-5" />
           </button>
           <div className="ml-auto flex items-center gap-3">
+            <WorkspaceSync />
             <ActiveTarget />
             <Link
               href="/dashboard/applications/new"

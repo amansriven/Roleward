@@ -7,14 +7,17 @@ import {
   getActiveApplication,
   loadWorkspace,
   setActiveApplication,
+  workspaceUpdatedEvent,
   type WorkspaceSnapshot,
 } from "@/modules/workspace/repository";
 export function ApplicationList() {
   const [workspace, setWorkspace] = useState<WorkspaceSnapshot | null>(null);
-  useEffect(
-    () => queueMicrotask(() => setWorkspace(loadWorkspace(localStorage))),
-    [],
-  );
+  useEffect(() => {
+    const refresh = () => setWorkspace(loadWorkspace(localStorage));
+    queueMicrotask(refresh);
+    window.addEventListener(workspaceUpdatedEvent, refresh);
+    return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
+  }, []);
   if (!workspace)
     return (
       <p className="text-dust py-20 text-center text-sm">

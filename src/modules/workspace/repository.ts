@@ -1,8 +1,19 @@
-import type { CandidateProfile } from "@/modules/candidates/schema";
-import type { EvidenceItem } from "@/modules/evidence/schema";
-import type { JobRequirement } from "@/modules/applications/schema";
+import { z } from "zod";
+import {
+  candidateProfileSchema,
+  type CandidateProfile,
+} from "@/modules/candidates/schema";
+import {
+  evidenceItemSchema,
+  type EvidenceItem,
+} from "@/modules/evidence/schema";
+import {
+  jobRequirementSchema,
+  type JobRequirement,
+} from "@/modules/applications/schema";
 import {
   matchRequirements,
+  targetApplicationSchema,
   type TargetApplication,
 } from "@/modules/applications/workflow";
 import { assessReadiness } from "@/modules/readiness/model";
@@ -16,6 +27,23 @@ export interface WorkspaceSnapshot {
   applications: StoredApplication[];
   activeApplicationId: string | null;
 }
+
+export const storedApplicationSchema = targetApplicationSchema.extend({
+  requirements: z.array(jobRequirementSchema),
+});
+export const workspaceSnapshotSchema = z.object({
+  profile: candidateProfileSchema.nullable(),
+  evidence: z.array(evidenceItemSchema),
+  applications: z.array(storedApplicationSchema),
+  activeApplicationId: z.string().nullable(),
+});
+
+export const emptyWorkspace: WorkspaceSnapshot = {
+  profile: null,
+  evidence: [],
+  applications: [],
+  activeApplicationId: null,
+};
 export interface RecommendedAction {
   id: string;
   title: string;
@@ -31,6 +59,11 @@ const keys = {
   applications: "sweet-plus:applications",
   active: "sweet-plus:active-application-id",
 } as const;
+export const workspaceUpdatedEvent = "sweet-plus:workspace-updated";
+function announceWorkspaceUpdate() {
+  if (typeof window !== "undefined")
+    window.dispatchEvent(new CustomEvent(workspaceUpdatedEvent));
+}
 function read<T>(
   storage: Pick<Storage, "getItem">,
   key: string,
@@ -62,6 +95,21 @@ export function loadWorkspace(
         : (applications[0]?.id ?? null),
   };
 }
+
+export function saveWorkspaceSnapshot(
+  storage: Pick<Storage, "setItem">,
+  workspace: WorkspaceSnapshot,
+) {
+  const parsed = workspaceSnapshotSchema.parse(workspace);
+  if (parsed.profile)
+    storage.setItem(keys.profile, JSON.stringify(parsed.profile));
+  else storage.setItem(keys.profile, "null");
+  storage.setItem(keys.evidence, JSON.stringify(parsed.evidence));
+  storage.setItem(keys.applications, JSON.stringify(parsed.applications));
+  if (parsed.activeApplicationId)
+    storage.setItem(keys.active, parsed.activeApplicationId);
+  else storage.setItem(keys.active, "");
+}
 export function saveApplication(
   storage: Pick<Storage, "getItem" | "setItem">,
   application: StoredApplication,
@@ -73,12 +121,14 @@ export function saveApplication(
   ];
   storage.setItem(keys.applications, JSON.stringify(applications));
   storage.setItem(keys.active, application.id);
+  announceWorkspaceUpdate();
 }
 export function setActiveApplication(
   storage: Pick<Storage, "setItem">,
   id: string,
 ) {
   storage.setItem(keys.active, id);
+  announceWorkspaceUpdate();
 }
 export function saveEvidenceAndRefresh(
   storage: Pick<Storage, "getItem" | "setItem">,
@@ -91,6 +141,7 @@ export function saveEvidenceAndRefresh(
     requirements: matchRequirements(application.requirements, evidence),
   }));
   storage.setItem(keys.applications, JSON.stringify(applications));
+  announceWorkspaceUpdate();
 }
 export function getActiveApplication(workspace: WorkspaceSnapshot) {
   return (

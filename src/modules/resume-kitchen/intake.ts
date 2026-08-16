@@ -16,6 +16,7 @@ export const resumeDocumentSchema = z.object({
     .positive()
     .max(10 * 1024 * 1024),
   contentHash: z.string().regex(/^[a-f0-9]{64}$/),
+  storageKey: z.string().min(1).optional(),
   status: z.enum([
     "uploaded",
     "queued",
