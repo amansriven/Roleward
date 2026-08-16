@@ -71,9 +71,11 @@ export function ResumeIntakeFlow() {
       setItems(createSampleExtraction(nextResume.id).items);
       localStorage.setItem("sweet-plus:resume-hash", contentHash);
       window.setTimeout(() => setStep("review"), 650);
-    } catch {
+    } catch (problem) {
       setError(
-        "We could not read this file. Your existing evidence was not changed.",
+        problem instanceof Error
+          ? problem.message
+          : "We could not read this file. Your existing evidence was not changed.",
       );
       setStep("upload");
     }
