@@ -5,18 +5,25 @@ import { useEffect, useState } from "react";
 import {
   hydrateCloudWorkspace,
   scheduleCloudWorkspaceSave,
+  WorkspaceSyncError,
+  type WorkspaceSyncFailure,
 } from "@/modules/workspace/cloud-sync";
 import { workspaceUpdatedEvent } from "@/modules/workspace/repository";
 
 export function WorkspaceSync() {
   const [state, setState] = useState<
-    "loading" | "cloud" | "unconfigured" | "error"
+    "loading" | "cloud" | WorkspaceSyncFailure
   >("loading");
   useEffect(() => {
     let active = true;
     void hydrateCloudWorkspace(localStorage)
       .then((mode) => active && setState(mode))
-      .catch(() => active && setState("error"));
+      .catch((error) => {
+        if (!active) return;
+        setState(
+          error instanceof WorkspaceSyncError ? error.code : "storage_error",
+        );
+      });
     const save = (event: Event) => {
       if ((event as CustomEvent).detail?.source === "cloud") return;
       scheduleCloudWorkspaceSave(localStorage);
@@ -35,9 +42,15 @@ export function WorkspaceSync() {
           ? "Workspace synced to AWS"
           : state === "unconfigured"
             ? "AWS workspace variables are missing from this deployment"
-            : state === "error"
-              ? "AWS workspace request failed; check the table, region, and IAM permissions"
-              : "Opening cloud workspace"
+            : state === "table_not_found"
+              ? "DynamoDB table not found in the configured region"
+              : state === "credentials"
+                ? "AWS rejected the configured access key"
+                : state === "access_denied"
+                  ? "The IAM identity cannot access the workspace table"
+                  : state === "storage_error"
+                    ? "AWS workspace storage returned an unexpected error"
+                    : "Opening cloud workspace"
       }
     >
       {state === "loading" ? (
@@ -53,7 +66,13 @@ export function WorkspaceSync() {
           ? "Synced"
           : state === "unconfigured"
             ? "AWS setup needed"
-            : "Sync error"}
+            : state === "table_not_found"
+              ? "Table not found"
+              : state === "credentials"
+                ? "AWS key rejected"
+                : state === "access_denied"
+                  ? "AWS access denied"
+                  : "Sync error"}
     </span>
   );
 }

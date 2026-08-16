@@ -11,6 +11,33 @@ import {
 export const runtime = "nodejs";
 const maximumWorkspaceBytes = 350_000;
 
+function storageError(error: unknown) {
+  const name = error instanceof Error ? error.name : "";
+  if (name === "ResourceNotFoundException")
+    return NextResponse.json(
+      { error: "Workspace table was not found", code: "table_not_found" },
+      { status: 503 },
+    );
+  if (
+    name === "UnrecognizedClientException" ||
+    name === "InvalidSignatureException" ||
+    name === "CredentialsProviderError"
+  )
+    return NextResponse.json(
+      { error: "AWS credentials were rejected", code: "credentials" },
+      { status: 503 },
+    );
+  if (name === "AccessDeniedException")
+    return NextResponse.json(
+      { error: "AWS denied workspace access", code: "access_denied" },
+      { status: 503 },
+    );
+  return NextResponse.json(
+    { error: "Workspace storage failed", code: "storage_error" },
+    { status: 503 },
+  );
+}
+
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id)
@@ -20,12 +47,16 @@ export async function GET() {
       { error: "Storage is not configured" },
       { status: 503 },
     );
-  const item = await getWorkspace(session.user.id);
-  return NextResponse.json({
-    workspace: item?.workspace ?? emptyWorkspace,
-    version: item?.version ?? 0,
-    updatedAt: item?.updatedAt ?? null,
-  });
+  try {
+    const item = await getWorkspace(session.user.id);
+    return NextResponse.json({
+      workspace: item?.workspace ?? emptyWorkspace,
+      version: item?.version ?? 0,
+      updatedAt: item?.updatedAt ?? null,
+    });
+  } catch (error) {
+    return storageError(error);
+  }
 }
 
 export async function PUT(request: Request) {
@@ -71,6 +102,6 @@ export async function PUT(request: Request) {
         { error: "Workspace changed on another device" },
         { status: 409 },
       );
-    throw error;
+    return storageError(error);
   }
 }

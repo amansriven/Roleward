@@ -15,6 +15,20 @@ interface CloudWorkspace {
   updatedAt: string | null;
 }
 
+export type WorkspaceSyncFailure =
+  | "unconfigured"
+  | "table_not_found"
+  | "credentials"
+  | "access_denied"
+  | "storage_error";
+
+export class WorkspaceSyncError extends Error {
+  constructor(public code: WorkspaceSyncFailure) {
+    super(code);
+    this.name = "WorkspaceSyncError";
+  }
+}
+
 let cloudVersion: number | null = null;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let syncing: Promise<void> | null = null;
@@ -52,7 +66,13 @@ function mergeForMigration(
 
 async function readCloud(): Promise<CloudWorkspace | null> {
   const response = await fetch("/api/workspace", { cache: "no-store" });
-  if (response.status === 503) return null;
+  if (response.status === 503) {
+    const body = (await response.json().catch(() => null)) as {
+      code?: WorkspaceSyncFailure;
+    } | null;
+    if (!body?.code) return null;
+    throw new WorkspaceSyncError(body.code);
+  }
   if (!response.ok) throw new Error("Unable to load the cloud workspace");
   const data = (await response.json()) as CloudWorkspace;
   return {
