@@ -1,5 +1,11 @@
 import NextAuth from "next-auth";
 import Cognito from "next-auth/providers/cognito";
+import Credentials from "next-auth/providers/credentials";
+import { z } from "zod";
+import {
+  authenticateWithPassword,
+  emailAuthConfigured,
+} from "@/modules/identity/cognito-server";
 
 const authConfigured = Boolean(
   process.env.AUTH_COGNITO_ID &&
@@ -18,6 +24,30 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   session: { strategy: "jwt", maxAge: 60 * 60 * 8 },
   providers: authConfigured
     ? [
+        Credentials({
+          credentials: {
+            email: { label: "Email", type: "email" },
+            password: { label: "Password", type: "password" },
+          },
+          authorize: async (credentials) => {
+            if (!emailAuthConfigured) return null;
+            const parsed = z
+              .object({
+                email: z.string().email(),
+                password: z.string().min(8),
+              })
+              .safeParse(credentials);
+            if (!parsed.success) return null;
+            try {
+              return await authenticateWithPassword(
+                parsed.data.email.toLowerCase(),
+                parsed.data.password,
+              );
+            } catch {
+              return null;
+            }
+          },
+        }),
         Cognito({
           clientId: process.env.AUTH_COGNITO_ID!,
           clientSecret: process.env.AUTH_COGNITO_SECRET!,

@@ -1,8 +1,8 @@
-import { Apple, ArrowRight, LockKeyhole, Mail } from "lucide-react";
+import { Apple, LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { authConfigured } from "@/auth";
 import { beginManagedLogin } from "@/components/auth/auth-actions";
-import { Button } from "@/components/ui/button";
+import { EmailAuthForm } from "@/components/auth/email-auth-form";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const signup = mode === "signup";
@@ -20,30 +20,19 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     );
   return (
     <div className="mt-8">
-      <form action={beginManagedLogin} className="grid gap-3">
+      <EmailAuthForm mode={mode} />
+      <div className="my-5 flex items-center gap-3" role="separator">
+        <span className="bg-iron/70 h-px flex-1" />
+        <span className="text-dust text-[11px]">or continue with</span>
+        <span className="bg-iron/70 h-px flex-1" />
+      </div>
+      <form action={beginManagedLogin}>
         <input
           type="hidden"
           name="next"
           value={signup ? "/onboarding" : "/dashboard"}
         />
         <input type="hidden" name="mode" value={mode} />
-        <Button
-          className="h-12 w-full justify-between px-4"
-          name="provider"
-          value="email"
-          type="submit"
-        >
-          <span className="flex items-center gap-3">
-            <Mail className="size-4" />
-            {signup ? "Sign up with email" : "Continue with email"}
-          </span>
-          <ArrowRight className="size-4" />
-        </Button>
-        <div className="my-2 flex items-center gap-3" role="separator">
-          <span className="bg-iron/70 h-px flex-1" />
-          <span className="text-dust text-[11px]">or continue with</span>
-          <span className="bg-iron/70 h-px flex-1" />
-        </div>
         <div className="grid grid-cols-2 gap-3">
           <button
             className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
@@ -66,8 +55,8 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       <div className="mt-5 flex items-start gap-3">
         <LockKeyhole className="text-sage mt-0.5 size-4 shrink-0" />
         <p className="text-dust text-xs leading-5">
-          Your credentials are handled by our secure identity provider. Sweet+
-          never receives or stores your password.
+          Cognito securely validates your credentials. Sweet+ never stores your
+          password.
         </p>
       </div>
       <p className="text-canvas mt-6 text-center text-sm">
