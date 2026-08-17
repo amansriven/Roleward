@@ -37,7 +37,15 @@ function hasData(workspace: WorkspaceSnapshot) {
   return Boolean(
     workspace.profile ||
     workspace.evidence.length ||
-    workspace.applications.length,
+    workspace.applications.length ||
+    workspace.interviewSummaries.length,
+  );
+}
+
+function dedupeById<T extends { id: string }>(items: T[]) {
+  return items.filter(
+    (item, index, all) =>
+      all.findIndex((other) => other.id === item.id) === index,
   );
 }
 
@@ -61,6 +69,10 @@ function mergeForMigration(
     evidence: remote.evidence.length ? remote.evidence : local.evidence,
     applications,
     activeApplicationId,
+    interviewSummaries: dedupeById([
+      ...remote.interviewSummaries,
+      ...local.interviewSummaries,
+    ]),
   });
 }
 
@@ -127,17 +139,15 @@ async function persist(storage: Storage) {
       const merged = workspaceSnapshotSchema.parse({
         ...latest.workspace,
         ...local,
-        evidence: [...latest.workspace.evidence, ...local.evidence].filter(
-          (item, index, all) =>
-            all.findIndex((other) => other.id === item.id) === index,
-        ),
-        applications: [
+        evidence: dedupeById([...latest.workspace.evidence, ...local.evidence]),
+        applications: dedupeById([
           ...latest.workspace.applications,
           ...local.applications,
-        ].filter(
-          (item, index, all) =>
-            all.findIndex((other) => other.id === item.id) === index,
-        ),
+        ]),
+        interviewSummaries: dedupeById([
+          ...latest.workspace.interviewSummaries,
+          ...local.interviewSummaries,
+        ]),
       });
       response = await writeCloud(merged, latest.version);
       if (response.ok) saveWorkspaceSnapshot(storage, merged);

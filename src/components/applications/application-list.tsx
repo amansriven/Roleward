@@ -45,7 +45,7 @@ export function ApplicationList() {
   return (
     <div className="space-y-3">
       {workspace.applications.map((app) => {
-        const ready = applicationReadiness(app);
+        const ready = applicationReadiness(app, workspace);
         const isActive = app.id === active?.id;
         return (
           <button

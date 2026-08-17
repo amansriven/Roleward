@@ -41,7 +41,7 @@ export function LiveDashboard() {
   const app = getActiveApplication(workspace);
   const actions = recommendActions(workspace);
   const primary = actions[0];
-  const readiness = app ? applicationReadiness(app) : null;
+  const readiness = app ? applicationReadiness(app, workspace) : null;
   return (
     <div className="space-y-8">
       <div>

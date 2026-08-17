@@ -17,6 +17,16 @@ import {
   type TargetApplication,
 } from "@/modules/applications/workflow";
 import { assessReadiness } from "@/modules/readiness/model";
+import {
+  COMPETENCY_LABELS,
+  interviewSummarySchema,
+  type InterviewSummary,
+} from "@/modules/interviews/schema";
+import {
+  behavioralSignals,
+  nextCompetency,
+  technicalSignals,
+} from "@/modules/interviews/signals";
 
 export interface StoredApplication extends TargetApplication {
   requirements: JobRequirement[];
@@ -26,6 +36,7 @@ export interface WorkspaceSnapshot {
   evidence: EvidenceItem[];
   applications: StoredApplication[];
   activeApplicationId: string | null;
+  interviewSummaries: InterviewSummary[];
 }
 
 export const storedApplicationSchema = targetApplicationSchema.extend({
@@ -36,6 +47,8 @@ export const workspaceSnapshotSchema = z.object({
   evidence: z.array(evidenceItemSchema),
   applications: z.array(storedApplicationSchema),
   activeApplicationId: z.string().nullable(),
+  // Defaulted so workspace items written before interviews existed still parse.
+  interviewSummaries: z.array(interviewSummarySchema).default([]),
 });
 
 export const emptyWorkspace: WorkspaceSnapshot = {
@@ -43,6 +56,7 @@ export const emptyWorkspace: WorkspaceSnapshot = {
   evidence: [],
   applications: [],
   activeApplicationId: null,
+  interviewSummaries: [],
 };
 export interface RecommendedAction {
   id: string;
@@ -58,6 +72,7 @@ const keys = {
   evidence: "sweet-plus:evidence-library",
   applications: "sweet-plus:applications",
   active: "sweet-plus:active-application-id",
+  interviews: "sweet-plus:interview-summaries",
 } as const;
 export const workspaceUpdatedEvent = "sweet-plus:workspace-updated";
 function announceWorkspaceUpdate() {
@@ -93,6 +108,7 @@ export function loadWorkspace(
       activeId && applications.some((item) => item.id === activeId)
         ? activeId
         : (applications[0]?.id ?? null),
+    interviewSummaries: read<InterviewSummary[]>(storage, keys.interviews, []),
   };
 }
 
@@ -106,6 +122,7 @@ export function saveWorkspaceSnapshot(
   else storage.setItem(keys.profile, "null");
   storage.setItem(keys.evidence, JSON.stringify(parsed.evidence));
   storage.setItem(keys.applications, JSON.stringify(parsed.applications));
+  storage.setItem(keys.interviews, JSON.stringify(parsed.interviewSummaries));
   if (parsed.activeApplicationId)
     storage.setItem(keys.active, parsed.activeApplicationId);
   else storage.setItem(keys.active, "");
@@ -143,6 +160,18 @@ export function saveEvidenceAndRefresh(
   storage.setItem(keys.applications, JSON.stringify(applications));
   announceWorkspaceUpdate();
 }
+export function saveInterviewSummary(
+  storage: Pick<Storage, "getItem" | "setItem">,
+  summary: InterviewSummary,
+) {
+  const workspace = loadWorkspace(storage);
+  const summaries = [
+    summary,
+    ...workspace.interviewSummaries.filter((item) => item.id !== summary.id),
+  ];
+  storage.setItem(keys.interviews, JSON.stringify(summaries));
+  announceWorkspaceUpdate();
+}
 export function getActiveApplication(workspace: WorkspaceSnapshot) {
   return (
     workspace.applications.find(
@@ -151,15 +180,20 @@ export function getActiveApplication(workspace: WorkspaceSnapshot) {
   );
 }
 
-export function applicationReadiness(application: StoredApplication) {
+export function applicationReadiness(
+  application: StoredApplication,
+  workspace: WorkspaceSnapshot,
+) {
+  const behavioral = behavioralSignals(workspace.interviewSummaries);
+  const technical = technicalSignals(workspace.interviewSummaries);
   return assessReadiness({
     requirements: application.requirements,
     resumeReviewed: false,
     resumeExported: false,
-    technicalCoverage: 0,
-    technicalRecencyDays: null,
-    behavioralCompetenciesCovered: 0,
-    behavioralRehearsals: 0,
+    technicalCoverage: technical.coverage,
+    technicalRecencyDays: technical.recencyDays,
+    behavioralCompetenciesCovered: behavioral.competenciesCovered,
+    behavioralRehearsals: behavioral.rehearsals,
   });
 }
 export function recommendActions(
@@ -201,23 +235,27 @@ export function recommendActions(
       href: "/dashboard/resume-kitchen",
       area: "resume",
     });
-  actions.push(
-    {
-      id: "coding-graph",
-      title: "Practice graph traversal",
-      detail: "Coding · target-role fundamentals",
-      minutes: 30,
-      href: "/dashboard/guru",
-      area: "coding",
-    },
-    {
-      id: "story-conflict",
-      title: "Rehearse a collaboration story",
-      detail: "Stories · behavioral coverage",
-      minutes: 15,
-      href: "/dashboard/stage-fright",
-      area: "stories",
-    },
-  );
+  const technical = technicalSignals(workspace.interviewSummaries);
+  actions.push({
+    id: "coding-practice",
+    title: technical.attempts
+      ? "Run another coding interview"
+      : "Try your first coding interview",
+    detail: technical.attempts
+      ? `Coding · last scored ${technical.coverage}%`
+      : "Coding · establishes your technical baseline",
+    minutes: 30,
+    href: "/dashboard/stage-fright/new?type=coding",
+    area: "coding",
+  });
+  const competency = nextCompetency(workspace.interviewSummaries);
+  actions.push({
+    id: `story-${competency}`,
+    title: `Practice a ${COMPETENCY_LABELS[competency].toLowerCase()} question`,
+    detail: "Stories · your least-covered competency",
+    minutes: 15,
+    href: "/dashboard/stage-fright/new?type=behavioral",
+    area: "stories",
+  });
   return actions.slice(0, 3);
 }
