@@ -51,9 +51,6 @@ export async function POST(request: Request) {
     Bucket: uploadBucket,
     Key: objectKey,
     ContentType: parsed.data.contentType,
-    ContentLength: parsed.data.size,
-    ServerSideEncryption: "AES256",
-    Metadata: { owner: session.user.id, kind: parsed.data.kind },
   });
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
   return NextResponse.json({ uploadUrl, objectKey, expiresIn: 300 });

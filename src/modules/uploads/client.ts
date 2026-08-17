@@ -37,7 +37,7 @@ export async function uploadPrivateFile(
   }
   if (upload.status === 403)
     throw new Error(
-      "AWS denied the upload. Check the bucket name and s3:PutObject IAM resource.",
+      "S3 rejected the signed upload. Check that the IAM policy update is active and retry.",
     );
   if (upload.status === 404)
     throw new Error(
