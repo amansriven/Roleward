@@ -34,3 +34,7 @@ pnpm-debug.log*
 
 # AWS CDK
 cdk.out
+
+# Python bytecode (Lambda sources)
+__pycache__/
+*.pyc
