@@ -146,12 +146,21 @@ twice. `/api/guru/problem` claims an unseen one, copies it into the caller's
 namespace so `/api/guru/run` can find its tests, and tops the cell up
 after the response via `after`.
 
-Two things fill the pool:
+Three things fill the pool:
 
-| Trigger                   | What it does                                         |
-| ------------------------- | ---------------------------------------------------- |
-| `vercel.json` hourly cron | Fills the shallowest cell toward its target          |
-| A served request          | Tops up the cell it just drew from, after responding |
+| Trigger                  | What it does                                         |
+| ------------------------ | ---------------------------------------------------- |
+| `vercel.json` daily cron | Fills the shallowest cell toward its target          |
+| A served request         | Tops up the cell it just drew from, after responding |
+| A targeted warm call     | Fills one named cell, on demand                      |
+
+The cron is **daily, not hourly, and that is a plan limit rather than a
+choice**. Vercel rejects a sub-daily schedule on Hobby and fails the whole
+deployment rather than degrading, so an hourly entry here takes the site down
+with it. At roughly five problems a run, a daily cron is a trickle across
+ninety cells rather than a fill strategy: the request-driven refill is what
+keeps active cells stocked, and the targeted call below is how a cell gets
+filled on purpose.
 
 A single cell can be filled directly, which is how a newly added archetype gets
 proven without waiting for the rotation to reach it:
