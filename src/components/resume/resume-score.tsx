@@ -143,6 +143,50 @@ function FindingRow({
   const affected = claims.filter((claim) =>
     finding.claimIds.includes(claim.id),
   );
+  const [selected, setSelected] = useState<string[]>([]);
+  const [rewrites, setRewrites] = useState<Record<string, Rewrite>>({});
+  const [busy, setBusy] = useState(false);
+
+  /**
+   * Rewrites only what was ticked.
+   *
+   * A finding can name a dozen bullets, and most of them are not the ones the
+   * candidate wants touched — some are fine as they are, some they would rather
+   * edit themselves. Nothing here is sent to a model without being chosen.
+   */
+  async function rewriteSelected() {
+    setBusy(true);
+    try {
+      const targets = affected.filter((claim) => selected.includes(claim.id));
+      // Sequential rather than parallel: a handful of short calls, and the
+      // results appearing one at a time reads as progress rather than a stall.
+      for (const claim of targets) {
+        const response = await fetch("/api/resume/improve", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            bullet: claim.content,
+            context: claim.itemTitle,
+          }),
+        });
+        const body = (await response
+          .json()
+          .catch(() => null)) as Rewrite | null;
+        if (body) setRewrites((current) => ({ ...current, [claim.id]: body }));
+      }
+      setSelected([]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function toggle(id: string) {
+    setSelected((current) =>
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id],
+    );
+  }
 
   return (
     <div className="border-iron/60 rounded-xl border">
@@ -170,62 +214,105 @@ function FindingRow({
       </button>
 
       {open && affected.length > 0 && (
-        <div className="border-iron/50 space-y-2 border-t p-3">
-          {affected.map((claim) => (
-            <BulletFix key={claim.id} claim={claim} />
-          ))}
+        <div className="border-iron/50 border-t p-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-dust text-[10px]">
+              Pick the ones you want rewritten. The rest are left alone.
+            </p>
+            {affected.length > 1 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setSelected(
+                    selected.length === affected.length
+                      ? []
+                      : affected.map((claim) => claim.id),
+                  )
+                }
+                className="text-dust hover:text-canvas shrink-0 text-[10px]"
+              >
+                {selected.length === affected.length ? "Clear" : "Select all"}
+              </button>
+            )}
+          </div>
+
+          <div className="mt-2.5 space-y-2">
+            {affected.map((claim) => (
+              <BulletRow
+                key={claim.id}
+                claim={claim}
+                selected={selected.includes(claim.id)}
+                onToggle={() => toggle(claim.id)}
+                rewrite={rewrites[claim.id]}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void rewriteSelected()}
+            disabled={busy || selected.length === 0}
+            className="bg-copper text-night mt-3 inline-flex min-h-8 items-center gap-2 rounded-lg px-3 text-[11px] font-semibold disabled:opacity-40"
+          >
+            {busy ? (
+              <LoaderCircle className="size-3 animate-spin" />
+            ) : (
+              <Wand2 className="size-3" />
+            )}
+            {busy
+              ? "Rewriting…"
+              : selected.length
+                ? `Rewrite ${selected.length} selected`
+                : "Rewrite selected"}
+          </button>
         </div>
       )}
     </div>
   );
 }
 
-function BulletFix({
+function BulletRow({
   claim,
+  selected,
+  onToggle,
+  rewrite,
 }: {
   claim: { id: string; content: string; itemTitle: string };
+  selected: boolean;
+  onToggle: () => void;
+  rewrite?: Rewrite;
 }) {
-  const [busy, setBusy] = useState(false);
-  const [rewrite, setRewrite] = useState<Rewrite | null>(null);
   const [copied, setCopied] = useState(false);
 
-  async function improve() {
-    setBusy(true);
-    try {
-      const response = await fetch("/api/resume/improve", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          bullet: claim.content,
-          context: claim.itemTitle,
-        }),
-      });
-      setRewrite((await response.json().catch(() => null)) as Rewrite);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
-    <div className="border-iron/50 rounded-lg border p-2.5">
-      <p className="text-canvas text-[11px] leading-5">{claim.content}</p>
-      <p className="text-dust mt-1 text-[10px]">{claim.itemTitle}</p>
-
-      {!rewrite && (
-        <button
-          type="button"
-          onClick={() => void improve()}
-          disabled={busy}
-          className="text-copper mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold disabled:opacity-40"
-        >
-          {busy ? (
-            <LoaderCircle className="size-3 animate-spin" />
-          ) : (
-            <Wand2 className="size-3" />
-          )}
-          Rewrite this
-        </button>
+    <div
+      className={cn(
+        "rounded-lg border p-2.5 transition",
+        selected ? "border-copper/50 bg-copper/[.04]" : "border-iron/50",
       )}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-start gap-2.5 text-left"
+      >
+        <span
+          className={cn(
+            "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded border",
+            selected ? "border-copper bg-copper" : "border-iron",
+          )}
+        >
+          {selected && <Check className="text-night size-3" />}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="text-canvas block text-[11px] leading-5">
+            {claim.content}
+          </span>
+          <span className="text-dust mt-1 block text-[10px]">
+            {claim.itemTitle}
+          </span>
+        </span>
+      </button>
 
       {rewrite?.improved && (
         <div className="border-copper/30 bg-copper/[.06] mt-2 rounded-lg border p-2.5">
@@ -253,8 +340,8 @@ function BulletFix({
           <Sparkles className="text-copper mr-1.5 inline size-3" />
           {rewrite.askFor}
           <span className="text-dust mt-1 block text-[10px]">
-            We will not guess this for you. Answer it and edit the bullet
-            yourself in your evidence library.
+            We will not guess this for you. Answer it and edit the bullet in
+            your evidence library.
           </span>
         </p>
       )}
