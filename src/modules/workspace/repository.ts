@@ -188,8 +188,16 @@ export function applicationReadiness(
   const technical = technicalSignals(workspace.interviewSummaries);
   return assessReadiness({
     requirements: application.requirements,
-    resumeReviewed: false,
-    resumeExported: false,
+    // Real, rather than the hardcoded false this used to pass. Confirming what
+    // was read from the résumé is what makes a claim usable anywhere else in
+    // the product, so it is the signal worth scoring.
+    evidenceConfirmed: workspace.evidence.some((item) =>
+      item.claims.some(
+        (claim) =>
+          claim.verificationStatus === "confirmed" ||
+          claim.verificationStatus === "corrected",
+      ),
+    ),
     technicalCoverage: technical.coverage,
     technicalRecencyDays: technical.recencyDays,
     behavioralCompetenciesCovered: behavioral.competenciesCovered,

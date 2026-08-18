@@ -38,6 +38,7 @@ export function ApplicationIntakeFlow() {
     null,
   );
   const [requirements, setRequirements] = useState<JobRequirement[]>([]);
+  const [evidenceConfirmed, setEvidenceConfirmed] = useState(false);
   const [extracting, setExtracting] = useState(false);
   /** True when the posting could not be read and the keyword guess was used. */
   const [fellBack, setFellBack] = useState(false);
@@ -116,6 +117,15 @@ export function ApplicationIntakeFlow() {
     const evidence = JSON.parse(
       localStorage.getItem("sweet-plus:evidence-library") ?? "[]",
     ) as EvidenceItem[];
+    setEvidenceConfirmed(
+      evidence.some((item) =>
+        item.claims.some(
+          (claim) =>
+            claim.verificationStatus === "confirmed" ||
+            claim.verificationStatus === "corrected",
+        ),
+      ),
+    );
     const matched = matchRequirements(confirmed, evidence);
     setRequirements(matched);
     if (application) {
@@ -292,8 +302,7 @@ export function ApplicationIntakeFlow() {
   ).length;
   const readiness = assessReadiness({
     requirements,
-    resumeReviewed: false,
-    resumeExported: false,
+    evidenceConfirmed,
     technicalCoverage: 0,
     technicalRecencyDays: null,
     behavioralCompetenciesCovered: 0,

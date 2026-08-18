@@ -1,13 +1,13 @@
 import type { JobRequirement } from "@/modules/applications/schema";
 
-export const READINESS_RULE_VERSION = "readiness-v1" as const;
+export const READINESS_RULE_VERSION = "readiness-v2" as const;
 export type ReadinessLevel =
   "needs_attention" | "developing" | "nearly_ready" | "ready";
 
 export interface ReadinessInput {
   requirements: JobRequirement[];
-  resumeReviewed: boolean;
-  resumeExported: boolean;
+  /** The candidate has confirmed or corrected what was read from their résumé. */
+  evidenceConfirmed: boolean;
   technicalCoverage: number;
   technicalRecencyDays: number | null;
   behavioralCompetenciesCovered: number;
@@ -38,17 +38,21 @@ function levelFor(score: number): ReadinessLevel {
 }
 
 export function assessReadiness(input: ReadinessInput): ReadinessAssessment {
+  // Requirements are read from the posting now, so they mean something before
+  // anyone ticks a box. Scoring zero because a confirmation step was skipped
+  // told the candidate they had no coverage when they had not been asked yet.
   const confirmed = input.requirements.filter((item) => item.confirmed);
-  const required = confirmed.filter((item) => item.importance === "required");
+  const basis = confirmed.length ? confirmed : input.requirements;
+  const unconfirmedBasis = confirmed.length === 0 && basis.length > 0;
+
+  const required = basis.filter((item) => item.importance === "required");
   const strong = required.filter(
     (item) =>
       item.matchStrength === "strong" && item.supportingClaimIds.length > 0,
   );
   const coverage = required.length === 0 ? 0 : strong.length / required.length;
   const applicationScore = clamp(
-    coverage * 75 +
-      (input.resumeReviewed ? 15 : 0) +
-      (input.resumeExported ? 10 : 0),
+    coverage * 85 + (input.evidenceConfirmed ? 15 : 0),
   );
   const technicalScore = clamp(
     input.technicalCoverage * 0.85 +
@@ -68,12 +72,14 @@ export function assessReadiness(input: ReadinessInput): ReadinessAssessment {
       level: levelFor(applicationScore),
       explanation: [
         `${strong.length} of ${required.length} required requirements have strong, confirmed evidence.`,
-        input.resumeReviewed
-          ? "The tailored resume has been reviewed."
-          : "The tailored resume still needs review.",
-        input.resumeExported
-          ? "A final export is ready."
-          : "A final export has not been created.",
+        ...(unconfirmedBasis
+          ? [
+              "These requirements have not been confirmed yet, so they are counted as read from the posting.",
+            ]
+          : []),
+        input.evidenceConfirmed
+          ? "Your résumé evidence has been reviewed and confirmed."
+          : "Confirm what was read from your résumé to make it usable here.",
       ],
     },
     technical: {
