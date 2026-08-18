@@ -10,7 +10,7 @@ export default function EvidencePage() {
       <PageIntro
         eyebrow="Shared foundation"
         title="Evidence Library"
-        copy="The confirmed facts Resume Kitchen, Guru, and Stage Fright may reference. Proposed or rejected claims never appear here."
+        copy="Everything read from your résumé, in one place. Resume Kitchen tailors bullets from it, Stage Fright grounds interview questions in it, and your portfolio publishes it — so only confirmed claims are used anywhere. Edit the wording, or delete anything you would rather not be asked about."
         action={
           <Link
             href="/dashboard/resume-kitchen/intake"
