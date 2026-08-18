@@ -119,7 +119,45 @@ AWS_JUDGE_FUNCTION=sweetplus-judge-python
 
 Then redeploy Vercel so the build picks it up.
 
-Guru also needs `OPENAI_API_KEY`, which you already have.
+Guru also needs `OPENAI_API_KEY`, which you already have, and a secret for the
+pool warmer below:
+
+```env
+CRON_SECRET=
+```
+
+Any long random string. Vercel presents it to scheduled invocations as a bearer
+token; `/api/guru/pool/warm` returns `401` to everything else, and refuses to
+run at all when the variable is unset rather than falling open.
+
+---
+
+## 5a. The warm pool
+
+Generating one validated problem takes 11 to 28 seconds — an OpenAI call plus
+two judge round trips, retried up to three times. That cannot sit behind a
+click, so problems are generated ahead of the request into a pool partitioned by
+archetype and difficulty.
+
+Problems are not user-specific, so one pool serves everyone. A pooled problem is
+lent rather than consumed: it stays in the cell after being served, and a
+per-user set of seen ids is what stops anyone being given the same problem
+twice. `/api/guru/problem` claims an unseen one, copies it into the caller's
+namespace so `/api/guru/run` can find its hidden tests, and tops the cell up
+after the response via `after`.
+
+Two things fill the pool:
+
+| Trigger                   | What it does                                         |
+| ------------------------- | ---------------------------------------------------- |
+| `vercel.json` hourly cron | Fills the shallowest cell toward its target          |
+| A served request          | Tops up the cell it just drew from, after responding |
+
+Refills take a DynamoDB lock per cell, so a burst against a cold cell does not
+pay for the same problems several times over. A cell with nothing unseen left
+still generates inline, so an empty pool means the old latency, not an error.
+
+Pool size constants live in `src/modules/guru/pool-policy.ts`.
 
 ---
 

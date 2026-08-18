@@ -1,21 +1,24 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
-import { putProblem } from "@/modules/aws/problem-store";
 import {
   executionConfigured,
   lambdaExecutionAdapter,
 } from "@/modules/execution/lambda-adapter";
 import { ExecutionUnavailableError } from "@/modules/execution/port";
 import { ARCHETYPE_IDS } from "@/modules/guru/archetypes";
-import { generateValidatedProblem } from "@/modules/guru/pipeline";
+import { claimProblem, refillCell } from "@/modules/guru/pool";
 import { toClientProblem } from "@/modules/guru/schema";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 
 export const runtime = "nodejs";
-// Generation plus three validation round trips runs well past the default.
+// A pool hit answers in well under a second, but a cold cell still generates
+// inline, and the background refill runs inside whatever budget is left.
 export const maxDuration = 120;
+
+/** Leaves the refill enough room to finish and store what it starts. */
+const REFILL_RESERVE_MS = 10_000;
 
 const requestSchema = z.object({
   archetypeId: z.enum(ARCHETYPE_IDS as [string, ...string[]]),
@@ -52,13 +55,17 @@ export async function POST(request: Request) {
   if (!parsed.success)
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
+  const startedAt = Date.now();
+  const { archetypeId, difficulty } = parsed.data;
+
   try {
-    const { problem, attempts } = await generateValidatedProblem(
+    const { claim, attempts } = await claimProblem(
       lambdaExecutionAdapter,
-      parsed.data.archetypeId,
-      parsed.data.difficulty,
+      session.user.id,
+      archetypeId,
+      difficulty,
     );
-    if (!problem)
+    if (!claim)
       return NextResponse.json(
         {
           error: "No generated problem passed validation.",
@@ -73,10 +80,28 @@ export async function POST(request: Request) {
         { status: 502 },
       );
 
-    await putProblem(session.user.id, problem);
+    // Refilling after the response is the whole point of the pool: this
+    // candidate already has their problem, and the next one should not wait
+    // either. Failures here are the pool's problem, not the request's.
+    if (claim.refill > 0)
+      after(async () => {
+        const deadline = startedAt + maxDuration * 1000 - REFILL_RESERVE_MS;
+        try {
+          await refillCell(
+            lambdaExecutionAdapter,
+            archetypeId,
+            difficulty,
+            claim.refill,
+            deadline,
+          );
+        } catch (error) {
+          console.error("guru pool refill failed", error);
+        }
+      });
+
     return NextResponse.json({
-      problem: toClientProblem(problem),
-      attempts: attempts.length,
+      problem: toClientProblem(claim.problem),
+      source: claim.source,
     });
   } catch (error) {
     if (error instanceof ExecutionUnavailableError)
