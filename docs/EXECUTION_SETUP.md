@@ -143,7 +143,7 @@ Problems are not user-specific, so one pool serves everyone. A pooled problem is
 lent rather than consumed: it stays in the cell after being served, and a
 per-user set of seen ids is what stops anyone being given the same problem
 twice. `/api/guru/problem` claims an unseen one, copies it into the caller's
-namespace so `/api/guru/run` can find its hidden tests, and tops the cell up
+namespace so `/api/guru/run` can find its tests, and tops the cell up
 after the response via `after`.
 
 Two things fill the pool:
@@ -232,9 +232,17 @@ without returning a value fails. The runner also tags its result line with a
 per-invocation token generated before any submitted code runs, so a module-level
 `print` cannot impersonate the result channel.
 
-**Hidden tests never reach the browser.** `/api/guru/run` loads them server-side
-and `redactForClient` strips values and stdout from every non-public case before
-responding. Only pass/fail and timing survive.
+**Tests are all visible; the solutions are not.** Problems were once split into
+public and hidden tests so a candidate could not hardcode past the judge. That
+protects a score with an external stakeholder, and here there is none — the only
+person a candidate can cheat is themselves, and the cost was a failing test they
+were not allowed to look at. What still never crosses to the browser is the
+canonical solution, the brute force, the input generator, and the archetype id,
+which is the practice gate's answer.
+
+Verdicts do not depend on the tests being secret. `reconcileOutcomes` recomputes
+every pass from the expectations the server holds, so a forged judge response
+still fails.
 
 ---
 

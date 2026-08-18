@@ -170,7 +170,7 @@ export function buildInterviewerInstructions({
         [
           "Whether the candidate's code works is established by running it against the real tests, not inferred from how they typed.",
           describeRuns(codingRuns),
-          "Only some tests are visible to them. Never reveal a hidden test's input or expected value, and never claim their code is correct unless a run says so.",
+          "Never claim their code is correct unless a run says so, and never write the fix for them.",
         ].join(" "),
       );
   }

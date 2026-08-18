@@ -1,7 +1,6 @@
 import type { ExecutionAdapter } from "@/modules/execution/port";
 import {
   generatedProblemSchema,
-  PUBLIC_TEST_COUNT,
   type GeneratedProblem,
   type ProblemDraft,
 } from "./schema";
@@ -123,8 +122,7 @@ export async function realizeDraft(
     statement: draft.statement,
     constraints: draft.constraints,
     signature: draft.signature,
-    publicTests: cases.slice(0, PUBLIC_TEST_COUNT),
-    hiddenTests: cases.slice(PUBLIC_TEST_COUNT),
+    tests: cases,
     edgeCases: draft.edgeCases,
     followUps: draft.followUps,
     expectedComplexity: draft.expectedComplexity,

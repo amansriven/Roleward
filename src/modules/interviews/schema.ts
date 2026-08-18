@@ -130,8 +130,7 @@ export const codingExecutionSchema = z.object({
   problemId: z.string().min(1),
   archetypeId: z.string().min(1),
   signature: signatureSchema,
-  /** Public only. Hidden expectations never reach a browser. */
-  publicTests: z.array(testCaseSchema),
+  tests: z.array(testCaseSchema),
   constraints: z.array(z.string()).default([]),
   expectedComplexity: z.object({ time: z.string(), space: z.string() }),
 });
@@ -159,8 +158,7 @@ export const codingRunSchema = z.object({
   verdict: z.string().min(1),
   passed: z.number().int().nonnegative(),
   total: z.number().int().nonnegative(),
-  /** Public failures only, so the interviewer can name one without leaking. */
-  failedPublicTests: z.array(z.number().int().nonnegative()).default([]),
+  failedTests: z.array(z.number().int().nonnegative()).default([]),
   createdAt: z.string().datetime(),
 });
 export type CodingRun = z.infer<typeof codingRunSchema>;

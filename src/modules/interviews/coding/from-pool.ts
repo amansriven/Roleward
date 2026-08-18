@@ -32,7 +32,7 @@ export function toStoredCodingProblem(
       problemId: problem.id,
       archetypeId: problem.archetypeId,
       signature: problem.signature,
-      publicTests: problem.publicTests,
+      tests: problem.tests,
       constraints: problem.constraints,
       expectedComplexity: problem.expectedComplexity,
     },
@@ -42,10 +42,9 @@ export function toStoredCodingProblem(
 /**
  * What the interviewer is told about the candidate's submissions.
  *
- * Deliberately not the failing values. An interviewer who reads out the hidden
- * case the candidate missed has handed them the answer; one who knows only that
- * a hidden case fails can ask what input might break it, which is the question
- * a real interviewer asks.
+ * The candidate can see every test, so the interviewer is free to point at a
+ * failing one. It is still told to ask rather than fix: naming the case is a
+ * fair prompt, walking them to the answer is not.
  */
 export function describeRuns(runs: CodingRun[]): string {
   if (!runs.length)
@@ -61,17 +60,14 @@ export function describeRuns(runs: CodingRun[]): string {
     lines.push(
       "Every test passes, so treat the implementation as correct and move to complexity and follow-ups.",
     );
-  else if (latest.failedPublicTests.length)
+  else if (latest.failedTests.length)
     lines.push(
-      `Failing example ${latest.failedPublicTests.length === 1 ? "case" : "cases"} ${latest.failedPublicTests
+      `Failing ${latest.failedTests.length === 1 ? "case" : "cases"} ${latest.failedTests
+        .slice(0, 3)
         .map((index) => index + 1)
         .join(
           ", ",
-        )}, which the candidate can see. Point at the example rather than the fix.`,
-    );
-  else
-    lines.push(
-      "The visible examples pass but hidden tests do not. Do NOT reveal the hidden cases. Ask what input might break it.",
+        )}, which the candidate can see too. Ask what those inputs have in common rather than naming the fix.`,
     );
 
   const improving =

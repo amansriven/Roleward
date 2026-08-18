@@ -100,9 +100,7 @@ export function CodePane({
   }
 
   const lines = code.split("\n").length;
-  const visible = outcome?.outcomes.filter(
-    (item) => item.index < (execution?.publicTests.length ?? 0),
-  );
+  const cases = outcome?.outcomes ?? [];
 
   return (
     <div className="border-iron bg-workshop/60 flex min-h-0 flex-col overflow-hidden rounded-2xl border">
@@ -181,7 +179,7 @@ export function CodePane({
                 </pre>
               )}
 
-              {visible?.map((item) => (
+              {cases.map((item) => (
                 <div key={item.index} className="flex items-start gap-2">
                   {item.passed ? (
                     <Check className="text-sage mt-0.5 size-3 shrink-0" />
@@ -190,15 +188,13 @@ export function CodePane({
                   )}
                   <div className="min-w-0 font-mono text-[10px] leading-4">
                     <p className="text-canvas truncate">
-                      {JSON.stringify(execution.publicTests[item.index]?.input)}
+                      {JSON.stringify(execution.tests[item.index]?.input)}
                     </p>
                     {!item.passed && (
                       <p className="text-dust truncate">
                         expected{" "}
-                        {JSON.stringify(
-                          execution.publicTests[item.index]?.expected,
-                        )}
-                        , got {JSON.stringify(item.actual)}
+                        {JSON.stringify(execution.tests[item.index]?.expected)},
+                        got {JSON.stringify(item.actual)}
                       </p>
                     )}
                   </div>
@@ -206,12 +202,6 @@ export function CodePane({
               ))}
 
               {/* Hidden tests are counted but never described. */}
-              {outcome.total > (visible?.length ?? 0) && (
-                <p className="text-dust text-[10px]">
-                  {outcome.total - (visible?.length ?? 0)} hidden tests also
-                  ran.
-                </p>
-              )}
             </div>
           ) : null}
         </div>

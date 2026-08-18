@@ -58,10 +58,9 @@ describe("realizeDraft", () => {
     const outcome = await realizeDraft(adapter(agreed, distinctOutputs), draft);
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    expect(outcome.problem.publicTests).toHaveLength(3);
-    expect(outcome.problem.hiddenTests).toHaveLength(7);
+    expect(outcome.problem.tests).toHaveLength(10);
     // Expected values come from execution, not from the draft.
-    expect(outcome.problem.publicTests[1]?.expected).toBe(2);
+    expect(outcome.problem.tests[1]?.expected).toBe(2);
     expect(outcome.problem.validation?.trials).toBe(60);
   });
 

@@ -9,7 +9,6 @@ import {
 import {
   ExecutionUnavailableError,
   isExecutable,
-  redactForClient,
 } from "@/modules/execution/port";
 import { submissionSchema } from "@/modules/guru/schema";
 
@@ -45,21 +44,14 @@ export async function POST(request: Request) {
   if (!problem)
     return NextResponse.json({ error: "Unknown problem" }, { status: 404 });
 
-  // Public tests first so their index range is what redaction keeps visible.
-  const tests = [...problem.publicTests, ...problem.hiddenTests];
-
   try {
     const result = await lambdaExecutionAdapter.execute({
       language: parsed.data.language,
       code: parsed.data.code,
       entrypoint: problem.signature.name,
-      tests,
+      tests: problem.tests,
     });
-    return NextResponse.json({
-      result: redactForClient(result, problem.publicTests.length),
-      publicTestCount: problem.publicTests.length,
-      hiddenTestCount: problem.hiddenTests.length,
-    });
+    return NextResponse.json({ result, testCount: problem.tests.length });
   } catch (error) {
     if (error instanceof ExecutionUnavailableError)
       return NextResponse.json(

@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   matchesExpected,
   reconcileOutcomes,
-  redactForClient,
   summarizeVerdict,
-  type ExecutionResult,
   type TestOutcome,
 } from "./port";
 
@@ -80,33 +78,5 @@ describe("reconcileOutcomes", () => {
     expect(
       reconcileOutcomes(tests, [outcome({ index: 9, actual: 3 })])[0]?.passed,
     ).toBe(false);
-  });
-});
-
-describe("redactForClient", () => {
-  it("strips values and stdout from hidden tests but keeps pass/fail", () => {
-    const result: ExecutionResult = {
-      verdict: "wrong_answer",
-      passed: 1,
-      total: 2,
-      durationMs: 10,
-      outcomes: [
-        outcome({ index: 0, actual: [0, 1], stdout: "debug" }),
-        outcome({
-          index: 1,
-          passed: false,
-          actual: [9, 9],
-          stdout: "secret",
-          error: "boom",
-        }),
-      ],
-    };
-    const redacted = redactForClient(result, 1);
-    expect(redacted.outcomes[0]?.actual).toEqual([0, 1]);
-    expect(redacted.outcomes[1]).toEqual({
-      index: 1,
-      passed: false,
-      timeMs: 1,
-    });
   });
 });

@@ -2,8 +2,8 @@ import { z } from "zod";
 import { LANGUAGES } from "@/modules/execution/port";
 import { ARCHETYPE_IDS, CODING_SKILLS, type Difficulty } from "./archetypes";
 
-/** Below this a problem cannot hide enough of its behaviour to be worth solving. */
-export const MIN_HIDDEN_TESTS = 4;
+/** Below this a problem does not exercise enough behaviour to be worth solving. */
+export const MIN_TESTS = 6;
 
 export const difficultySchema = z.enum(["easy", "medium", "hard"]);
 export const codingSkillSchema = z.enum(CODING_SKILLS);
@@ -50,8 +50,28 @@ export const followUpSchema = z.object({
   lookingFor: z.string().trim().min(1),
 });
 
-/** The full object the model produces. Hidden fields never reach the browser. */
-export const generatedProblemSchema = z.object({
+/**
+ * The full object the model produces.
+ *
+ * Tests were once split into public and hidden, so a candidate could not
+ * hardcode their way past the judge. That protects a score with an external
+ * stakeholder; here the only person a candidate can cheat is themselves, and
+ * the cost was a bad teaching signal — a failure they were not allowed to see.
+ * `preprocess` folds already-pooled problems into the single list.
+ */
+export const generatedProblemSchema = z.preprocess((value) => {
+  if (!value || typeof value !== "object") return value;
+  const record = value as Record<string, unknown>;
+  if (record.tests || !Array.isArray(record.publicTests)) return value;
+  const { publicTests, hiddenTests, ...rest } = record;
+  return {
+    ...rest,
+    tests: [
+      ...publicTests,
+      ...(Array.isArray(hiddenTests) ? hiddenTests : []),
+    ],
+  };
+}, z.object({
   id: z.string().min(1),
   archetypeId: z.enum(ARCHETYPE_IDS as [string, ...string[]]),
   difficulty: difficultySchema,
@@ -59,8 +79,7 @@ export const generatedProblemSchema = z.object({
   statement: z.string().trim().min(80),
   constraints: z.array(z.string().trim().min(1)).min(1).max(6),
   signature: signatureSchema,
-  publicTests: z.array(testCaseSchema).min(2).max(4),
-  hiddenTests: z.array(testCaseSchema).min(MIN_HIDDEN_TESTS).max(20),
+  tests: z.array(testCaseSchema).min(MIN_TESTS).max(20),
   edgeCases: z.array(z.string().trim().min(1)).min(2).max(6),
   followUps: z.array(followUpSchema).min(1).max(3),
   expectedComplexity: z.object({
@@ -79,24 +98,39 @@ export const generatedProblemSchema = z.object({
     })
     .nullable()
     .default(null),
-});
+}));
 export type GeneratedProblem = z.infer<typeof generatedProblemSchema>;
 
-/** Everything the browser is allowed to see. */
-export const clientProblemSchema = generatedProblemSchema.pick({
-  id: true,
-  archetypeId: true,
-  difficulty: true,
-  title: true,
-  statement: true,
-  constraints: true,
-  signature: true,
-  publicTests: true,
+/**
+ * Everything the browser is allowed to see.
+ *
+ * The tests are all of them now. What still does not cross is the pair of
+ * solutions and the input generator, and — for the practice gate — which of the
+ * offered archetypes is the right one.
+ */
+export const clientProblemSchema = z.object({
+  id: z.string().min(1),
+  difficulty: difficultySchema,
+  title: z.string(),
+  statement: z.string(),
+  constraints: z.array(z.string()),
+  signature: signatureSchema,
+  tests: z.array(testCaseSchema),
+  expectedComplexity: z.object({ time: z.string(), space: z.string() }),
 });
 export type ClientProblem = z.infer<typeof clientProblemSchema>;
 
 export function toClientProblem(problem: GeneratedProblem): ClientProblem {
-  return clientProblemSchema.parse(problem);
+  return clientProblemSchema.parse({
+    id: problem.id,
+    difficulty: problem.difficulty,
+    title: problem.title,
+    statement: problem.statement,
+    constraints: problem.constraints,
+    signature: problem.signature,
+    tests: problem.tests,
+    expectedComplexity: problem.expectedComplexity,
+  });
 }
 
 export const submissionSchema = z.object({
@@ -104,6 +138,30 @@ export const submissionSchema = z.object({
   language: z.enum(LANGUAGES),
   code: z.string().min(1).max(60_000),
 });
+
+/**
+ * One pass through the practice loop.
+ *
+ * Held server-side because most of it is not the candidate's to assert: whether
+ * they named the pattern, whether they predicted the cost, how many hints they
+ * opened, and whether the judge ever accepted their code.
+ */
+export const practiceAttemptSchema = z.object({
+  problemId: z.string().min(1),
+  archetypeId: z.string().min(1),
+  difficulty: difficultySchema,
+  classification: z.string().nullable().default(null),
+  classificationCorrect: z.boolean().default(false),
+  complexity: z.string().nullable().default(null),
+  complexityCorrect: z.boolean().default(false),
+  hintsUsed: z.number().int().nonnegative().default(0),
+  runs: z.number().int().nonnegative().default(0),
+  solved: z.boolean().default(false),
+  startedAt: z.string().datetime(),
+  committedAt: z.string().datetime().nullable().default(null),
+  completedAt: z.string().datetime().nullable().default(null),
+});
+export type PracticeAttempt = z.infer<typeof practiceAttemptSchema>;
 
 /** Per-skill scores accumulated across sessions — the competency graph. */
 export const skillScoreSchema = z.object({
@@ -121,9 +179,8 @@ export const archetypeMasterySchema = z.object({
 });
 export type ArchetypeMastery = z.infer<typeof archetypeMasterySchema>;
 
-/** How many test inputs a draft carries, and how many of them are public. */
+/** How many test inputs a draft carries. */
 export const TEST_INPUT_COUNT = 10;
-export const PUBLIC_TEST_COUNT = 3;
 
 /** A generated problem before expected outputs have been derived by execution. */
 export interface ProblemDraft {

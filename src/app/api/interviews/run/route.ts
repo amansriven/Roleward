@@ -13,7 +13,6 @@ import {
   ExecutionUnavailableError,
   isExecutable,
   LANGUAGES,
-  redactForClient,
 } from "@/modules/execution/port";
 
 export const runtime = "nodejs";
@@ -81,16 +80,12 @@ export async function POST(request: Request) {
   if (!problem)
     return NextResponse.json({ error: "Unknown problem" }, { status: 404 });
 
-  // Public tests first, so their index range is what redaction keeps visible.
-  const tests = [...problem.publicTests, ...problem.hiddenTests];
-  const visible = problem.publicTests.length;
-
   try {
     const result = await lambdaExecutionAdapter.execute({
       language: parsed.data.language,
       code: parsed.data.code,
       entrypoint: problem.signature.name,
-      tests,
+      tests: problem.tests,
     });
 
     session.codingRuns.push({
@@ -99,17 +94,16 @@ export async function POST(request: Request) {
       verdict: result.verdict,
       passed: result.passed,
       total: result.total,
-      failedPublicTests: result.outcomes
-        .filter((outcome) => outcome.index < visible && !outcome.passed)
+      failedTests: result.outcomes
+        .filter((outcome) => !outcome.passed)
         .map((outcome) => outcome.index),
       createdAt: new Date().toISOString(),
     });
     await putInterview(auth_.user.id, session);
 
     return NextResponse.json({
-      result: redactForClient(result, visible),
-      publicTestCount: visible,
-      hiddenTestCount: problem.hiddenTests.length,
+      result,
+      testCount: problem.tests.length,
     });
   } catch (error) {
     if (error instanceof ExecutionUnavailableError)

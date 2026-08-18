@@ -17,8 +17,14 @@ const problem = {
     ],
     returnType: "int",
   },
-  publicTests: [{ input: [[1, 2, 3]], expected: 3 }],
-  hiddenTests: [{ input: [[1]], expected: 1 }],
+  tests: [
+    { input: [[1, 2, 3]], expected: 3 },
+    { input: [[1]], expected: 1 },
+    { input: [[2, 2]], expected: 2 },
+    { input: [[3, 3, 3]], expected: 3 },
+    { input: [[4]], expected: 1 },
+    { input: [[5, 5]], expected: 2 },
+  ],
   edgeCases: ["a single reading"],
   followUps: [{ prompt: "What if it streams?", lookingFor: "constant space" }],
   expectedComplexity: { time: "O(n)", space: "O(1)" },
@@ -35,7 +41,7 @@ const run = (patch: Partial<CodingRun>): CodingRun => ({
   verdict: "wrong_answer",
   passed: 1,
   total: 10,
-  failedPublicTests: [],
+  failedTests: [],
   createdAt: "2026-08-18T00:00:00.000Z",
   ...patch,
 });
@@ -51,10 +57,11 @@ describe("toStoredCodingProblem", () => {
     expect(stored.execution?.signature.name).toBe("longest_steady");
   });
 
-  it("never puts hidden tests in the stored problem", () => {
+  it("never puts the solutions in the stored problem", () => {
+    // Tests are all visible now; the solutions and the generator are not.
     const serialized = JSON.stringify(toStoredCodingProblem(problem));
-    expect(serialized).not.toContain("hiddenTests");
     expect(serialized).not.toContain("canonicalSolution");
+    expect(serialized).not.toContain("inputGenerator");
   });
 
   it("shows the candidate the constraints alongside the statement", () => {
@@ -72,17 +79,16 @@ describe("describeRuns", () => {
     expect(text).toContain("Every test passes");
   });
 
-  it("names failing public cases in one-based terms", () => {
-    expect(describeRuns([run({ failedPublicTests: [0, 2] })])).toContain(
+  it("names failing cases in one-based terms", () => {
+    expect(describeRuns([run({ failedTests: [0, 2] })])).toContain(
       "cases 1, 3",
     );
   });
 
-  it("withholds hidden failures instead of describing them", () => {
-    // Reading out the hidden case the candidate missed hands them the answer.
-    const text = describeRuns([run({ passed: 3, total: 10 })]);
-    expect(text).toContain("Do NOT reveal");
-    expect(text).toContain("what input might break it");
+  it("prompts rather than hands over the fix", () => {
+    const text = describeRuns([run({ failedTests: [1] })]);
+    expect(text).toContain("what those inputs have in common");
+    expect(text).not.toContain('naming the fix." ');
   });
 
   it("notices when the candidate is converging", () => {

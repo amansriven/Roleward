@@ -86,7 +86,6 @@ export interface ExecutionRequest {
 export interface TestOutcome {
   index: number;
   passed: boolean;
-  /** Omitted for hidden tests before the result is returned to the browser. */
   actual?: unknown;
   stdout?: string;
   error?: string;
@@ -243,23 +242,4 @@ export function reconcileOutcomes(
       matchesExpected(outcome.actual, test.expected);
     return { ...outcome, passed };
   });
-}
-
-/** Hidden expectations must never cross the network to the browser. */
-export function redactForClient(
-  result: ExecutionResult,
-  visibleCount: number,
-): ExecutionResult {
-  return {
-    ...result,
-    outcomes: result.outcomes.map((outcome) =>
-      outcome.index < visibleCount
-        ? outcome
-        : {
-            index: outcome.index,
-            passed: outcome.passed,
-            timeMs: outcome.timeMs,
-          },
-    ),
-  };
 }

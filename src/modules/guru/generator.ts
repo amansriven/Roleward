@@ -5,17 +5,16 @@ import { INTERVIEW_MODEL, openai } from "@/modules/interviews/openai";
 import { findArchetype, type Archetype, type Difficulty } from "./archetypes";
 import { ArityError, normalizeTestInputs } from "./test-inputs";
 import {
-  MIN_HIDDEN_TESTS,
-  PUBLIC_TEST_COUNT,
+  MIN_TESTS,
   signatureSchema,
   TEST_INPUT_COUNT,
   type ProblemDraft,
 } from "./schema";
 
-export { PUBLIC_TEST_COUNT, TEST_INPUT_COUNT, type ProblemDraft };
+export { TEST_INPUT_COUNT, type ProblemDraft };
 
-/** Enough inputs to fill the public tests and the schema's hidden-test floor. */
-const MIN_TEST_INPUTS = PUBLIC_TEST_COUNT + MIN_HIDDEN_TESTS;
+/** Enough inputs to clear the schema's floor once outputs are derived. */
+const MIN_TEST_INPUTS = MIN_TESTS;
 
 /**
  * The model is never asked what its function returns.
