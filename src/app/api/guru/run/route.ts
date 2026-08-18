@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
+import { getAttempt, putAttempt } from "@/modules/aws/practice-store";
 import { getProblem } from "@/modules/aws/problem-store";
 import {
   executionConfigured,
@@ -51,6 +52,15 @@ export async function POST(request: Request) {
       entrypoint: problem.signature.name,
       tests: problem.tests,
     });
+    // Recorded server-side so "solved unaided" reflects the judge rather than
+    // whatever the browser felt like claiming.
+    const attempt = await getAttempt(session.user.id, problem.id);
+    if (attempt) {
+      attempt.runs += 1;
+      attempt.solved = attempt.solved || result.verdict === "accepted";
+      await putAttempt(session.user.id, attempt);
+    }
+
     return NextResponse.json({ result, testCount: problem.tests.length });
   } catch (error) {
     if (error instanceof ExecutionUnavailableError)

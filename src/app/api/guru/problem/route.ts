@@ -9,6 +9,7 @@ import {
 import { ExecutionUnavailableError } from "@/modules/execution/port";
 import { ARCHETYPE_IDS } from "@/modules/guru/archetypes";
 import { claimProblem, refillCell } from "@/modules/guru/pool";
+import { buildGate } from "@/modules/guru/practice";
 import { toClientProblem } from "@/modules/guru/schema";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 
@@ -21,7 +22,8 @@ export const maxDuration = 120;
 const REFILL_RESERVE_MS = 10_000;
 
 const requestSchema = z.object({
-  archetypeId: z.enum(ARCHETYPE_IDS as [string, ...string[]]),
+  /** Omitted means "surprise me", which is what makes the gate a real test. */
+  archetypeId: z.enum(ARCHETYPE_IDS as [string, ...string[]]).optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
 });
 
@@ -56,7 +58,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
   const startedAt = Date.now();
-  const { archetypeId, difficulty } = parsed.data;
+  const { difficulty } = parsed.data;
+  const archetypeId =
+    parsed.data.archetypeId ??
+    ARCHETYPE_IDS[Math.floor(Math.random() * ARCHETYPE_IDS.length)]!;
 
   try {
     const { claim, attempts } = await claimProblem(
@@ -101,6 +106,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       problem: toClientProblem(claim.problem),
+      gate: buildGate(claim.problem),
       source: claim.source,
     });
   } catch (error) {

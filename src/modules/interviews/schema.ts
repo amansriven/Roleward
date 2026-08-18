@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { signatureSchema, testCaseSchema } from "@/modules/guru/schema";
+import { signatureSchema, testCaseSchema } from "@/modules/guru/signature";
 
 export const competencySchema = z.enum([
   "leadership",
@@ -132,7 +132,11 @@ export const codingExecutionSchema = z.object({
   signature: signatureSchema,
   tests: z.array(testCaseSchema),
   constraints: z.array(z.string()).default([]),
-  expectedComplexity: z.object({ time: z.string(), space: z.string() }),
+  /** Interviewer guidance. Stripped before the session reaches the browser. */
+  expectedComplexity: z
+    .object({ time: z.string(), space: z.string() })
+    .nullable()
+    .default(null),
 });
 export type CodingExecution = z.infer<typeof codingExecutionSchema>;
 
@@ -210,4 +214,25 @@ export function summarizeSession(
       : session.report.topicsCovered,
     completedAt: session.completedAt,
   });
+}
+
+/**
+ * The session as the browser may see it.
+ *
+ * The room takes the whole session as a prop, so anything left on it is in the
+ * page source. The intended complexity is the interviewer's to know and the
+ * candidate's to work out.
+ */
+export function toClientSession(session: InterviewSession): InterviewSession {
+  if (!session.codingProblem?.execution) return session;
+  return {
+    ...session,
+    codingProblem: {
+      ...session.codingProblem,
+      execution: {
+        ...session.codingProblem.execution,
+        expectedComplexity: null,
+      },
+    },
+  };
 }

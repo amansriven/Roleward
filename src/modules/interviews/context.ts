@@ -150,7 +150,7 @@ export function buildInterviewerInstructions({
         execution
           ? `They must implement ${signatureLine(execution.signature)}.`
           : "",
-        execution
+        execution?.expectedComplexity
           ? `The intended solution is ${execution.expectedComplexity.time} time and ${execution.expectedComplexity.space} space. Do not state this; use it to judge whether their approach is the intended one.`
           : "",
         codingProblem.edgeCases.length

@@ -1,48 +1,27 @@
 import { z } from "zod";
 import { LANGUAGES } from "@/modules/execution/port";
 import { ARCHETYPE_IDS, CODING_SKILLS, type Difficulty } from "./archetypes";
+import {
+  parameterSchema,
+  signatureSchema,
+  testCaseSchema,
+  type Parameter,
+  type Signature,
+} from "./signature";
+
+export {
+  parameterSchema,
+  signatureSchema,
+  testCaseSchema,
+  type Parameter,
+  type Signature,
+};
 
 /** Below this a problem does not exercise enough behaviour to be worth solving. */
 export const MIN_TESTS = 6;
 
 export const difficultySchema = z.enum(["easy", "medium", "hard"]);
 export const codingSkillSchema = z.enum(CODING_SKILLS);
-
-/**
- * A language-agnostic signature. Stubs for all ten editor languages render from
- * this, so adding a language is one formatter rather than N hand-written stubs.
- */
-export const parameterSchema = z.object({
-  name: z.string().regex(/^[a-z][a-z0-9_]*$/),
-  type: z.enum([
-    "int",
-    "float",
-    "string",
-    "bool",
-    "int[]",
-    "float[]",
-    "string[]",
-    "bool[]",
-    "int[][]",
-    "string[][]",
-  ]),
-  description: z.string().trim().min(1),
-});
-export type Parameter = z.infer<typeof parameterSchema>;
-
-export const signatureSchema = z.object({
-  name: z.string().regex(/^[a-z][a-z0-9_]*$/),
-  parameters: z.array(parameterSchema).min(1).max(4),
-  returnType: parameterSchema.shape.type,
-});
-export type Signature = z.infer<typeof signatureSchema>;
-
-export const testCaseSchema = z.object({
-  input: z.array(z.unknown()),
-  expected: z.unknown(),
-  /** Only ever populated on public tests. */
-  explanation: z.string().trim().optional(),
-});
 
 export const followUpSchema = z.object({
   prompt: z.string().trim().min(1),
@@ -59,46 +38,49 @@ export const followUpSchema = z.object({
  * the cost was a bad teaching signal — a failure they were not allowed to see.
  * `preprocess` folds already-pooled problems into the single list.
  */
-export const generatedProblemSchema = z.preprocess((value) => {
-  if (!value || typeof value !== "object") return value;
-  const record = value as Record<string, unknown>;
-  if (record.tests || !Array.isArray(record.publicTests)) return value;
-  const { publicTests, hiddenTests, ...rest } = record;
-  return {
-    ...rest,
-    tests: [
-      ...publicTests,
-      ...(Array.isArray(hiddenTests) ? hiddenTests : []),
-    ],
-  };
-}, z.object({
-  id: z.string().min(1),
-  archetypeId: z.enum(ARCHETYPE_IDS as [string, ...string[]]),
-  difficulty: difficultySchema,
-  title: z.string().trim().min(3).max(80),
-  statement: z.string().trim().min(80),
-  constraints: z.array(z.string().trim().min(1)).min(1).max(6),
-  signature: signatureSchema,
-  tests: z.array(testCaseSchema).min(MIN_TESTS).max(20),
-  edgeCases: z.array(z.string().trim().min(1)).min(2).max(6),
-  followUps: z.array(followUpSchema).min(1).max(3),
-  expectedComplexity: z.object({
-    time: z.string().trim().min(2),
-    space: z.string().trim().min(2),
+export const generatedProblemSchema = z.preprocess(
+  (value) => {
+    if (!value || typeof value !== "object") return value;
+    const record = value as Record<string, unknown>;
+    if (record.tests || !Array.isArray(record.publicTests)) return value;
+    const { publicTests, hiddenTests, ...rest } = record;
+    return {
+      ...rest,
+      tests: [
+        ...publicTests,
+        ...(Array.isArray(hiddenTests) ? hiddenTests : []),
+      ],
+    };
+  },
+  z.object({
+    id: z.string().min(1),
+    archetypeId: z.enum(ARCHETYPE_IDS as [string, ...string[]]),
+    difficulty: difficultySchema,
+    title: z.string().trim().min(3).max(80),
+    statement: z.string().trim().min(80),
+    constraints: z.array(z.string().trim().min(1)).min(1).max(6),
+    signature: signatureSchema,
+    tests: z.array(testCaseSchema).min(MIN_TESTS).max(20),
+    edgeCases: z.array(z.string().trim().min(1)).min(2).max(6),
+    followUps: z.array(followUpSchema).min(1).max(3),
+    expectedComplexity: z.object({
+      time: z.string().trim().min(2),
+      space: z.string().trim().min(2),
+    }),
+    canonicalSolution: z.string().trim().min(20),
+    bruteForceSolution: z.string().trim().min(20),
+    /** Python defining generate_input(seed) -> list of positional arguments. */
+    inputGenerator: z.string().trim().min(20),
+    createdAt: z.string().datetime(),
+    validation: z
+      .object({
+        trials: z.number().int().nonnegative(),
+        validatedAt: z.string().datetime(),
+      })
+      .nullable()
+      .default(null),
   }),
-  canonicalSolution: z.string().trim().min(20),
-  bruteForceSolution: z.string().trim().min(20),
-  /** Python defining generate_input(seed) -> list of positional arguments. */
-  inputGenerator: z.string().trim().min(20),
-  createdAt: z.string().datetime(),
-  validation: z
-    .object({
-      trials: z.number().int().nonnegative(),
-      validatedAt: z.string().datetime(),
-    })
-    .nullable()
-    .default(null),
-}));
+);
 export type GeneratedProblem = z.infer<typeof generatedProblemSchema>;
 
 /**
@@ -116,7 +98,6 @@ export const clientProblemSchema = z.object({
   constraints: z.array(z.string()),
   signature: signatureSchema,
   tests: z.array(testCaseSchema),
-  expectedComplexity: z.object({ time: z.string(), space: z.string() }),
 });
 export type ClientProblem = z.infer<typeof clientProblemSchema>;
 
@@ -129,7 +110,6 @@ export function toClientProblem(problem: GeneratedProblem): ClientProblem {
     constraints: problem.constraints,
     signature: problem.signature,
     tests: problem.tests,
-    expectedComplexity: problem.expectedComplexity,
   });
 }
 

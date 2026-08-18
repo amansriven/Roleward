@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { InterviewRoom } from "@/components/interviews/interview-room";
+import { toClientSession } from "@/modules/interviews/schema";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
 import { getInterview } from "@/modules/aws/interview-store";
 
@@ -17,5 +18,5 @@ export default async function InterviewSessionPage({
   if (!interview) notFound();
   if (interview.status === "complete")
     redirect(`/dashboard/stage-fright/report/${id}`);
-  return <InterviewRoom session={interview} />;
+  return <InterviewRoom session={toClientSession(interview)} />;
 }

@@ -1,5 +1,5 @@
 import type { Language } from "@/modules/execution/port";
-import type { Parameter, Signature } from "./schema";
+import type { Parameter, Signature } from "./signature";
 
 type TypeName = Parameter["type"];
 
