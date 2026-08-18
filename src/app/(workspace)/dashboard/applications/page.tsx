@@ -8,7 +8,7 @@ export default function ApplicationsPage() {
       <PageIntro
         eyebrow="Applications"
         title="Your target roles"
-        copy="Choose the active role Sweet+ should use to prioritize your preparation."
+        copy="Ordered by what needs attention first — an approaching interview, a deadline, or preparation that is still thin. Open one to track its status and see what its requirements are missing."
         action={
           <Link
             href="/dashboard/applications/new"

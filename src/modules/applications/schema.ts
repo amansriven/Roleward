@@ -10,6 +10,8 @@ export const applicationStatusSchema = z.enum([
   "closed",
 ]);
 
+export type ApplicationStatus = z.infer<typeof applicationStatusSchema>;
+
 export const jobRequirementSchema = z.object({
   id: z.string().min(1),
   category: z.enum(["skill", "responsibility", "qualification", "competency"]),

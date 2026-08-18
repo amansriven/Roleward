@@ -147,6 +147,29 @@ export function setActiveApplication(
   storage.setItem(keys.active, id);
   announceWorkspaceUpdate();
 }
+/**
+ * Updates one application in place.
+ *
+ * Status and dates are the only things a candidate edits after intake, and both
+ * were previously unreachable: status was fixed at "preparing" and the deadline
+ * was collected once and never shown again.
+ */
+export function updateApplication(
+  storage: Pick<Storage, "getItem" | "setItem">,
+  id: string,
+  patch: Partial<
+    Pick<StoredApplication, "status" | "deadline" | "interviewDate">
+  >,
+) {
+  const workspace = loadWorkspace(storage);
+  const applications = workspace.applications.map((item) =>
+    item.id === id ? { ...item, ...patch } : item,
+  );
+  storage.setItem(keys.applications, JSON.stringify(applications));
+  announceWorkspaceUpdate();
+  return applications.find((item) => item.id === id) ?? null;
+}
+
 export function saveEvidenceAndRefresh(
   storage: Pick<Storage, "getItem" | "setItem">,
   evidence: EvidenceItem[],

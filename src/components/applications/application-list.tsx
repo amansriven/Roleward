@@ -1,7 +1,19 @@
 "use client";
-import { ArrowRight, BriefcaseBusiness, Plus } from "lucide-react";
+
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  CalendarClock,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+import {
+  assessUrgency,
+  isSettled,
+  STATUS_LABELS,
+} from "@/modules/applications/timeline";
 import {
   applicationReadiness,
   getActiveApplication,
@@ -10,6 +22,14 @@ import {
   workspaceUpdatedEvent,
   type WorkspaceSnapshot,
 } from "@/modules/workspace/repository";
+
+/**
+ * Applications ordered by what needs attention, not by when they were added.
+ *
+ * The list previously showed a requirement count and a readiness percentage in
+ * insertion order, which is the one ordering that never answers "what should I
+ * do now" — the whole reason someone opens this page.
+ */
 export function ApplicationList() {
   const [workspace, setWorkspace] = useState<WorkspaceSnapshot | null>(null);
   useEffect(() => {
@@ -18,12 +38,14 @@ export function ApplicationList() {
     window.addEventListener(workspaceUpdatedEvent, refresh);
     return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
   }, []);
+
   if (!workspace)
     return (
-      <p className="text-dust py-20 text-center text-sm">
-        Loading applications…
-      </p>
+      <div className="text-dust py-24 text-center text-sm">
+        Opening your workspace…
+      </div>
     );
+
   if (!workspace.applications.length)
     return (
       <div className="border-iron bg-workshop/70 rounded-2xl border py-20 text-center">
@@ -41,40 +63,111 @@ export function ApplicationList() {
         </Link>
       </div>
     );
+
   const active = getActiveApplication(workspace);
+  const ranked = workspace.applications
+    .map((app) => {
+      const readiness = applicationReadiness(app, workspace);
+      return {
+        app,
+        readiness,
+        urgency: assessUrgency({
+          status: app.status,
+          deadline: app.deadline,
+          interviewDate: app.interviewDate,
+          readinessScore: readiness.application.score,
+        }),
+      };
+    })
+    .sort((left, right) => right.urgency.score - left.urgency.score);
+
   return (
     <div className="space-y-3">
-      {workspace.applications.map((app) => {
-        const ready = applicationReadiness(app, workspace);
+      {ranked.map(({ app, readiness, urgency }) => {
         const isActive = app.id === active?.id;
+        const settled = isSettled(app.status);
+        const covered = app.requirements.filter(
+          (item) => item.matchStrength === "strong",
+        ).length;
         return (
-          <button
+          <div
             key={app.id}
-            onClick={() => {
-              setActiveApplication(localStorage, app.id);
-              setWorkspace(loadWorkspace(localStorage));
-            }}
-            className={`border-iron bg-workshop/70 flex w-full items-center gap-4 rounded-2xl border p-5 text-left ${isActive ? "border-amber/45" : "hover:border-canvas/40"}`}
+            className={cn(
+              "border-iron bg-workshop/70 rounded-2xl border p-5",
+              isActive && "border-amber/45",
+              settled && "opacity-60",
+            )}
           >
-            <span className="bg-amber/10 text-amber flex size-10 items-center justify-center rounded-xl">
-              <BriefcaseBusiness className="size-4" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="truncate text-sm font-semibold">
-                  {app.companyName} · {app.roleTitle}
+            <div className="flex items-start gap-4">
+              <span className="bg-amber/10 text-amber flex size-10 shrink-0 items-center justify-center rounded-xl">
+                <BriefcaseBusiness className="size-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-semibold">
+                    {app.companyName} · {app.roleTitle}
+                  </p>
+                  <span className="border-iron text-dust rounded-full border px-2 py-0.5 text-[10px]">
+                    {STATUS_LABELS[app.status]}
+                  </span>
+                  {isActive && (
+                    <span className="text-sage text-[9px] uppercase">
+                      Active
+                    </span>
+                  )}
+                </div>
+
+                {urgency.headline && (
+                  <p
+                    className={cn(
+                      "mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold",
+                      urgency.score > 45 ? "text-copper" : "text-canvas",
+                    )}
+                  >
+                    <CalendarClock className="size-3" />
+                    {urgency.headline}
+                  </p>
+                )}
+
+                <div className="mt-3 flex items-center gap-3">
+                  <div className="bg-iron h-1.5 flex-1 rounded-full">
+                    <div
+                      className="bg-amber h-full rounded-full"
+                      style={{ width: `${readiness.application.score}%` }}
+                    />
+                  </div>
+                  <span className="text-dust shrink-0 font-mono text-[10px]">
+                    {readiness.application.score}%
+                  </span>
+                </div>
+                <p className="text-dust mt-1.5 text-[10px]">
+                  {covered} of {app.requirements.length} requirements have
+                  evidence
                 </p>
-                {isActive && (
-                  <span className="text-sage text-[9px] uppercase">Active</span>
+              </div>
+
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                <Link
+                  href={`/dashboard/applications/${app.id}`}
+                  className="text-canvas hover:text-linen inline-flex items-center gap-1 text-xs font-semibold"
+                >
+                  Open <ArrowRight className="size-3" />
+                </Link>
+                {!isActive && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveApplication(localStorage, app.id);
+                      setWorkspace(loadWorkspace(localStorage));
+                    }}
+                    className="text-dust hover:text-canvas text-[11px]"
+                  >
+                    Make active
+                  </button>
                 )}
               </div>
-              <p className="text-dust mt-1 text-xs">
-                {app.requirements.length} requirements ·{" "}
-                {ready.application.score}% readiness
-              </p>
             </div>
-            <ArrowRight className="text-dust size-4" />
-          </button>
+          </div>
         );
       })}
     </div>

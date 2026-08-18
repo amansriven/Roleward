@@ -1,6 +1,10 @@
 import { z } from "zod";
 import type { EvidenceItem } from "@/modules/evidence/schema";
-import { jobRequirementSchema, type JobRequirement } from "./schema";
+import {
+  applicationStatusSchema,
+  jobRequirementSchema,
+  type JobRequirement,
+} from "./schema";
 
 export const targetApplicationSchema = z.object({
   id: z.string().min(1),
@@ -9,7 +13,11 @@ export const targetApplicationSchema = z.object({
   location: z.string().trim().optional(),
   sourceUrl: z.union([z.literal(""), z.url()]),
   deadline: z.string().optional(),
-  status: z.literal("preparing"),
+  /** When the interview actually is, which is what preparation is paced against. */
+  interviewDate: z.string().optional(),
+  // Pinned to a literal until now, so the seven-state enum beside it was dead.
+  // Defaulted so applications saved before this still parse.
+  status: applicationStatusSchema.default("preparing"),
   jobDescription: z.string().trim().min(80),
   contentHash: z.string().regex(/^[a-f0-9]{64}$/),
   createdAt: z.string().datetime(),
