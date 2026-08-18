@@ -62,8 +62,10 @@ export async function POST(request: Request) {
 
   try {
     const text = await extractDocumentText(await file.arrayBuffer(), file.type);
-    const { items, dropped } = await extractEvidence(text);
+    const { fullName, headline, items, dropped } = await extractEvidence(text);
     return NextResponse.json({
+      fullName,
+      headline,
       items,
       // Surfaced so the candidate is told something was withheld and why,
       // rather than silently seeing a shorter list.

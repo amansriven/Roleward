@@ -32,6 +32,9 @@ export interface StoredApplication extends TargetApplication {
   requirements: JobRequirement[];
 }
 export interface WorkspaceSnapshot {
+  /** Read from the résumé, and the basis for the portfolio handle. */
+  candidateName: string | null;
+  candidateHeadline: string | null;
   profile: CandidateProfile | null;
   evidence: EvidenceItem[];
   applications: StoredApplication[];
@@ -43,6 +46,9 @@ export const storedApplicationSchema = targetApplicationSchema.extend({
   requirements: z.array(jobRequirementSchema),
 });
 export const workspaceSnapshotSchema = z.object({
+  // Defaulted so workspace items written before the résumé was read still parse.
+  candidateName: z.string().nullable().default(null),
+  candidateHeadline: z.string().nullable().default(null),
   profile: candidateProfileSchema.nullable(),
   evidence: z.array(evidenceItemSchema),
   applications: z.array(storedApplicationSchema),
@@ -52,6 +58,8 @@ export const workspaceSnapshotSchema = z.object({
 });
 
 export const emptyWorkspace: WorkspaceSnapshot = {
+  candidateName: null,
+  candidateHeadline: null,
   profile: null,
   evidence: [],
   applications: [],
@@ -73,6 +81,7 @@ const keys = {
   applications: "sweet-plus:applications",
   active: "sweet-plus:active-application-id",
   interviews: "sweet-plus:interview-summaries",
+  candidate: "sweet-plus:candidate-identity",
 } as const;
 export const workspaceUpdatedEvent = "sweet-plus:workspace-updated";
 function announceWorkspaceUpdate() {
@@ -100,7 +109,14 @@ export function loadWorkspace(
     [],
   );
   const activeId = storage.getItem(keys.active);
+  const identity = read<{ name: string | null; headline: string | null }>(
+    storage,
+    keys.candidate,
+    { name: null, headline: null },
+  );
   return {
+    candidateName: identity.name,
+    candidateHeadline: identity.headline,
     profile: read<CandidateProfile | null>(storage, keys.profile, null),
     evidence: read<EvidenceItem[]>(storage, keys.evidence, []),
     applications,
@@ -120,6 +136,13 @@ export function saveWorkspaceSnapshot(
   if (parsed.profile)
     storage.setItem(keys.profile, JSON.stringify(parsed.profile));
   else storage.setItem(keys.profile, "null");
+  storage.setItem(
+    keys.candidate,
+    JSON.stringify({
+      name: parsed.candidateName,
+      headline: parsed.candidateHeadline,
+    }),
+  );
   storage.setItem(keys.evidence, JSON.stringify(parsed.evidence));
   storage.setItem(keys.applications, JSON.stringify(parsed.applications));
   storage.setItem(keys.interviews, JSON.stringify(parsed.interviewSummaries));
@@ -168,6 +191,23 @@ export function updateApplication(
   storage.setItem(keys.applications, JSON.stringify(applications));
   announceWorkspaceUpdate();
   return applications.find((item) => item.id === id) ?? null;
+}
+
+/** Recorded when a résumé is read, since nothing else in the product asks. */
+export function saveCandidateIdentity(
+  storage: Pick<Storage, "getItem" | "setItem">,
+  name: string,
+  headline: string,
+) {
+  const current = loadWorkspace(storage);
+  storage.setItem(
+    keys.candidate,
+    JSON.stringify({
+      name: name || current.candidateName,
+      headline: headline || current.candidateHeadline,
+    }),
+  );
+  announceWorkspaceUpdate();
 }
 
 export function saveEvidenceAndRefresh(

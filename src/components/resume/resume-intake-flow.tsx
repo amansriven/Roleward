@@ -16,7 +16,10 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { finalizeConfirmedEvidence } from "@/modules/evidence/confirmation";
-import { saveEvidenceAndRefresh } from "@/modules/workspace/repository";
+import {
+  saveCandidateIdentity,
+  saveEvidenceAndRefresh,
+} from "@/modules/workspace/repository";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import {
   createResumeProcessingJob,
@@ -101,6 +104,8 @@ export function ResumeIntakeFlow() {
         body: form,
       });
       const body = (await response.json().catch(() => null)) as {
+        fullName?: string;
+        headline?: string;
         items?: DraftItem[];
         droppedCount?: number;
         error?: string;
@@ -111,6 +116,8 @@ export function ResumeIntakeFlow() {
         return;
       }
 
+      if (body.fullName)
+        saveCandidateIdentity(localStorage, body.fullName, body.headline ?? "");
       setItems(toEvidenceItems(body.items));
       setDroppedCount(body.droppedCount ?? 0);
       localStorage.setItem("sweet-plus:resume-hash", contentHash);

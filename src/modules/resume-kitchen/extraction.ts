@@ -16,6 +16,8 @@ import { groundItems, type DraftItem } from "./grounding";
 export class ExtractionError extends Error {}
 
 const draftSchema = z.object({
+  fullName: z.string().trim(),
+  headline: z.string().trim(),
   items: z.array(
     z.object({
       type: z.enum([
@@ -48,8 +50,18 @@ const draftSchema = z.object({
 const jsonSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["items"],
+  required: ["fullName", "headline", "items"],
   properties: {
+    fullName: {
+      type: "string",
+      description:
+        "The candidate's name exactly as written at the top of the resume. Empty string if there is none.",
+    },
+    headline: {
+      type: "string",
+      description:
+        "The title or summary line under their name, copied as written. Empty string if there is none.",
+    },
     items: {
       type: "array",
       description: "One entry per role, project, or activity on the resume.",
@@ -120,11 +132,15 @@ const INSTRUCTIONS = [
   "- If a line is vague, extract it vaguely. The candidate will sharpen it themselves; that is what the confirmation step is for.",
   "- Split each role into its distinct claims rather than one summary claim. One bullet is usually one claim.",
   "- Skip contact details, links, and lists of interests entirely.",
+  "- fullName and headline are copied from the top of the resume as written. Do not invent a title the candidate did not give themselves.",
   "",
   "A claim whose quote is not found in the document verbatim is discarded before the candidate ever sees it, so an invented one is wasted output, not a clever addition.",
 ].join("\n");
 
 export interface ExtractionResult {
+  /** As written on the résumé, and only if it is actually written there. */
+  fullName: string;
+  headline: string;
   items: DraftItem[];
   /** Claims the document did not support, kept for logging rather than display. */
   dropped: { content: string; sourceQuote: string; reason: string }[];
@@ -175,6 +191,19 @@ export async function extractEvidence(
   }));
 
   const { kept, dropped } = groundItems(items, document);
+
+  // The name and headline are held to the same rule as everything else: if the
+  // document does not contain them, we do not have them.
+  const fullName =
+    parsed.fullName &&
+    document.toLowerCase().includes(parsed.fullName.toLowerCase())
+      ? parsed.fullName
+      : "";
+  const headline =
+    parsed.headline &&
+    document.toLowerCase().includes(parsed.headline.toLowerCase())
+      ? parsed.headline
+      : "";
   if (dropped.length)
     console.warn("resume extraction: ungrounded claims dropped", {
       dropped: dropped.length,
@@ -186,5 +215,5 @@ export async function extractEvidence(
       "Nothing on this resume could be matched back to its text. Rather than show you claims we cannot support, we stopped.",
     );
 
-  return { items: kept, dropped };
+  return { fullName, headline, items: kept, dropped };
 }

@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { JobRequirement } from "@/modules/applications/schema";
 import type { EvidenceItem } from "@/modules/evidence/schema";
+import { PortfolioPublish } from "./portfolio-publish";
 import {
   getActiveApplication,
   loadWorkspace,
@@ -95,14 +96,24 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
       />
     );
 
+  // A portfolio needs confirmed evidence and nothing else, so it stays reachable
+  // before any application exists — which is exactly when someone has just
+  // finished the résumé step and wants something to show for it.
   if (!application)
     return (
-      <Empty
-        title="Add the role you are targeting"
-        copy={`You have ${claims.length} confirmed ${claims.length === 1 ? "claim" : "claims"}. Add a job posting and we will show which of its requirements your experience already answers.`}
-        href="/dashboard/applications/new"
-        action="Add an application"
-      />
+      <div className="grid gap-5 xl:grid-cols-[1.5fr_.5fr]">
+        <Empty
+          title="Add the role you are targeting"
+          copy={`You have ${claims.length} confirmed ${claims.length === 1 ? "claim" : "claims"}. Add a job posting and we will show which of its requirements your experience already answers.`}
+          href="/dashboard/applications/new"
+          action="Add an application"
+        />
+        <PortfolioPublish
+          name={workspace.candidateName}
+          headline={workspace.candidateHeadline}
+          evidence={workspace.evidence}
+        />
+      </div>
     );
 
   return (
@@ -188,6 +199,12 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
               Import another résumé
             </Link>
           </section>
+
+          <PortfolioPublish
+            name={workspace.candidateName}
+            headline={workspace.candidateHeadline}
+            evidence={workspace.evidence}
+          />
 
           <section className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
             <ShieldCheck className="text-sage size-4" />
