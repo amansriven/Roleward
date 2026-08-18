@@ -50,6 +50,19 @@ export interface ArchetypeOption {
   name: string;
 }
 
+export interface RecommendationView {
+  archetypeId: string;
+  archetypeName: string;
+  difficulty: Difficulty;
+  reason: string;
+  estimatedMinutes: number;
+}
+
+export interface SkillObservationView {
+  skill: string;
+  score: number;
+}
+
 interface Reveal {
   archetype: { id: string; name: string; tell: string } | null;
   expectedComplexity: { time: string; space: string };
@@ -59,6 +72,8 @@ interface Reveal {
   classificationCorrect: boolean;
   chosenComplexity: string | null;
   complexityCorrect: boolean;
+  chosenEdgeCases: string[];
+  edgeCasesScore: number | null;
   solved: boolean;
   hintsUsed: number;
   runs: number;
@@ -73,8 +88,13 @@ const ORDERED_LANGUAGES: Language[] = [
 
 export function PracticeFlow({
   archetypes,
+  skillLabels,
+  recommendation,
 }: {
   archetypes: ArchetypeOption[];
+  /** Passed down rather than imported, to keep archetypes.ts out of this bundle. */
+  skillLabels: Record<string, string>;
+  recommendation: RecommendationView | null;
 }) {
   const [stage, setStage] = useState<Stage>("pick");
   const [archetypeId, setArchetypeId] = useState<string>("");
@@ -84,6 +104,7 @@ export function PracticeFlow({
   const [gate, setGate] = useState<PracticeGate | null>(null);
   const [classification, setClassification] = useState("");
   const [complexity, setComplexity] = useState("");
+  const [edgeCases, setEdgeCases] = useState<string[]>([]);
 
   const [language, setLanguage] = useState<Language>(
     EXECUTABLE_LANGUAGES[0] ?? "python",
@@ -92,6 +113,7 @@ export function PracticeFlow({
   const [result, setResult] = useState<ExecutionResult | null>(null);
   const [hints, setHints] = useState<string[]>([]);
   const [coaching, setCoaching] = useState<CoachingPoint[]>([]);
+  const [skills, setSkills] = useState<SkillObservationView[]>([]);
   const [reveal, setReveal] = useState<Reveal | null>(null);
 
   const [busy, setBusy] = useState(false);
@@ -141,6 +163,7 @@ export function PracticeFlow({
           problemId: problem.id,
           classification,
           complexity,
+          edgeCases,
         }),
       });
       setStage("solve");
@@ -205,8 +228,10 @@ export function PracticeFlow({
       const body = (await response.json().catch(() => null)) as {
         coaching?: CoachingPoint[];
         reveal?: Reveal;
+        skills?: SkillObservationView[];
       } | null;
       setCoaching(body?.coaching ?? []);
+      setSkills(body?.skills ?? []);
       setReveal(body?.reveal ?? null);
       setStage("coaching");
     } finally {
@@ -220,10 +245,12 @@ export function PracticeFlow({
     setGate(null);
     setClassification("");
     setComplexity("");
+    setEdgeCases([]);
     setCode("");
     setResult(null);
     setHints([]);
     setCoaching([]);
+    setSkills([]);
     setReveal(null);
     setError("");
   }
@@ -249,6 +276,12 @@ export function PracticeFlow({
       {stage === "pick" && (
         <PickStage
           archetypes={archetypes}
+          recommendation={recommendation}
+          onAcceptRecommendation={() => {
+            if (!recommendation) return;
+            setArchetypeId(recommendation.archetypeId);
+            setDifficulty(recommendation.difficulty);
+          }}
           archetypeId={archetypeId}
           setArchetypeId={setArchetypeId}
           difficulty={difficulty}
@@ -327,6 +360,50 @@ export function PracticeFlow({
               ))}
             </div>
           </div>
+          <div>
+            <p className="text-sm font-semibold">
+              Which of these actually bite on this problem?
+            </p>
+            <p className="text-dust mt-1 text-xs">
+              Some of these matter here and some never come up. Naming every one
+              is not the same as knowing which break your approach.
+            </p>
+            <div className="mt-4 grid gap-2">
+              {gate.edgeCases.map((choice) => {
+                const chosen = edgeCases.includes(choice);
+                return (
+                  <button
+                    key={choice}
+                    type="button"
+                    onClick={() =>
+                      setEdgeCases((current) =>
+                        chosen
+                          ? current.filter((item) => item !== choice)
+                          : [...current, choice],
+                      )
+                    }
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-xl border p-3 text-left text-xs transition",
+                      chosen
+                        ? "border-cobalt bg-cobalt/10 text-linen"
+                        : "border-iron text-canvas hover:text-linen",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-4 shrink-0 items-center justify-center rounded border",
+                        chosen ? "border-cobalt bg-cobalt" : "border-iron",
+                      )}
+                    >
+                      {chosen && <Check className="size-3 text-white" />}
+                    </span>
+                    {choice}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <button
             type="button"
             disabled={!complexity || busy}
@@ -360,7 +437,13 @@ export function PracticeFlow({
       )}
 
       {stage === "coaching" && (
-        <CoachingStage coaching={coaching} reveal={reveal} onAgain={reset} />
+        <CoachingStage
+          coaching={coaching}
+          reveal={reveal}
+          skills={skills}
+          skillLabels={skillLabels}
+          onAgain={reset}
+        />
       )}
     </div>
   );
@@ -425,6 +508,8 @@ function Statement({ problem }: { problem: ClientProblem }) {
 
 function PickStage({
   archetypes,
+  recommendation,
+  onAcceptRecommendation,
   archetypeId,
   setArchetypeId,
   difficulty,
@@ -433,6 +518,8 @@ function PickStage({
   onStart,
 }: {
   archetypes: ArchetypeOption[];
+  recommendation: RecommendationView | null;
+  onAcceptRecommendation: () => void;
   archetypeId: string;
   setArchetypeId: (value: string) => void;
   difficulty: Difficulty;
@@ -449,6 +536,31 @@ function PickStage({
           there is nothing to memorize and nothing to look up.
         </p>
       </div>
+
+      {recommendation && (
+        <div className="border-cobalt/40 bg-cobalt/5 rounded-xl border p-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="text-cobalt size-3.5" />
+            <p className="text-xs font-semibold">Recommended next</p>
+          </div>
+          <p className="text-canvas mt-2 text-xs leading-6">
+            {recommendation.reason}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={onAcceptRecommendation}
+              className="border-cobalt/60 text-linen hover:bg-cobalt/10 inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold"
+            >
+              {recommendation.archetypeName}
+              <span className="text-dust capitalize">
+                · {recommendation.difficulty} · ~
+                {recommendation.estimatedMinutes} min
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       <div>
         <p className="section-label">Pattern</p>
@@ -727,10 +839,14 @@ function SolveStage({
 function CoachingStage({
   coaching,
   reveal,
+  skills,
+  skillLabels,
   onAgain,
 }: {
   coaching: CoachingPoint[];
   reveal: Reveal | null;
+  skills: SkillObservationView[];
+  skillLabels: Record<string, string>;
   onAgain: () => void;
 }) {
   return (
@@ -784,6 +900,39 @@ function CoachingStage({
             <span className="text-dust">
               hints <span className="text-canvas">{reveal.hintsUsed}</span>
             </span>
+          </div>
+        </div>
+      )}
+
+      {skills.length > 0 && (
+        <div className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+          <p className="section-label">What this session measured</p>
+          <p className="text-dust mt-1 text-xs">
+            Only the skills this problem actually tested. Guru cannot hear you
+            explain, so it does not pretend to score that.
+          </p>
+          <div className="mt-4 space-y-3">
+            {skills.map((item) => (
+              <div key={item.skill}>
+                <div className="mb-1.5 flex justify-between gap-3 text-xs">
+                  <span className="text-canvas">
+                    {skillLabels[item.skill] ?? item.skill}
+                  </span>
+                  <span className="text-dust font-mono">
+                    {item.score.toFixed(1)}/10
+                  </span>
+                </div>
+                <div className="bg-iron h-1.5 rounded-full">
+                  <div
+                    className={cn(
+                      "h-full rounded-full",
+                      item.score >= 7 ? "bg-sage" : "bg-cobalt",
+                    )}
+                    style={{ width: `${item.score * 10}%` }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

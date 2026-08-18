@@ -10,8 +10,11 @@ import {
   complexityMatches,
   hintsFor,
   MAX_HINTS,
+  offeredEdgeCases,
+  scoreEdgeCases,
 } from "@/modules/guru/practice";
 import { practiceAttemptSchema } from "@/modules/guru/schema";
+import { observeAttempt } from "@/modules/guru/skills";
 
 export const runtime = "nodejs";
 
@@ -21,6 +24,7 @@ const requestSchema = z.discriminatedUnion("action", [
     problemId: z.string().min(1),
     classification: z.string().min(1),
     complexity: z.string().min(1),
+    edgeCases: z.array(z.string()).max(20).default([]),
   }),
   z.object({ action: z.literal("hint"), problemId: z.string().min(1) }),
   z.object({ action: z.literal("finish"), problemId: z.string().min(1) }),
@@ -77,6 +81,14 @@ export async function POST(request: Request) {
       parsed.data.complexity,
       problem.expectedComplexity.time,
     );
+    attempt.edgeCasesChosen = parsed.data.edgeCases;
+    // The offered set is rebuilt here rather than taken from the request, so a
+    // browser cannot widen the decoys and score itself well.
+    attempt.edgeCasesScore = scoreEdgeCases(
+      parsed.data.edgeCases,
+      problem.edgeCases,
+      offeredEdgeCases(problem),
+    );
     attempt.committedAt = new Date().toISOString();
     await putAttempt(session.user.id, attempt);
     return NextResponse.json({ committed: true });
@@ -99,6 +111,17 @@ export async function POST(request: Request) {
   await putAttempt(session.user.id, attempt);
   const archetype = findArchetype(problem.archetypeId);
   return NextResponse.json({
+    skills: observeAttempt({
+      archetypeId: problem.archetypeId,
+      difficulty: problem.difficulty,
+      classificationCorrect: attempt.classificationCorrect,
+      complexityCorrect: attempt.complexityCorrect,
+      edgeCasesScore: attempt.edgeCasesScore,
+      solved: attempt.solved,
+      hintsUsed: attempt.hintsUsed,
+      runs: attempt.runs,
+      completedAt: attempt.completedAt,
+    }),
     coaching: buildCoaching(problem, {
       classificationCorrect: attempt.classificationCorrect,
       complexityCorrect: attempt.complexityCorrect,
@@ -117,6 +140,8 @@ export async function POST(request: Request) {
       classificationCorrect: attempt.classificationCorrect,
       chosenComplexity: attempt.complexity,
       complexityCorrect: attempt.complexityCorrect,
+      chosenEdgeCases: attempt.edgeCasesChosen,
+      edgeCasesScore: attempt.edgeCasesScore,
       solved: attempt.solved,
       hintsUsed: attempt.hintsUsed,
       runs: attempt.runs,

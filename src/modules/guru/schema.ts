@@ -134,6 +134,9 @@ export const practiceAttemptSchema = z.object({
   classificationCorrect: z.boolean().default(false),
   complexity: z.string().nullable().default(null),
   complexityCorrect: z.boolean().default(false),
+  edgeCasesChosen: z.array(z.string()).default([]),
+  /** 0-10, or null when the gate was skipped. */
+  edgeCasesScore: z.number().min(0).max(10).nullable().default(null),
   hintsUsed: z.number().int().nonnegative().default(0),
   runs: z.number().int().nonnegative().default(0),
   solved: z.boolean().default(false),

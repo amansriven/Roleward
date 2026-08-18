@@ -5,6 +5,7 @@ import {
   complexityMatches,
   hintsFor,
   normalizeComplexity,
+  scoreEdgeCases,
   summarizeMastery,
   type AttemptRecord,
   type AttemptSignals,
@@ -83,6 +84,12 @@ describe("buildGate", () => {
     // The browser gets ids and names only. Anything more would be the answer.
     for (const choice of gate.classification)
       expect(Object.keys(choice).sort()).toEqual(["id", "name"]);
+  });
+
+  it("mixes the problem's edge cases with generic decoys", () => {
+    const gate = buildGate(problem, () => 0);
+    expect(gate.edgeCases).toContain("an empty array");
+    expect(gate.edgeCases.length).toBeGreaterThan(problem.edgeCases.length);
   });
 
   it("includes the true complexity among plausible wrong ones", () => {
@@ -178,5 +185,29 @@ describe("summarizeMastery", () => {
 
   it("names the archetype rather than echoing its id", () => {
     expect(summarizeMastery([attempt({})])[0]?.name).toBe("Sliding window");
+  });
+});
+
+describe("scoreEdgeCases", () => {
+  const actual = ["an empty array", "all equal values"];
+  const offered = [...actual, "decoy one", "decoy two", "decoy three"];
+
+  it("rewards finding this problem's real cases", () => {
+    expect(scoreEdgeCases(actual, actual, offered)).toBe(10);
+  });
+
+  it("does not reward naming everything", () => {
+    // Selecting the whole list has perfect recall and no discrimination.
+    expect(scoreEdgeCases(offered, actual, offered)).toBeLessThan(8);
+  });
+
+  it("scores an empty selection at zero", () => {
+    expect(scoreEdgeCases([], actual, offered)).toBeLessThanOrEqual(3);
+  });
+
+  it("puts a partial answer between the two", () => {
+    const partial = scoreEdgeCases([actual[0]!], actual, offered);
+    expect(partial).toBeGreaterThan(0);
+    expect(partial).toBeLessThan(10);
   });
 });

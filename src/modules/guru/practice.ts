@@ -72,6 +72,56 @@ export interface ClassificationChoice {
 export interface PracticeGate {
   classification: ClassificationChoice[];
   complexity: string[];
+  /** The problem's real edge cases mixed with plausible generic ones. */
+  edgeCases: string[];
+}
+
+/**
+ * Generic cases that sound like they might matter and usually do not.
+ *
+ * Mixed in with the problem's own edge cases so the gate measures reading this
+ * problem rather than reciting a checklist.
+ */
+const GENERIC_EDGE_CASES = [
+  "an input containing only zeroes",
+  "an input already in sorted order",
+  "an input where every value is negative",
+  "the largest input the constraints allow",
+  "an input with no valid answer at all",
+];
+
+/**
+ * The full set of edge cases offered for a problem.
+ *
+ * Deterministic apart from ordering, so the server can score a submission
+ * without being told what the browser displayed.
+ */
+export function offeredEdgeCases(problem: GeneratedProblem): string[] {
+  const decoys = GENERIC_EDGE_CASES.filter(
+    (item) => !problem.edgeCases.includes(item),
+  ).slice(0, 3);
+  return [...problem.edgeCases, ...decoys];
+}
+
+/**
+ * How well the candidate picked out this problem's real edge cases.
+ *
+ * Scored 0-10, and false positives cost: naming everything is not the same as
+ * knowing which cases bite, and an interviewer can tell the difference.
+ */
+export function scoreEdgeCases(
+  chosen: string[],
+  actual: string[],
+  offered: string[],
+): number {
+  if (!actual.length || !offered.length) return 0;
+  const real = new Set(actual);
+  const hits = chosen.filter((item) => real.has(item)).length;
+  const falsePositives = chosen.filter((item) => !real.has(item)).length;
+  const decoys = offered.length - actual.length;
+  const recall = hits / actual.length;
+  const precision = decoys > 0 ? 1 - falsePositives / decoys : 1;
+  return Math.max(0, Math.round((recall * 0.7 + precision * 0.3) * 10));
 }
 
 /**
@@ -104,7 +154,9 @@ export function buildGate(
   ).slice(0, 3);
   const complexity = shuffle([truth, ...wrong], random);
 
-  return { classification, complexity };
+  const edgeCases = shuffle(offeredEdgeCases(problem), random);
+
+  return { classification, complexity, edgeCases };
 }
 
 /**
