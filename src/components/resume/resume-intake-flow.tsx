@@ -25,11 +25,32 @@ import {
   validateResumeFile,
   type ResumeDocument,
 } from "@/modules/resume-kitchen/intake";
-import { createSampleExtraction } from "@/modules/resume-kitchen/sample-extraction";
+import type { DraftItem } from "@/modules/resume-kitchen/grounding";
 import { uploadPrivateFile } from "@/modules/uploads/client";
 
 type Step = "upload" | "processing" | "review" | "complete";
 const storageKey = "sweet-plus:evidence-library";
+
+/**
+ * Everything arrives as "proposed". Nothing is verified until the candidate
+ * says so, which is the entire point of the review step.
+ */
+function toEvidenceItems(items: DraftItem[]): EvidenceItem[] {
+  return items.map((item) => ({
+    id: crypto.randomUUID(),
+    type: item.type,
+    title: item.title,
+    organization: item.organization,
+    summary: item.summary,
+    verificationStatus: "proposed" as const,
+    claims: item.claims.map((claim) => ({
+      id: crypto.randomUUID(),
+      type: claim.type,
+      content: claim.content,
+      verificationStatus: "proposed" as const,
+    })),
+  }));
+}
 
 export function ResumeIntakeFlow() {
   const input = useRef<HTMLInputElement>(null);
@@ -37,6 +58,7 @@ export function ResumeIntakeFlow() {
   const [error, setError] = useState("");
   const [resume, setResume] = useState<ResumeDocument | null>(null);
   const [items, setItems] = useState<EvidenceItem[]>([]);
+  const [droppedCount, setDroppedCount] = useState(0);
 
   async function receive(file?: File) {
     if (!file) return;
@@ -68,9 +90,31 @@ export function ResumeIntakeFlow() {
       });
       createResumeProcessingJob(nextResume, "local-preview-user");
       setResume(nextResume);
-      setItems(createSampleExtraction(nextResume.id).items);
+
+      // The document itself is read here. Until this existed the review screen
+      // showed a fixed sample, and confirming it turned someone else's
+      // accomplishments into this candidate's verified background.
+      const form = new FormData();
+      form.append("file", file);
+      const response = await fetch("/api/resume/extract", {
+        method: "POST",
+        body: form,
+      });
+      const body = (await response.json().catch(() => null)) as {
+        items?: DraftItem[];
+        droppedCount?: number;
+        error?: string;
+      } | null;
+      if (!response.ok || !body?.items?.length) {
+        setError(body?.error ?? "We could not read this resume.");
+        setStep("upload");
+        return;
+      }
+
+      setItems(toEvidenceItems(body.items));
+      setDroppedCount(body.droppedCount ?? 0);
       localStorage.setItem("sweet-plus:resume-hash", contentHash);
-      window.setTimeout(() => setStep("review"), 650);
+      setStep("review");
     } catch (problem) {
       setError(
         problem instanceof Error
@@ -236,9 +280,17 @@ export function ResumeIntakeFlow() {
             Check every extracted claim.
           </h1>
           <p className="text-canvas mt-2 text-sm">
-            {resume?.fileName} · AI extraction is proposed, never verified
-            automatically.
+            {resume?.fileName} · every claim below was quoted from your file and
+            checked against it. Nothing is verified until you say so.
           </p>
+          {droppedCount > 0 && (
+            <p className="text-dust mt-2 text-xs leading-5">
+              {droppedCount} proposed{" "}
+              {droppedCount === 1 ? "claim was" : "claims were"} discarded for
+              not matching the text of your resume. You are not being shown
+              them, because we could not support them.
+            </p>
+          )}
         </div>
         <p className="text-canvas font-mono text-xs">
           {reviewed} / {total} reviewed
