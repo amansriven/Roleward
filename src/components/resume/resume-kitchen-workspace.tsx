@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import type { JobRequirement } from "@/modules/applications/schema";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import { PortfolioPublish } from "./portfolio-publish";
+import { ResumeScore } from "./resume-score";
 import {
   getActiveApplication,
   loadWorkspace,
@@ -108,11 +109,14 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
           href="/dashboard/applications/new"
           action="Add an application"
         />
-        <PortfolioPublish
-          name={workspace.candidateName}
-          headline={workspace.candidateHeadline}
-          evidence={workspace.evidence}
-        />
+        <div className="space-y-5">
+          <ResumeScore evidence={workspace.evidence} />
+          <PortfolioPublish
+            name={workspace.candidateName}
+            headline={workspace.candidateHeadline}
+            evidence={workspace.evidence}
+          />
+        </div>
       </div>
     );
 
@@ -199,6 +203,8 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
               Import another résumé
             </Link>
           </section>
+
+          <ResumeScore evidence={workspace.evidence} />
 
           <PortfolioPublish
             name={workspace.candidateName}

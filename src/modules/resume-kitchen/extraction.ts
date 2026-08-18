@@ -2,7 +2,13 @@ import "server-only";
 
 import { z } from "zod";
 import { INTERVIEW_MODEL, openai } from "@/modules/interviews/openai";
-import { groundItems, type DraftItem } from "./grounding";
+import {
+  extractionLooksComplete,
+  groundItems,
+  groundSkills,
+  type DraftItem,
+  type DraftSkillGroup,
+} from "./grounding";
 
 /**
  * Reads a resume and proposes evidence the candidate can confirm.
@@ -18,6 +24,12 @@ export class ExtractionError extends Error {}
 const draftSchema = z.object({
   fullName: z.string().trim(),
   headline: z.string().trim(),
+  skills: z.array(
+    z.object({
+      category: z.string().trim(),
+      skills: z.array(z.string().trim()),
+    }),
+  ),
   items: z.array(
     z.object({
       type: z.enum([
@@ -29,6 +41,8 @@ const draftSchema = z.object({
       ]),
       title: z.string().trim().min(1),
       organization: z.string().trim().optional(),
+      period: z.string().trim().optional(),
+      location: z.string().trim().optional(),
       summary: z.string().trim().min(1),
       claims: z.array(
         z.object({
@@ -50,7 +64,7 @@ const draftSchema = z.object({
 const jsonSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["fullName", "headline", "items"],
+  required: ["fullName", "headline", "skills", "items"],
   properties: {
     fullName: {
       type: "string",
@@ -62,13 +76,38 @@ const jsonSchema = {
       description:
         "The title or summary line under their name, copied as written. Empty string if there is none.",
     },
+    skills: {
+      type: "array",
+      description:
+        "The skills section, grouped as the resume groups them. Empty array if there is no skills section.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["category", "skills"],
+        properties: {
+          category: {
+            type: "string",
+            description: "The heading used, such as Languages or Tools.",
+          },
+          skills: { type: "array", items: { type: "string" } },
+        },
+      },
+    },
     items: {
       type: "array",
       description: "One entry per role, project, or activity on the resume.",
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["type", "title", "organization", "summary", "claims"],
+        required: [
+          "type",
+          "title",
+          "organization",
+          "period",
+          "location",
+          "summary",
+          "claims",
+        ],
         properties: {
           type: {
             type: "string",
@@ -78,6 +117,15 @@ const jsonSchema = {
           organization: {
             type: "string",
             description: "Employer or school. Empty string if none is given.",
+          },
+          period: {
+            type: "string",
+            description:
+              "The dates as written, such as 'June 2025 - August 2025'. Empty string if absent.",
+          },
+          location: {
+            type: "string",
+            description: "As written. Empty string if absent.",
           },
           summary: {
             type: "string",
@@ -131,6 +179,9 @@ const INSTRUCTIONS = [
   "- content must not be stronger than its source. 'Helped build' does not become 'Built'. 'Contributed to' does not become 'Led'.",
   "- If a line is vague, extract it vaguely. The candidate will sharpen it themselves; that is what the confirmation step is for.",
   "- Split each role into its distinct claims rather than one summary claim. One bullet is usually one claim.",
+  "- Extract EVERY entry on the resume: every job, internship, research position, project, leadership role, and the education. Do not summarise or select the best ones.",
+  "- Copy dates and locations as written. Leave them empty rather than guessing.",
+  "- List the skills section as it is grouped. Do not add a skill the resume does not name.",
   "- Skip contact details, links, and lists of interests entirely.",
   "- fullName and headline are copied from the top of the resume as written. Do not invent a title the candidate did not give themselves.",
   "",
@@ -141,6 +192,7 @@ export interface ExtractionResult {
   /** As written on the résumé, and only if it is actually written there. */
   fullName: string;
   headline: string;
+  skills: DraftSkillGroup[];
   items: DraftItem[];
   /** Claims the document did not support, kept for logging rather than display. */
   dropped: { content: string; sourceQuote: string; reason: string }[];
@@ -149,7 +201,33 @@ export interface ExtractionResult {
 /** Long resumes are truncated: the model only needs what it can quote. */
 const MAX_DOCUMENT_CHARACTERS = 24_000;
 
+/**
+ * Reads the résumé, and reads it again if the first pass plainly missed most of
+ * it. One wasted call is cheaper than a candidate being shown their GPA and
+ * nothing else.
+ */
 export async function extractEvidence(
+  documentText: string,
+): Promise<ExtractionResult> {
+  const first = await attemptExtraction(documentText);
+  const claimCount = first.items.reduce(
+    (count, item) => count + item.claims.length,
+    0,
+  );
+  if (extractionLooksComplete(claimCount, documentText)) return first;
+
+  console.warn("resume extraction: first pass looked incomplete, retrying", {
+    claimCount,
+  });
+  const second = await attemptExtraction(documentText);
+  const secondCount = second.items.reduce(
+    (count, item) => count + item.claims.length,
+    0,
+  );
+  return secondCount > claimCount ? second : first;
+}
+
+async function attemptExtraction(
   documentText: string,
 ): Promise<ExtractionResult> {
   const document = documentText.slice(0, MAX_DOCUMENT_CHARACTERS);
@@ -188,6 +266,8 @@ export async function extractEvidence(
   const items: DraftItem[] = parsed.items.map((item) => ({
     ...item,
     organization: item.organization?.trim() ? item.organization : undefined,
+    period: item.period?.trim() ? item.period : undefined,
+    location: item.location?.trim() ? item.location : undefined,
   }));
 
   const { kept, dropped } = groundItems(items, document);
@@ -215,5 +295,11 @@ export async function extractEvidence(
       "Nothing on this resume could be matched back to its text. Rather than show you claims we cannot support, we stopped.",
     );
 
-  return { fullName, headline, items: kept, dropped };
+  return {
+    fullName,
+    headline,
+    skills: groundSkills(parsed.skills, document),
+    items: kept,
+    dropped,
+  };
 }

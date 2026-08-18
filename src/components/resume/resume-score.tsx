@@ -1,0 +1,270 @@
+"use client";
+
+import {
+  AlertTriangle,
+  Check,
+  LoaderCircle,
+  Sparkles,
+  Wand2,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
+import type { EvidenceItem } from "@/modules/evidence/schema";
+import { scoreResume, type Finding } from "@/modules/resume-kitchen/scoring";
+
+interface Rewrite {
+  improved: string;
+  changed: string;
+  askFor: string;
+  rejected?: boolean;
+}
+
+/**
+ * The résumé's score, and the specific lines responsible for it.
+ *
+ * Every deduction names the bullets it came from, so the score is a to-do list
+ * rather than a verdict. That is also why it is computed here rather than asked
+ * of a model: a number that changes between runs cannot be worked through.
+ */
+export function ResumeScore({ evidence }: { evidence: EvidenceItem[] }) {
+  const [openFinding, setOpenFinding] = useState<string | null>(null);
+
+  const claims = useMemo(
+    () =>
+      evidence.flatMap((item) =>
+        item.claims
+          .filter(
+            (claim) =>
+              claim.verificationStatus === "confirmed" ||
+              claim.verificationStatus === "corrected",
+          )
+          .map((claim) => ({
+            id: claim.id,
+            content: claim.content,
+            itemId: item.id,
+            itemTitle: item.title,
+          })),
+      ),
+    [evidence],
+  );
+
+  const score = useMemo(
+    () =>
+      scoreResume({
+        claims,
+        hasExperience: evidence.some((item) => item.type === "experience"),
+        hasProjects: evidence.some((item) => item.type === "project"),
+        skillCount: 0,
+      }),
+    [claims, evidence],
+  );
+
+  if (!claims.length) return null;
+
+  return (
+    <section className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="font-semibold">Résumé score</p>
+        <div className="text-right">
+          <p className="font-mono text-2xl font-semibold">{score.total}</p>
+          <p
+            className={cn(
+              "text-[10px] capitalize",
+              score.band === "strong" && "text-sage",
+              score.band === "getting there" && "text-copper",
+              score.band === "needs work" && "text-dust",
+            )}
+          >
+            {score.band}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-2.5">
+        {score.dimensions.map((dimension) => (
+          <div key={dimension.key}>
+            <div className="flex justify-between gap-3 text-[11px]">
+              <span className="text-canvas">{dimension.label}</span>
+              <span className="text-dust font-mono">
+                {dimension.score}/{dimension.max}
+              </span>
+            </div>
+            <div className="bg-iron mt-1 h-1 rounded-full">
+              <div
+                className={cn(
+                  "h-full rounded-full",
+                  dimension.score / dimension.max >= 0.7
+                    ? "bg-sage"
+                    : "bg-copper",
+                )}
+                style={{
+                  width: `${(dimension.score / dimension.max) * 100}%`,
+                }}
+              />
+            </div>
+            <p className="text-dust mt-1 text-[10px]">{dimension.detail}</p>
+          </div>
+        ))}
+      </div>
+
+      {score.findings.length > 0 && (
+        <div className="border-iron/60 mt-5 border-t pt-5">
+          <p className="section-label">What to fix</p>
+          <div className="mt-3 space-y-2">
+            {score.findings.map((finding) => (
+              <FindingRow
+                key={finding.id}
+                finding={finding}
+                claims={claims}
+                open={openFinding === finding.id}
+                onToggle={() =>
+                  setOpenFinding(openFinding === finding.id ? null : finding.id)
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function FindingRow({
+  finding,
+  claims,
+  open,
+  onToggle,
+}: {
+  finding: Finding;
+  claims: { id: string; content: string; itemTitle: string }[];
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const affected = claims.filter((claim) =>
+    finding.claimIds.includes(claim.id),
+  );
+
+  return (
+    <div className="border-iron/60 rounded-xl border">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-start gap-2.5 p-3 text-left"
+      >
+        <AlertTriangle
+          className={cn(
+            "mt-0.5 size-3.5 shrink-0",
+            finding.severity === "high" ? "text-copper" : "text-dust",
+          )}
+        />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[11px] font-semibold">
+            {finding.title}
+          </span>
+          {open && (
+            <span className="text-dust mt-1 block text-[11px] leading-5">
+              {finding.detail}
+            </span>
+          )}
+        </span>
+      </button>
+
+      {open && affected.length > 0 && (
+        <div className="border-iron/50 space-y-2 border-t p-3">
+          {affected.map((claim) => (
+            <BulletFix key={claim.id} claim={claim} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BulletFix({
+  claim,
+}: {
+  claim: { id: string; content: string; itemTitle: string };
+}) {
+  const [busy, setBusy] = useState(false);
+  const [rewrite, setRewrite] = useState<Rewrite | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function improve() {
+    setBusy(true);
+    try {
+      const response = await fetch("/api/resume/improve", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          bullet: claim.content,
+          context: claim.itemTitle,
+        }),
+      });
+      setRewrite((await response.json().catch(() => null)) as Rewrite);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="border-iron/50 rounded-lg border p-2.5">
+      <p className="text-canvas text-[11px] leading-5">{claim.content}</p>
+      <p className="text-dust mt-1 text-[10px]">{claim.itemTitle}</p>
+
+      {!rewrite && (
+        <button
+          type="button"
+          onClick={() => void improve()}
+          disabled={busy}
+          className="text-copper mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold disabled:opacity-40"
+        >
+          {busy ? (
+            <LoaderCircle className="size-3 animate-spin" />
+          ) : (
+            <Wand2 className="size-3" />
+          )}
+          Rewrite this
+        </button>
+      )}
+
+      {rewrite?.improved && (
+        <div className="border-copper/30 bg-copper/[.06] mt-2 rounded-lg border p-2.5">
+          <p className="text-sm leading-6">{rewrite.improved}</p>
+          <p className="text-dust mt-2 text-[10px] leading-4">
+            {rewrite.changed}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              void navigator.clipboard?.writeText(rewrite.improved);
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 1500);
+            }}
+            className="border-iron text-canvas mt-2 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold"
+          >
+            {copied ? <Check className="size-2.5" /> : null}
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+      )}
+
+      {rewrite?.askFor && (
+        <p className="border-iron/50 text-canvas mt-2 rounded-lg border p-2.5 text-[11px] leading-5">
+          <Sparkles className="text-copper mr-1.5 inline size-3" />
+          {rewrite.askFor}
+          <span className="text-dust mt-1 block text-[10px]">
+            We will not guess this for you. Answer it and edit the bullet
+            yourself in your evidence library.
+          </span>
+        </p>
+      )}
+
+      {rewrite && !rewrite.improved && !rewrite.askFor && (
+        <p className="text-dust mt-2 text-[10px]">
+          This one cannot be improved without inventing something, so we left it
+          alone.
+        </p>
+      )}
+    </div>
+  );
+}

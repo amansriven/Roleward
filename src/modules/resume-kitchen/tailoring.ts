@@ -181,3 +181,109 @@ export async function tailorBullet(
 
   return { suggestions, rejected };
 }
+
+/**
+ * Strengthens a bullet without a job in mind.
+ *
+ * The rewrite is allowed to change verbs, structure, and emphasis. It is not
+ * allowed to add a quantity, because the most tempting improvement to a bullet
+ * with no number in it is to supply one — and that is the single thing a
+ * candidate cannot defend when asked about it.
+ *
+ * Where a figure is genuinely missing, the model returns the question that
+ * would produce it instead. A prompt the candidate can answer from memory is
+ * more use than a number invented for them.
+ */
+const improveSchema = z.object({
+  improved: z.string().trim(),
+  changed: z.string().trim(),
+  askFor: z.string().trim(),
+});
+
+const improveJsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["improved", "changed", "askFor"],
+  properties: {
+    improved: {
+      type: "string",
+      description:
+        "The stronger bullet, using only facts already present. Empty string if it cannot be improved without inventing something.",
+    },
+    changed: {
+      type: "string",
+      description: "One short sentence on what you changed and why.",
+    },
+    askFor: {
+      type: "string",
+      description:
+        "If a number would transform this bullet, the question the candidate should answer to supply it. Empty string otherwise.",
+    },
+  },
+} as const;
+
+const IMPROVE_INSTRUCTIONS = [
+  "You strengthen a single résumé bullet.",
+  "",
+  "Rules:",
+  "- NEVER add a number, percentage, duration, team size, or scale that is not already in the original. This is absolute.",
+  "- Do not upgrade the candidate's role. 'Helped build' may become 'Built' ONLY if the original does not attribute the work to someone else.",
+  "- Replace weak openers ('helped with', 'worked on', 'responsible for') with what was actually done.",
+  "- Replace vague quantities ('various', 'several') only if the original says how many. Otherwise leave the vagueness and ask about it.",
+  "- Keep it to one line, roughly 12 to 30 words, starting with a past-tense verb, no trailing period.",
+  "- If the bullet is already strong, return it unchanged and say so.",
+  "- If a missing number is the main weakness, put the question that would supply it in askFor. Do not guess the answer.",
+].join("\n");
+
+export interface ImprovedBullet {
+  improved: string;
+  changed: string;
+  askFor: string;
+  /** True when a rewrite was discarded for inventing a figure. */
+  rejected: boolean;
+}
+
+export async function improveBullet(
+  original: string,
+  context: string,
+): Promise<ImprovedBullet> {
+  const response = await openai().chat.completions.create({
+    model: INTERVIEW_MODEL,
+    temperature: 0.3,
+    messages: [
+      { role: "system", content: IMPROVE_INSTRUCTIONS },
+      {
+        role: "user",
+        content: `From "${context}":\n\n${original}`,
+      },
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "improved_bullet",
+        strict: true,
+        schema: improveJsonSchema,
+      },
+    },
+  });
+
+  let parsed;
+  try {
+    parsed = improveSchema.parse(
+      JSON.parse(response.choices[0]?.message?.content ?? ""),
+    );
+  } catch (error) {
+    throw new TailoringError(
+      `The rewriter returned something unusable: ${
+        error instanceof Error ? error.message.slice(0, 200) : "unparseable"
+      }`,
+    );
+  }
+
+  // The original is the only evidence a rewrite of it has.
+  const check = bulletIsSupported(parsed.improved, [original]);
+  if (parsed.improved && !check.ok)
+    return { improved: "", changed: "", askFor: parsed.askFor, rejected: true };
+
+  return { ...parsed, rejected: false };
+}

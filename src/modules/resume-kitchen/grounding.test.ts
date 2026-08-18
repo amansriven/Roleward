@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   bulletIsSupported,
+  countBulletLines,
+  extractionLooksComplete,
   groundItems,
   quoteAppearsIn,
   type DraftItem,
@@ -50,6 +52,38 @@ describe("quoteAppearsIn", () => {
     expect(quoteAppearsIn("Built sessions students marketplace", resume)).toBe(
       false,
     );
+  });
+
+  it("survives a word the PDF extractor split across a line", () => {
+    // Verbatim from a real extraction: "Machine Lea\nrning".
+    const mangled = "Relevant Coursework: Algorithms, Machine Lea\nrning";
+    expect(
+      quoteAppearsIn(
+        "Relevant Coursework: Algorithms, Machine Learning",
+        mangled,
+      ),
+    ).toBe(true);
+  });
+
+  it("survives a bullet wrapped across two lines", () => {
+    const wrapped =
+      "\u2022 Collaborated with two senior engineers to migrate 34 tests,\n  cutting CI runtime from 22 minutes to 9 minutes";
+    expect(
+      quoteAppearsIn(
+        "Collaborated with two senior engineers to migrate 34 tests, cutting CI runtime from 22 minutes to 9 minutes",
+        wrapped,
+      ),
+    ).toBe(true);
+  });
+
+  it("still rejects a sentence that was never written", () => {
+    // The safety property has to survive the tolerance added for PDFs.
+    expect(
+      quoteAppearsIn(
+        "Led a team of twelve engineers across four countries",
+        resume,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -196,5 +230,37 @@ describe("bulletIsSupported", () => {
     expect(
       bulletIsSupported("Migrated REST endpoints to Fastify", claims).ok,
     ).toBe(true);
+  });
+});
+
+describe("extractionLooksComplete", () => {
+  const sixBullets = [
+    "EXPERIENCE",
+    "Datadog - Software Engineering Intern",
+    "• Designed and shipped a log-sampling service in Go that cut costs 18%",
+    "• Migrated 34 integration tests from Jenkins to GitHub Actions this summer",
+    "• Presented findings to a team of fifteen engineers at the showcase",
+    "PROJECTS",
+    "• Built a study scheduling app used by 450 students across four campuses",
+    "• Implemented real-time sync with WebSockets for concurrent connections",
+    "• Created a CLI tool that tracks coding practice streaks over time",
+  ].join("\n");
+
+  it("counts described achievements, not headings or dates", () => {
+    expect(countBulletLines(sixBullets)).toBe(6);
+  });
+
+  it("accepts an extraction that found most of the résumé", () => {
+    expect(extractionLooksComplete(6, sixBullets)).toBe(true);
+    expect(extractionLooksComplete(3, sixBullets)).toBe(true);
+  });
+
+  it("rejects one that found the education and little else", () => {
+    // Exactly the reported failure: a full résumé reduced to two claims.
+    expect(extractionLooksComplete(2, sixBullets)).toBe(false);
+  });
+
+  it("does not demand bullets from a résumé that has none", () => {
+    expect(extractionLooksComplete(0, "A short prose CV.")).toBe(true);
   });
 });
