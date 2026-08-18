@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { groundItems, quoteAppearsIn, type DraftItem } from "./grounding";
+import {
+  bulletIsSupported,
+  groundItems,
+  quoteAppearsIn,
+  type DraftItem,
+} from "./grounding";
 
 const resume = `
 JANE OKONKWO
@@ -153,5 +158,43 @@ describe("groundItems", () => {
       resume,
     );
     expect(kept).toHaveLength(0);
+  });
+});
+
+describe("bulletIsSupported", () => {
+  const claims = [
+    "Migrated 12 REST endpoints from Express to Fastify",
+    "Cut p95 latency by 22%",
+  ];
+
+  it("allows a rewrite that only rephrases what the evidence says", () => {
+    // Rewording is the point of tailoring; only new quantities are forbidden.
+    expect(
+      bulletIsSupported(
+        "Migrated 12 REST endpoints to Fastify, cutting p95 latency 22%",
+        claims,
+      ).ok,
+    ).toBe(true);
+  });
+
+  it("catches a number the evidence never contained", () => {
+    const check = bulletIsSupported(
+      "Migrated 40 REST endpoints to Fastify, cutting p95 latency 22%",
+      claims,
+    );
+    expect(check.ok).toBe(false);
+    expect(check.inventedNumbers).toContain("40");
+  });
+
+  it("catches an inflated version of a real number", () => {
+    expect(
+      bulletIsSupported("Cut p95 latency by 82%", claims).inventedNumbers,
+    ).toContain("82");
+  });
+
+  it("passes a bullet with no numbers at all", () => {
+    expect(
+      bulletIsSupported("Migrated REST endpoints to Fastify", claims).ok,
+    ).toBe(true);
   });
 });

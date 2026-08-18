@@ -15,6 +15,11 @@
  * Pure, so it is testable without a model or a PDF.
  */
 
+/**
+ * Trailing punctuation is not part of a number. Without stripping it,
+ * "graduated in 2026." is dropped against a quote that plainly says 2026.
+ */
+
 /** Collapses whitespace and case so a quote survives PDF spacing artefacts. */
 export function normalizeForMatch(text: string): string {
   return text
@@ -98,11 +103,7 @@ export function groundItems(
         });
         return false;
       }
-      // Trailing punctuation is not part of the number. Without stripping it,
-      // "graduated in 2026." is dropped against a quote that plainly says 2026.
-      const numbers = (claim.content.match(/\d[\d,.]*/g) ?? []).map((value) =>
-        value.replace(/[.,]+$/, ""),
-      );
+      const numbers = numbersIn(claim.content);
       const quoted = normalizeForMatch(claim.sourceQuote);
       const invented = numbers.filter(
         (value) => !quoted.includes(value.toLowerCase()),
@@ -123,4 +124,43 @@ export function groundItems(
   }
 
   return { kept, dropped };
+}
+
+/**
+ * Numbers a piece of text asserts, with sentence punctuation stripped.
+ *
+ * Shared by both grounding checks, because "38%" appearing in a bullet the
+ * candidate is about to send to an employer is the single highest-stakes token
+ * in this whole product.
+ */
+export function numbersIn(text: string): string[] {
+  return (text.match(/\d[\d,.]*/g) ?? []).map((value) =>
+    value.replace(/[.,]+$/, ""),
+  );
+}
+
+export interface SupportCheck {
+  ok: boolean;
+  /** Numbers the supporting text never contained. */
+  inventedNumbers: string[];
+}
+
+/**
+ * Whether a tailored bullet is actually supported by the claims behind it.
+ *
+ * A rewrite is allowed to change the wording — that is the entire point — so
+ * this cannot demand a verbatim quote. What it can demand is that the bullet
+ * introduces no quantity the confirmed evidence does not already contain. That
+ * is where an embellished résumé bullet turns into a lie a candidate has to
+ * defend in an interview.
+ */
+export function bulletIsSupported(
+  bullet: string,
+  supportingText: string[],
+): SupportCheck {
+  const support = normalizeForMatch(supportingText.join(" "));
+  const inventedNumbers = numbersIn(bullet).filter(
+    (value) => !support.includes(value.toLowerCase()),
+  );
+  return { ok: inventedNumbers.length === 0, inventedNumbers };
 }

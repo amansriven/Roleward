@@ -59,6 +59,21 @@ export function resolveRoleTarget(
   }
 }
 
+const TYPE_LABELS: Record<EvidenceItem["type"], string> = {
+  experience: "Experience",
+  project: "Project",
+  education: "Education",
+  leadership: "Leadership",
+  other: "Other",
+};
+
+/**
+ * The candidate's résumé, as the interviewer is allowed to know it.
+ *
+ * Only claims the candidate confirmed or corrected appear. A corrected claim is
+ * marked, because it is the one they rewrote in their own words — the closest
+ * thing here to something they have already committed to out loud.
+ */
 function describeEvidence(evidence: EvidenceItem[]) {
   const confirmed = evidence
     .map((item) => ({
@@ -76,10 +91,41 @@ function describeEvidence(evidence: EvidenceItem[]) {
       const heading = [item.title, item.organization]
         .filter(Boolean)
         .join(" — ");
-      const claims = item.claims.map((claim) => `  - ${claim.content}`);
-      return [`- ${heading}: ${item.summary}`, ...claims].join("\n");
+      const claims = item.claims.map(
+        (claim) =>
+          `  - ${claim.content}${
+            claim.verificationStatus === "corrected"
+              ? " (the candidate rewrote this themselves)"
+              : ""
+          }`,
+      );
+      return [
+        `- [${TYPE_LABELS[item.type]}] ${heading}: ${item.summary}`,
+        ...claims,
+      ].join("\n");
     })
     .join("\n");
+}
+
+/**
+ * Whether a résumé exists but has not been confirmed.
+ *
+ * Telling the interviewer the candidate has no résumé when they have uploaded
+ * one produces the wrong interview: it opens with "tell me about your
+ * background" as though nothing is known, when in fact everything is known and
+ * merely unconfirmed.
+ */
+function hasUnconfirmedEvidence(evidence: EvidenceItem[]) {
+  return (
+    evidence.length > 0 &&
+    evidence.every((item) =>
+      item.claims.every(
+        (claim) =>
+          claim.verificationStatus !== "confirmed" &&
+          claim.verificationStatus !== "corrected",
+      ),
+    )
+  );
 }
 
 function describeProfile(profile: CandidateProfile | null) {
@@ -130,6 +176,10 @@ export function buildInterviewerInstructions({
   if (evidenceText)
     sections.push(
       `The candidate's verified background. Ground your questions in this, and never invent experience they did not report:\n${evidenceText}`,
+    );
+  else if (hasUnconfirmedEvidence(evidence))
+    sections.push(
+      "The candidate has uploaded a résumé but has not confirmed what was read from it, so none of it is verified. Ask them to describe their background in their own words, and do not state any specific experience back to them as fact.",
     );
   else
     sections.push(

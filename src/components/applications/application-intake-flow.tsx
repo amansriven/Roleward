@@ -38,6 +38,9 @@ export function ApplicationIntakeFlow() {
     null,
   );
   const [requirements, setRequirements] = useState<JobRequirement[]>([]);
+  const [extracting, setExtracting] = useState(false);
+  /** True when the posting could not be read and the keyword guess was used. */
+  const [fellBack, setFellBack] = useState(false);
   const [error, setError] = useState("");
 
   async function analyze() {
@@ -62,9 +65,37 @@ export function ApplicationIntakeFlow() {
         createdAt: new Date().toISOString(),
       });
       setApplication(next);
-      setRequirements(extractRequirements(description));
       localStorage.setItem("sweet-plus:job-hash", contentHash);
       setStep("requirements");
+
+      // Read from the posting itself. The keyword table this replaced returned
+      // the same five canned requirements whenever it failed to match, so a
+      // posting for one kind of role produced requirements for another.
+      setExtracting(true);
+      try {
+        const response = await fetch("/api/resume/requirements", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ jobDescription: description }),
+        });
+        const body = (await response.json().catch(() => null)) as {
+          requirements?: JobRequirement[];
+          error?: string;
+        } | null;
+        if (response.ok && body?.requirements?.length)
+          setRequirements(body.requirements);
+        else {
+          // Falling back is better than an empty screen, but the candidate is
+          // told these were guessed rather than read.
+          setRequirements(extractRequirements(description));
+          setFellBack(true);
+        }
+      } catch {
+        setRequirements(extractRequirements(description));
+        setFellBack(true);
+      } finally {
+        setExtracting(false);
+      }
     } catch {
       setError(
         "Add a company, role, and at least a short job description (80 characters). ",
@@ -180,6 +211,16 @@ export function ApplicationIntakeFlow() {
           for.
         </p>
         {error && <p className="text-kiln mt-4 text-xs">{error}</p>}
+        {fellBack && (
+          <p className="border-kiln/30 bg-kiln/5 text-canvas mt-4 rounded-lg border p-3 text-xs leading-5">
+            We could not read this posting closely, so these are a rough guess
+            from keywords rather than what the description actually says. Edit
+            or remove anything that does not belong.
+          </p>
+        )}
+        {extracting && requirements.length === 0 && (
+          <p className="text-dust mt-7 text-xs">Reading the posting…</p>
+        )}
         <div className="border-iron bg-workshop/70 mt-7 overflow-hidden rounded-2xl border">
           {requirements.map((item) => (
             <div
