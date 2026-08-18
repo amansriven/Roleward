@@ -153,6 +153,14 @@ Two things fill the pool:
 | `vercel.json` hourly cron | Fills the shallowest cell toward its target          |
 | A served request          | Tops up the cell it just drew from, after responding |
 
+A single cell can be filled directly, which is how a newly added archetype gets
+proven without waiting for the rotation to reach it:
+
+```bash
+curl -H "authorization: Bearer $CRON_SECRET" \
+  "$APP_URL/api/guru/pool/warm?archetype=graph-bfs&difficulty=medium"
+```
+
 Refills take a DynamoDB lock per cell, so a burst against a cold cell does not
 pay for the same problems several times over. A cell with nothing unseen left
 still generates inline, so an empty pool means the old latency, not an error.

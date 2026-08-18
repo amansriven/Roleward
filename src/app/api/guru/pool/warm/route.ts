@@ -4,7 +4,9 @@ import {
   executionConfigured,
   lambdaExecutionAdapter,
 } from "@/modules/execution/lambda-adapter";
-import { warmShallowestCell } from "@/modules/guru/pool";
+import { refillCell, warmShallowestCell } from "@/modules/guru/pool";
+import { findArchetype } from "@/modules/guru/archetypes";
+import { POOL_TARGET } from "@/modules/guru/pool-policy";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 
 export const runtime = "nodejs";
@@ -40,7 +42,38 @@ export async function GET(request: Request) {
     );
 
   const deadline = Date.now() + maxDuration * 1000 - RESERVE_MS;
+
+  // A named cell can be filled directly, which is how a newly added archetype
+  // gets proven without waiting for the rotation to reach it.
+  const url = new URL(request.url);
+  const archetypeId = url.searchParams.get("archetype");
+  const difficulty = url.searchParams.get("difficulty") ?? "medium";
+
   try {
+    if (archetypeId) {
+      if (!findArchetype(archetypeId))
+        return NextResponse.json(
+          { error: `Unknown archetype: ${archetypeId}` },
+          { status: 400 },
+        );
+      if (
+        difficulty !== "easy" &&
+        difficulty !== "medium" &&
+        difficulty !== "hard"
+      )
+        return NextResponse.json(
+          { error: `Unknown difficulty: ${difficulty}` },
+          { status: 400 },
+        );
+      const report = await refillCell(
+        lambdaExecutionAdapter,
+        archetypeId,
+        difficulty,
+        POOL_TARGET,
+        deadline,
+      );
+      return NextResponse.json({ archetypeId, difficulty, ...report });
+    }
     const result = await warmShallowestCell(lambdaExecutionAdapter, deadline);
     return NextResponse.json(result);
   } catch (error) {
