@@ -6,12 +6,14 @@ import {
   Braces,
   Lightbulb,
   LoaderCircle,
+  Maximize2,
+  Minimize2,
   Play,
   RotateCcw,
   Sparkles,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   EXECUTABLE_LANGUAGES,
@@ -116,6 +118,7 @@ export function PracticeFlow({
   const [skills, setSkills] = useState<SkillObservationView[]>([]);
   const [reveal, setReveal] = useState<Reveal | null>(null);
 
+  const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -240,6 +243,7 @@ export function PracticeFlow({
   }
 
   function reset() {
+    setExpanded(false);
     setStage("pick");
     setProblem(null);
     setGate(null);
@@ -422,6 +426,8 @@ export function PracticeFlow({
 
       {stage === "solve" && problem && (
         <SolveStage
+          expanded={expanded}
+          onToggleExpanded={() => setExpanded((current) => !current)}
           problem={problem}
           language={language}
           onLanguage={switchLanguage}
@@ -641,6 +647,8 @@ function PickStage({
 }
 
 function SolveStage({
+  expanded,
+  onToggleExpanded,
   problem,
   language,
   onLanguage,
@@ -653,6 +661,8 @@ function SolveStage({
   onRun,
   onFinish,
 }: {
+  expanded: boolean;
+  onToggleExpanded: () => void;
   problem: ClientProblem;
   language: Language;
   onLanguage: (value: Language) => void;
@@ -665,9 +675,43 @@ function SolveStage({
   onRun: () => void;
   onFinish: () => void;
 }) {
+  // Escape belongs with the overlay rather than with whatever rendered it: the
+  // component that puts a full-screen surface up is the one that has to be able
+  // to take it down, and leaving the only exit as a small icon strands anyone
+  // who does not spot it.
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onToggleExpanded();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded, onToggleExpanded]);
+
   return (
-    <div className="grid gap-4 xl:grid-cols-[.85fr_1.15fr]">
-      <div className="border-iron/80 bg-workshop/75 space-y-5 rounded-2xl border p-5">
+    <div
+      className={cn(
+        expanded
+          ? // Fixed rather than a wider grid: the competency sidebar lives on
+            // the page outside this component, and while solving it is taking
+            // room from the two panes that matter.
+            // Stacked below xl, side by side above it. Explicit minmax rows
+            // stop a long statement from squeezing the editor to nothing, and
+            // each pane scrolls inside itself rather than the whole overlay.
+            "theme-guru bg-night fixed inset-0 z-50 grid grid-rows-[minmax(0,1fr)_minmax(0,1.15fr)] gap-3 overflow-hidden p-3 xl:grid-cols-[.8fr_1.2fr] xl:grid-rows-[minmax(0,1fr)]"
+          : "grid gap-4 xl:grid-cols-[.85fr_1.15fr]",
+      )}
+    >
+      <div
+        className={cn(
+          "border-iron/80 bg-workshop/75 space-y-5 rounded-2xl border p-5",
+          // Scrolls on its own so a long statement cannot push the editor down
+          // the page, which is what made the editor three lines tall.
+          expanded
+            ? "min-h-0 overflow-y-auto"
+            : "max-h-[32rem] overflow-y-auto",
+        )}
+      >
         <Statement problem={problem} />
 
         <div>
@@ -727,7 +771,12 @@ function SolveStage({
         </div>
       </div>
 
-      <div className="border-iron/80 bg-workshop/75 flex min-h-[28rem] flex-col overflow-hidden rounded-2xl border">
+      <div
+        className={cn(
+          "border-iron/80 bg-workshop/75 flex flex-col overflow-hidden rounded-2xl border",
+          expanded ? "min-h-0" : "min-h-[28rem]",
+        )}
+      >
         <div className="border-iron/70 flex items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2">
             <Braces className="text-cobalt size-3.5" />
@@ -745,9 +794,26 @@ function SolveStage({
               ))}
             </select>
           </div>
-          <span className="text-dust font-mono text-[10px]">
-            {code.split("\n").length} lines
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-dust font-mono text-[10px]">
+              {code.split("\n").length} lines
+            </span>
+            <button
+              type="button"
+              onClick={onToggleExpanded}
+              aria-label={expanded ? "Exit full screen" : "Expand editor"}
+              title={
+                expanded ? "Exit full screen (Esc)" : "Expand to full screen"
+              }
+              className="text-dust hover:text-canvas"
+            >
+              {expanded ? (
+                <Minimize2 className="size-3.5" />
+              ) : (
+                <Maximize2 className="size-3.5" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 bg-[#18191e]">
@@ -810,7 +876,7 @@ function SolveStage({
             disabled={busy}
             className="border-iron text-canvas hover:text-linen inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold disabled:opacity-40"
           >
-            Finish & see coaching
+            Finish &amp; see coaching
           </button>
           <button
             type="button"
