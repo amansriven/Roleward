@@ -24,6 +24,13 @@ import {
 } from "./pool-policy";
 import type { GeneratedProblem } from "./schema";
 
+export interface RefillReport {
+  added: number;
+  /** Why generation stopped, when it stopped early. */
+  rejections: string[];
+  skipped?: "locked";
+}
+
 export interface ClaimResult {
   claim: Claim | null;
   /** Populated only on the slow path, and only worth reading when it failed. */
@@ -137,30 +144,41 @@ export async function refillCell(
   difficulty: Difficulty,
   count: number,
   deadline: number,
-) {
+): Promise<RefillReport> {
   const cell = poolCell(archetypeId, difficulty);
-  if (count < 1) return 0;
-  if (!(await acquireRefillLock(cell))) return 0;
+  if (count < 1) return { added: 0, rejections: [] };
+  const holder = await acquireRefillLock(cell);
+  if (!holder) return { added: 0, rejections: [], skipped: "locked" };
 
   let added = 0;
+  const rejections: string[] = [];
   try {
     for (let index = 0; index < count; index += 1) {
       // One generation can take 28s. Starting one we cannot finish spends an
       // OpenAI call and two judge invocations on a result nobody stores.
       if (Date.now() > deadline - MIN_GENERATION_BUDGET_MS) break;
-      const { problem } = await generateValidatedProblem(
+      const { problem, attempts } = await generateValidatedProblem(
         adapter,
         archetypeId,
         difficulty,
       );
-      if (!problem) break;
+      if (!problem) {
+        // Nobody is watching a background refill, so a cell that has quietly
+        // stopped producing valid problems would otherwise just stay empty.
+        // These describe the model's output, not anyone's data.
+        for (const item of attempts)
+          if (!item.outcome.ok)
+            rejections.push(`${item.outcome.reason}: ${item.outcome.detail}`);
+        console.warn("guru pool: generation rejected", { cell, rejections });
+        break;
+      }
       await putPooledProblem(cell, problem);
       added += 1;
     }
   } finally {
-    await releaseRefillLock(cell);
+    await releaseRefillLock(cell, holder);
   }
-  return added;
+  return { added, rejections };
 }
 
 /** The slowest generation observed in testing, with room to store the result. */
@@ -206,9 +224,9 @@ export async function warmShallowestCell(
 ) {
   const [shallowest] = await poolStock();
   if (!shallowest || shallowest.size >= POOL_TARGET)
-    return { archetypeId: null, difficulty: null, added: 0 };
+    return { archetypeId: null, difficulty: null, added: 0, rejections: [] };
 
-  const added = await refillCell(
+  const report = await refillCell(
     adapter,
     shallowest.archetypeId,
     shallowest.difficulty,
@@ -218,6 +236,6 @@ export async function warmShallowestCell(
   return {
     archetypeId: shallowest.archetypeId,
     difficulty: shallowest.difficulty,
-    added,
+    ...report,
   };
 }

@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { INTERVIEW_MODEL, openai } from "@/modules/interviews/openai";
 import { findArchetype, type Archetype, type Difficulty } from "./archetypes";
+import { ArityError, normalizeTestInputs } from "./test-inputs";
 import {
   MIN_HIDDEN_TESTS,
   PUBLIC_TEST_COUNT,
@@ -129,7 +130,7 @@ const problemJsonSchema = {
     },
     testInputsJson: {
       type: "array",
-      description: `EXACTLY ${TEST_INPUT_COUNT} entries. Each is a JSON array of positional arguments in signature order, for example "[[2,7,11,15], 9]". Do not include expected outputs.`,
+      description: `EXACTLY ${TEST_INPUT_COUNT} entries. Each is the complete JSON array of positional arguments in signature order — "[[2,7,11,15], 9]" for two parameters, "[[1,3,5]]" for a single array parameter. Do not include expected outputs.`,
       items: { type: "string" },
     },
     edgeCases: {
@@ -202,9 +203,11 @@ function instructions(archetype: Archetype, difficulty: Difficulty) {
     "- canonicalSolution and bruteForceSolution must BOTH define a module-level function with exactly the signature name, taking the parameters in order.",
     "- The two must be genuinely independent approaches that agree on every valid input.",
     "- bruteForceSolution must be the obviously-correct version. Prefer clarity over efficiency; it is the oracle.",
-    "- inputGenerator must define generate_input(seed), call random.seed(seed), and return a LIST of positional arguments matching the signature exactly.",
+    "- inputGenerator must define generate_input(seed), call random.seed(seed), and return a LIST of positional arguments matching the signature exactly. For a single array parameter that means `return [values]`, not `return values`.",
     "- Inputs stay small enough that the brute force finishes quickly (collections of at most ~40 elements).",
     "- testInputsJson must collectively exercise every edge case you list.",
+    '- Each testInputsJson entry is the FULL ARGUMENT LIST, not the first argument. A function taking one array is tested with "[[1,3,5]]", not "[1,3,5]".',
+    "- If the answer is a collection whose order carries no meaning, BOTH solutions must return it in sorted order and the statement must say the order is sorted. Two correct solutions that return the same elements in different orders are rejected as disagreeing.",
     "- Do NOT provide expected outputs anywhere. They are computed by running your canonical solution.",
     "- Every parameter must be homogeneous: an int[] holds only integers, a string[] only strings.",
     "- NEVER encode numbers inside a string array. If you need paired data, use two parallel arrays (names: string[], ages: int[]).",
@@ -263,21 +266,23 @@ export async function generateProblemDraft(
 
   // Every failure here must be a ProblemGenerationError, because that is what
   // the pipeline retries on. A raw SyntaxError would abandon the request.
-  const testInputs = raw.testInputsJson.slice(0, TEST_INPUT_COUNT).map((entry) => {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(entry);
-    } catch {
-      throw new ProblemGenerationError(
-        `A test input was not valid JSON: ${entry.slice(0, 120)}`,
-      );
-    }
-    if (!Array.isArray(parsed))
-      throw new ProblemGenerationError(
-        "A test input was not a JSON array of arguments.",
-      );
-    return parsed;
-  });
+  const testInputs = raw.testInputsJson
+    .slice(0, TEST_INPUT_COUNT)
+    .map((entry) => {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(entry);
+      } catch {
+        throw new ProblemGenerationError(
+          `A test input was not valid JSON: ${entry.slice(0, 120)}`,
+        );
+      }
+      if (!Array.isArray(parsed))
+        throw new ProblemGenerationError(
+          "A test input was not a JSON array of arguments.",
+        );
+      return parsed;
+    });
 
   // Cheaper to reject now than after two Lambda round trips prove a problem
   // that cannot fill its hidden test set anyway.
@@ -285,6 +290,15 @@ export async function generateProblemDraft(
     throw new ProblemGenerationError(
       `Only ${testInputs.length} test inputs were returned; ${MIN_TEST_INPUTS} is the minimum.`,
     );
+
+  const signature = signatureSchema.parse(raw.signature);
+  let normalized;
+  try {
+    normalized = normalizeTestInputs(signature, testInputs);
+  } catch (error) {
+    if (!(error instanceof ArityError)) throw error;
+    throw new ProblemGenerationError(error.message);
+  }
 
   return {
     archetypeId: archetype.id,
@@ -294,8 +308,8 @@ export async function generateProblemDraft(
     // Trim rather than reject: strict mode does not enforce array bounds, so
     // the model overshoots these counts routinely.
     constraints: raw.constraints.slice(0, 5),
-    signature: signatureSchema.parse(raw.signature),
-    testInputs,
+    signature,
+    testInputs: normalized.inputs,
     edgeCases: raw.edgeCases.slice(0, 5),
     followUps: raw.followUps.slice(0, 3),
     expectedComplexity: raw.expectedComplexity,

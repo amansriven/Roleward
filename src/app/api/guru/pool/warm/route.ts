@@ -46,7 +46,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("guru pool warm failed", error);
     return NextResponse.json(
-      { error: "Warming failed", code: "warm_failed" },
+      { error: "Warming failed", code: "warm_failed", detail: String(error) },
       { status: 502 },
     );
   }
