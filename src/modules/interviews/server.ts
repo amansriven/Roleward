@@ -22,5 +22,6 @@ export async function instructionsForSession(
     profile: workspace.profile,
     evidence: workspace.evidence,
     codingProblem: session.codingProblem,
+    codingRuns: session.codingRuns,
   });
 }

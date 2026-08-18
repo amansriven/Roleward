@@ -239,6 +239,8 @@ export async function scoreInterview(
       ...AREA_ACTIONS[item.area],
     })),
     competenciesCovered,
-    topicsCovered: [],
+    // The archetype is the topic. With a static list this was guesswork, so it
+    // was left empty; a pool problem knows what it is testing.
+    topicsCovered: session.codingProblem ? [session.codingProblem.topic] : [],
   });
 }

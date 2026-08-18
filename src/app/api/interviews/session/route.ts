@@ -8,7 +8,7 @@ import {
   buildInterviewerInstructions,
   resolveRoleTarget,
 } from "@/modules/interviews/context";
-import { selectProblem } from "@/modules/interviews/coding/problems";
+import { selectInterviewProblem } from "@/modules/interviews/coding/source";
 import { nextInterviewerTurn } from "@/modules/interviews/conversation";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 import {
@@ -18,6 +18,8 @@ import {
 import { emptyWorkspace } from "@/modules/workspace/repository";
 
 export const runtime = "nodejs";
+// Claiming from the pool is a read, but a cold cell still generates inline.
+export const maxDuration = 120;
 
 export async function GET() {
   const session = await auth();
@@ -71,7 +73,10 @@ export async function POST(request: Request) {
 
   const codingProblem =
     parsed.data.type === "coding"
-      ? selectProblem(parsed.data.difficulty ?? "medium")
+      ? await selectInterviewProblem(
+          auth_.user.id,
+          parsed.data.difficulty ?? "medium",
+        )
       : null;
 
   const instructions = buildInterviewerInstructions({

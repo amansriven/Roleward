@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import type { ExecutionResult, Language } from "@/modules/execution/port";
 import { INTERVIEW_PLANS } from "@/modules/interviews/plan";
 import {
   startRealtimeInterview,
@@ -109,6 +110,30 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
       return;
     }
     void sendToInterviewer(digest, { show: false });
+  }
+
+  /**
+   * Running is a judged submission, so the verdict is recorded on the session
+   * server-side. The interviewer learns of it on its next turn rather than
+   * being interrupted mid-answer.
+   */
+  async function runCode(language: Language, code: string) {
+    try {
+      const response = await fetch("/api/interviews/run", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sessionId: session.id, language, code }),
+      });
+      const body = (await response.json().catch(() => null)) as {
+        result?: ExecutionResult;
+        error?: string;
+      } | null;
+      if (!response.ok)
+        return { error: body?.error ?? "Sweet+ could not run that code." };
+      return { result: body?.result };
+    } catch {
+      return { error: "Sweet+ could not reach the judge." };
+    }
   }
 
   async function sendToInterviewer(
@@ -256,6 +281,7 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
               problem={coding}
               busy={thinking}
               onCheckIn={checkInWithCode}
+              onRun={runCode}
             />
           </div>
         )}

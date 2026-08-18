@@ -2,12 +2,26 @@ import type { CandidateProfile } from "@/modules/candidates/schema";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import type { StoredApplication } from "@/modules/workspace/repository";
 import { INTENSITY_DIRECTION, INTERVIEW_PLANS, TURN_BUDGETS } from "./plan";
+import { describeRuns } from "./coding/from-pool";
 import {
   COMPETENCY_LABELS,
+  type CodingRun,
   type InterviewConfig,
   type RoleTarget,
   type StoredCodingProblem,
 } from "./schema";
+
+/** Reads back the signature the way an interviewer would say it. */
+function signatureLine(signature: {
+  name: string;
+  parameters: { name: string; type: string }[];
+  returnType: string;
+}) {
+  const parameters = signature.parameters
+    .map((item) => `${item.name}: ${item.type}`)
+    .join(", ");
+  return `${signature.name}(${parameters}) returning ${signature.returnType}`;
+}
 
 export interface ResolvedRole {
   label: string;
@@ -83,6 +97,7 @@ export interface BuildContextInput {
   profile: CandidateProfile | null;
   evidence: EvidenceItem[];
   codingProblem?: StoredCodingProblem | null;
+  codingRuns?: CodingRun[];
 }
 
 /**
@@ -95,6 +110,7 @@ export function buildInterviewerInstructions({
   profile,
   evidence,
   codingProblem,
+  codingRuns = [],
 }: BuildContextInput) {
   const plan = INTERVIEW_PLANS[config.type];
   const sections: string[] = [
@@ -125,11 +141,18 @@ export function buildInterviewerInstructions({
       `Behavioral competencies you may probe: ${Object.values(COMPETENCY_LABELS).join(", ")}.`,
     );
 
-  if (config.type === "coding" && codingProblem)
+  if (config.type === "coding" && codingProblem) {
+    const execution = codingProblem.execution;
     sections.push(
       [
         `The problem is "${codingProblem.title}" (${codingProblem.topic}, ${config.difficulty ?? "medium"}).`,
         `Prompt shown to the candidate: ${codingProblem.prompt}`,
+        execution
+          ? `They must implement ${signatureLine(execution.signature)}.`
+          : "",
+        execution
+          ? `The intended solution is ${execution.expectedComplexity.time} time and ${execution.expectedComplexity.space} space. Do not state this; use it to judge whether their approach is the intended one.`
+          : "",
         codingProblem.edgeCases.length
           ? `Edge cases to raise only if the candidate does not: ${codingProblem.edgeCases.join("; ")}.`
           : "",
@@ -138,6 +161,19 @@ export function buildInterviewerInstructions({
         .filter(Boolean)
         .join("\n"),
     );
+
+    // Correctness used to be guesswork read off an edit log. When the problem
+    // came from the pool it is a fact, and saying so plainly matters more than
+    // brevity: an interviewer who hedges about working code loses the candidate.
+    if (execution)
+      sections.push(
+        [
+          "Whether the candidate's code works is established by running it against the real tests, not inferred from how they typed.",
+          describeRuns(codingRuns),
+          "Only some tests are visible to them. Never reveal a hidden test's input or expected value, and never claim their code is correct unless a run says so.",
+        ].join(" "),
+      );
+  }
 
   sections.push(
     "Speak only as the interviewer. Ask one question at a time and wait for the answer. Never grade the candidate mid-interview or reveal a score.",

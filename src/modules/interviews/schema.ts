@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { signatureSchema, testCaseSchema } from "@/modules/guru/schema";
 
 export const competencySchema = z.enum([
   "leadership",
@@ -117,14 +118,52 @@ export const interviewReportSchema = z.object({
 });
 export type InterviewReport = z.infer<typeof interviewReportSchema>;
 
+/**
+ * What the interview needs in order to actually run the candidate's code.
+ *
+ * Present only on problems drawn from the Guru pool. Sessions created before
+ * the pool existed, and any created while the judge is unconfigured, carry null
+ * here and fall back to the interviewer inferring correctness from an edit log.
+ */
+export const codingExecutionSchema = z.object({
+  /** The problem in the candidate's own namespace, where hidden tests live. */
+  problemId: z.string().min(1),
+  archetypeId: z.string().min(1),
+  signature: signatureSchema,
+  /** Public only. Hidden expectations never reach a browser. */
+  publicTests: z.array(testCaseSchema),
+  constraints: z.array(z.string()).default([]),
+  expectedComplexity: z.object({ time: z.string(), space: z.string() }),
+});
+export type CodingExecution = z.infer<typeof codingExecutionSchema>;
+
 export const codingProblemSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   topic: z.string().min(1),
   prompt: z.string().min(1),
   edgeCases: z.array(z.string().min(1)).default([]),
+  execution: codingExecutionSchema.nullable().default(null),
 });
 export type StoredCodingProblem = z.infer<typeof codingProblemSchema>;
+
+/**
+ * One judged submission during the interview.
+ *
+ * This is the point of pointing the interview at the pool: the interviewer used
+ * to infer correctness from how the candidate typed. Now it is told.
+ */
+export const codingRunSchema = z.object({
+  id: z.string().min(1),
+  language: z.string().min(1),
+  verdict: z.string().min(1),
+  passed: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+  /** Public failures only, so the interviewer can name one without leaking. */
+  failedPublicTests: z.array(z.number().int().nonnegative()).default([]),
+  createdAt: z.string().datetime(),
+});
+export type CodingRun = z.infer<typeof codingRunSchema>;
 
 export const interviewSessionSchema = z.object({
   id: z.string().min(1),
@@ -133,6 +172,7 @@ export const interviewSessionSchema = z.object({
   roleLabel: z.string().min(1),
   roleDescription: z.string().default(""),
   codingProblem: codingProblemSchema.nullable().default(null),
+  codingRuns: z.array(codingRunSchema).default([]),
   turns: z.array(interviewTurnSchema).default([]),
   report: interviewReportSchema.nullable().default(null),
   createdAt: z.string().datetime(),
