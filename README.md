@@ -18,7 +18,7 @@ want and the work you have already completed.
 
 ## Use Roleward
 
-Roleward is a hosted product available at **[roleward.org](https://roleward.org)**.
+Roleward is a product for software engineers like you! Available at **[roleward.org](https://roleward.org)**.
 
 This repository is maintained as a public product reference. It is not an
 open-source distribution, no open-source license is granted, and local or
