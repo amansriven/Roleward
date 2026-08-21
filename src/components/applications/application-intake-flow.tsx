@@ -68,7 +68,7 @@ export function ApplicationIntakeFlow() {
     setLinkLoaded(false);
     setImporting(true);
     try {
-      const response = await fetch("/api/interviews/job-source", {
+      const response = await fetch("/api/jobs/import", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url }),

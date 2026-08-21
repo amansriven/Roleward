@@ -122,7 +122,7 @@ export function InterviewSetup() {
   }
 
   async function resolveUrlTarget(): Promise<RoleTarget | null> {
-    const response = await fetch("/api/interviews/job-source", {
+    const response = await fetch("/api/jobs/import", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ url: url.trim() }),

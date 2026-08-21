@@ -3,11 +3,13 @@ import "server-only";
 import { lookup } from "node:dns/promises";
 
 import { parseJobPostingDocument } from "@/modules/applications/job-posting";
+import { env } from "@/lib/env";
 import { addressBlocked } from "./net-guard";
 
 const MAX_BYTES = 512 * 1024;
 const TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
+const IMPORTER_TIMEOUT_MS = 45_000;
 
 export class JobSourceError extends Error {
   constructor(
@@ -17,6 +19,59 @@ export class JobSourceError extends Error {
   ) {
     super(message);
     this.name = "JobSourceError";
+  }
+}
+
+type ImporterPosting = {
+  title?: unknown;
+  company?: unknown;
+  locations?: unknown;
+  description_text?: unknown;
+};
+
+function importerText(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+async function fetchFromImporterService(rawUrl: string) {
+  if (!env.JOB_IMPORTER_URL) return null;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), IMPORTER_TIMEOUT_MS);
+  try {
+    const endpoint = new URL("/jobs/import", env.JOB_IMPORTER_URL);
+    const response = await fetch(endpoint, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "content-type": "application/json",
+        ...(env.JOB_IMPORTER_SECRET
+          ? { authorization: `Bearer ${env.JOB_IMPORTER_SECRET}` }
+          : {}),
+      },
+      body: JSON.stringify({ url: rawUrl }),
+    });
+    if (!response.ok) return null;
+
+    const posting = (await response.json()) as ImporterPosting;
+    const description = importerText(posting.description_text);
+    if (description.length < 200) return null;
+
+    const locations = Array.isArray(posting.locations)
+      ? posting.locations.map(importerText).filter(Boolean)
+      : [];
+    return {
+      description: description.slice(0, 12_000),
+      companyName: importerText(posting.company),
+      roleTitle: importerText(posting.title),
+      location: locations.join(" · "),
+    };
+  } catch {
+    // The worker is an enhancement. Keep the cheap document parser available
+    // if it is unavailable, cold-starting, or cannot handle a particular site.
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -70,6 +125,9 @@ async function readCapped(response: Response) {
 
 export async function fetchJobPosting(rawUrl: string) {
   let url = assertHttpsUrl(rawUrl);
+  const imported = await fetchFromImporterService(url.toString());
+  if (imported) return imported;
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
