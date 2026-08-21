@@ -27,14 +27,28 @@ import {
   nextCompetency,
   technicalSignals,
 } from "@/modules/interviews/signals";
+import {
+  createOriginalResumeVersion,
+  forkResumeVersion,
+  resumeVersionSchema,
+  updateResumeVersion as updateVersionSnapshot,
+  type ResumeVersion,
+} from "@/modules/resume-kitchen/versions";
 
 export interface StoredApplication extends TargetApplication {
   requirements: JobRequirement[];
+}
+export interface CandidateSkillGroup {
+  category: string;
+  skills: string[];
 }
 export interface WorkspaceSnapshot {
   /** Read from the résumé, and the basis for the portfolio handle. */
   candidateName: string | null;
   candidateHeadline: string | null;
+  candidateSkills: CandidateSkillGroup[];
+  resumeVersions: ResumeVersion[];
+  activeResumeVersionId: string | null;
   profile: CandidateProfile | null;
   evidence: EvidenceItem[];
   applications: StoredApplication[];
@@ -49,6 +63,16 @@ export const workspaceSnapshotSchema = z.object({
   // Defaulted so workspace items written before the résumé was read still parse.
   candidateName: z.string().nullable().default(null),
   candidateHeadline: z.string().nullable().default(null),
+  candidateSkills: z
+    .array(
+      z.object({
+        category: z.string().trim(),
+        skills: z.array(z.string().trim().min(1)),
+      }),
+    )
+    .default([]),
+  resumeVersions: z.array(resumeVersionSchema).default([]),
+  activeResumeVersionId: z.string().nullable().default(null),
   profile: candidateProfileSchema.nullable(),
   evidence: z.array(evidenceItemSchema),
   applications: z.array(storedApplicationSchema),
@@ -60,6 +84,9 @@ export const workspaceSnapshotSchema = z.object({
 export const emptyWorkspace: WorkspaceSnapshot = {
   candidateName: null,
   candidateHeadline: null,
+  candidateSkills: [],
+  resumeVersions: [],
+  activeResumeVersionId: null,
   profile: null,
   evidence: [],
   applications: [],
@@ -82,6 +109,8 @@ const keys = {
   active: "sweet-plus:active-application-id",
   interviews: "sweet-plus:interview-summaries",
   candidate: "sweet-plus:candidate-identity",
+  resumeVersions: "sweet-plus:resume-versions",
+  activeResumeVersion: "sweet-plus:active-resume-version-id",
 } as const;
 export const workspaceUpdatedEvent = "sweet-plus:workspace-updated";
 function announceWorkspaceUpdate() {
@@ -109,16 +138,46 @@ export function loadWorkspace(
     [],
   );
   const activeId = storage.getItem(keys.active);
-  const identity = read<{ name: string | null; headline: string | null }>(
+  const identity = read<{
+    name: string | null;
+    headline: string | null;
+    skills?: CandidateSkillGroup[];
+  }>(storage, keys.candidate, { name: null, headline: null });
+  const evidence = read<EvidenceItem[]>(storage, keys.evidence, []);
+  let resumeVersions = read<unknown[]>(
     storage,
-    keys.candidate,
-    { name: null, headline: null },
-  );
+    keys.resumeVersions,
+    [],
+  ).flatMap((value) => {
+    const parsed = resumeVersionSchema.safeParse(value);
+    return parsed.success ? [parsed.data] : [];
+  });
+  // Workspaces created before version history use the current confirmed
+  // evidence as the only original snapshot still available.
+  if (!resumeVersions.length && evidence.length)
+    resumeVersions = [
+      createOriginalResumeVersion({
+        id: "legacy-original",
+        name: "Original résumé",
+        evidence,
+        headline: identity.headline ?? "",
+        skills: identity.skills ?? [],
+        now: "2000-01-01T00:00:00.000Z",
+      }),
+    ];
+  const requestedResumeVersion = storage.getItem(keys.activeResumeVersion);
   return {
     candidateName: identity.name,
     candidateHeadline: identity.headline,
+    candidateSkills: identity.skills ?? [],
+    resumeVersions,
+    activeResumeVersionId:
+      requestedResumeVersion &&
+      resumeVersions.some((version) => version.id === requestedResumeVersion)
+        ? requestedResumeVersion
+        : (resumeVersions[0]?.id ?? null),
     profile: read<CandidateProfile | null>(storage, keys.profile, null),
-    evidence: read<EvidenceItem[]>(storage, keys.evidence, []),
+    evidence,
     applications,
     activeApplicationId:
       activeId && applications.some((item) => item.id === activeId)
@@ -141,9 +200,12 @@ export function saveWorkspaceSnapshot(
     JSON.stringify({
       name: parsed.candidateName,
       headline: parsed.candidateHeadline,
+      skills: parsed.candidateSkills,
     }),
   );
   storage.setItem(keys.evidence, JSON.stringify(parsed.evidence));
+  storage.setItem(keys.resumeVersions, JSON.stringify(parsed.resumeVersions));
+  storage.setItem(keys.activeResumeVersion, parsed.activeResumeVersionId ?? "");
   storage.setItem(keys.applications, JSON.stringify(parsed.applications));
   storage.setItem(keys.interviews, JSON.stringify(parsed.interviewSummaries));
   if (parsed.activeApplicationId)
@@ -198,6 +260,7 @@ export function saveCandidateIdentity(
   storage: Pick<Storage, "getItem" | "setItem">,
   name: string,
   headline: string,
+  skills?: CandidateSkillGroup[],
 ) {
   const current = loadWorkspace(storage);
   storage.setItem(
@@ -205,6 +268,7 @@ export function saveCandidateIdentity(
     JSON.stringify({
       name: name || current.candidateName,
       headline: headline || current.candidateHeadline,
+      skills: skills ?? current.candidateSkills,
     }),
   );
   announceWorkspaceUpdate();
@@ -223,6 +287,107 @@ export function saveEvidenceAndRefresh(
   storage.setItem(keys.applications, JSON.stringify(applications));
   announceWorkspaceUpdate();
 }
+
+export function saveOriginalResumeVersion(
+  storage: Pick<Storage, "getItem" | "setItem">,
+  name: string,
+  evidence: EvidenceItem[],
+) {
+  const workspace = loadWorkspace(storage);
+  const version = createOriginalResumeVersion({
+    id: crypto.randomUUID(),
+    name,
+    evidence,
+    headline: workspace.candidateHeadline ?? "",
+    skills: workspace.candidateSkills,
+    now: new Date().toISOString(),
+  });
+  storage.setItem(
+    keys.resumeVersions,
+    JSON.stringify([version, ...workspace.resumeVersions]),
+  );
+  storage.setItem(keys.activeResumeVersion, version.id);
+  announceWorkspaceUpdate();
+  return version;
+}
+
+export function createResumeRevision(
+  storage: Pick<Storage, "getItem" | "setItem">,
+  sourceVersionId: string,
+  name: string,
+  applicationId?: string,
+) {
+  const workspace = loadWorkspace(storage);
+  const source = workspace.resumeVersions.find(
+    (version) => version.id === sourceVersionId,
+  );
+  if (!source) throw new Error("Source résumé version was not found");
+  const revision = forkResumeVersion({
+    source,
+    id: crypto.randomUUID(),
+    name,
+    applicationId,
+    now: new Date().toISOString(),
+  });
+  storage.setItem(
+    keys.resumeVersions,
+    JSON.stringify([revision, ...workspace.resumeVersions]),
+  );
+  storage.setItem(keys.activeResumeVersion, revision.id);
+  announceWorkspaceUpdate();
+  return revision;
+}
+
+export function updateResumeVersion(
+  storage: Pick<Storage, "getItem" | "setItem">,
+  versionId: string,
+  patch: {
+    name?: string;
+    headline?: string;
+    skills?: ResumeVersion["skills"];
+    items?: ResumeVersion["items"];
+  },
+) {
+  const workspace = loadWorkspace(storage);
+  const current = workspace.resumeVersions.find(
+    (version) => version.id === versionId,
+  );
+  if (!current) throw new Error("Résumé version was not found");
+  const updated = updateVersionSnapshot(
+    current,
+    patch,
+    new Date().toISOString(),
+  );
+  storage.setItem(
+    keys.resumeVersions,
+    JSON.stringify(
+      workspace.resumeVersions.map((version) =>
+        version.id === versionId ? updated : version,
+      ),
+    ),
+  );
+  announceWorkspaceUpdate();
+  return updated;
+}
+
+export function setActiveResumeVersion(
+  storage: Pick<Storage, "setItem">,
+  versionId: string,
+) {
+  storage.setItem(keys.activeResumeVersion, versionId);
+  announceWorkspaceUpdate();
+}
+
+export function getActiveResumeVersion(workspace: WorkspaceSnapshot) {
+  return (
+    workspace.resumeVersions.find(
+      (version) => version.id === workspace.activeResumeVersionId,
+    ) ??
+    workspace.resumeVersions[0] ??
+    null
+  );
+}
+
 export function saveInterviewSummary(
   storage: Pick<Storage, "getItem" | "setItem">,
   summary: InterviewSummary,

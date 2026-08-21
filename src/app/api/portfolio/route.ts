@@ -20,6 +20,15 @@ const publishSchema = z.object({
   action: z.literal("publish"),
   name: z.string().trim().min(1).max(120),
   headline: z.string().trim().max(200).default(""),
+  skills: z
+    .array(
+      z.object({
+        category: z.string().trim().max(120),
+        skills: z.array(z.string().trim().min(1).max(120)).max(60),
+      }),
+    )
+    .max(20)
+    .default([]),
   items: z
     .array(
       z.object({
@@ -120,6 +129,7 @@ export async function POST(request: Request) {
     userId: session.user.id,
     name: parsed.data.name,
     headline: parsed.data.headline,
+    skills: parsed.data.skills,
     items: parsed.data.items,
     published: true,
     publishedAt: existing?.publishedAt ?? now,

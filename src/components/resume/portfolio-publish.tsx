@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import { deriveHandle } from "@/modules/portfolio/handle";
 import type { Portfolio } from "@/modules/portfolio/schema";
+import type { CandidateSkillGroup } from "@/modules/workspace/repository";
 
 /**
  * Publishing a portfolio built from confirmed evidence.
@@ -16,10 +17,12 @@ import type { Portfolio } from "@/modules/portfolio/schema";
 export function PortfolioPublish({
   name,
   headline,
+  skills,
   evidence,
 }: {
   name: string | null;
   headline: string | null;
+  skills: CandidateSkillGroup[];
   evidence: EvidenceItem[];
 }) {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
@@ -76,7 +79,7 @@ export function PortfolioPublish({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(
           action === "publish"
-            ? { action, name, headline: headline ?? "", items }
+            ? { action, name, headline: headline ?? "", skills, items }
             : { action },
         ),
       });

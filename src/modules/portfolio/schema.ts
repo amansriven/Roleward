@@ -20,11 +20,18 @@ export const portfolioItemSchema = z.object({
   claims: z.array(portfolioClaimSchema),
 });
 
+export const portfolioSkillGroupSchema = z.object({
+  category: z.string().trim().max(120),
+  skills: z.array(z.string().trim().min(1).max(120)).max(60),
+});
+
 export const portfolioSchema = z.object({
   handle: z.string().min(3),
   userId: z.string().min(1),
   name: z.string().trim().min(1),
   headline: z.string().trim(),
+  // Default keeps portfolio snapshots published before skills were included readable.
+  skills: z.array(portfolioSkillGroupSchema).max(20).default([]),
   items: z.array(portfolioItemSchema),
   /** False takes the page down without deleting the handle they were given. */
   published: z.boolean(),

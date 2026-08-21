@@ -96,6 +96,9 @@ describe("scoreResume", () => {
     const score = scoreResume(resume([claim("1", "Shipped 3 services in Go")]));
     const quantified = score.dimensions.find((d) => d.key === "quantified");
     expect(quantified!.score).toBeLessThan(quantified!.max);
+    expect(score.findings.some((finding) => finding.id === "quantify")).toBe(
+      false,
+    );
   });
 
   it("notices the same verb over and over", () => {

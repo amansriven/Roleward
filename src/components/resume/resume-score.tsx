@@ -26,7 +26,13 @@ interface Rewrite {
  * rather than a verdict. That is also why it is computed here rather than asked
  * of a model: a number that changes between runs cannot be worked through.
  */
-export function ResumeScore({ evidence }: { evidence: EvidenceItem[] }) {
+export function ResumeScore({
+  evidence,
+  skillCount = 0,
+}: {
+  evidence: EvidenceItem[];
+  skillCount?: number;
+}) {
   const [openFinding, setOpenFinding] = useState<string | null>(null);
 
   const claims = useMemo(
@@ -54,9 +60,9 @@ export function ResumeScore({ evidence }: { evidence: EvidenceItem[] }) {
         claims,
         hasExperience: evidence.some((item) => item.type === "experience"),
         hasProjects: evidence.some((item) => item.type === "project"),
-        skillCount: 0,
+        skillCount,
       }),
-    [claims, evidence],
+    [claims, evidence, skillCount],
   );
 
   if (!claims.length) return null;

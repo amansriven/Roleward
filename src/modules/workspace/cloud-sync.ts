@@ -37,6 +37,7 @@ function hasData(workspace: WorkspaceSnapshot) {
   return Boolean(
     workspace.profile ||
     workspace.evidence.length ||
+    workspace.resumeVersions.length ||
     workspace.applications.length ||
     workspace.interviewSummaries.length,
   );
@@ -67,6 +68,14 @@ export function mergeForMigration(
   return workspaceSnapshotSchema.parse({
     candidateName: remote.candidateName ?? local.candidateName,
     candidateHeadline: remote.candidateHeadline ?? local.candidateHeadline,
+    candidateSkills: remote.candidateSkills.length
+      ? remote.candidateSkills
+      : local.candidateSkills,
+    resumeVersions: remote.resumeVersions.length
+      ? remote.resumeVersions
+      : local.resumeVersions,
+    activeResumeVersionId:
+      remote.activeResumeVersionId ?? local.activeResumeVersionId,
     profile: remote.profile ?? local.profile,
     evidence: remote.evidence.length ? remote.evidence : local.evidence,
     applications,
@@ -149,6 +158,10 @@ async function persist(storage: Storage) {
         interviewSummaries: dedupeById([
           ...latest.workspace.interviewSummaries,
           ...local.interviewSummaries,
+        ]),
+        resumeVersions: dedupeById([
+          ...local.resumeVersions,
+          ...latest.workspace.resumeVersions,
         ]),
       });
       response = await writeCloud(merged, latest.version);

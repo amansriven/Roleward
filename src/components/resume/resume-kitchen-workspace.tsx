@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import type { JobRequirement } from "@/modules/applications/schema";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import { PortfolioPublish } from "./portfolio-publish";
-import { ResumeScore } from "./resume-score";
+import { ResumeVersionManager } from "./resume-version-manager";
 import {
   getActiveApplication,
   loadWorkspace,
@@ -102,18 +102,19 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
   // finished the résumé step and wants something to show for it.
   if (!application)
     return (
-      <div className="grid gap-5 xl:grid-cols-[1.5fr_.5fr]">
-        <Empty
-          title="Add the role you are targeting"
-          copy={`You have ${claims.length} confirmed ${claims.length === 1 ? "claim" : "claims"}. Add a job posting and we will show which of its requirements your experience already answers.`}
-          href="/dashboard/applications/new"
-          action="Add an application"
-        />
-        <div className="space-y-5">
-          <ResumeScore evidence={workspace.evidence} />
+      <div className="space-y-5">
+        <ResumeVersionManager workspace={workspace} />
+        <div className="grid gap-5 xl:grid-cols-[1.5fr_.5fr]">
+          <Empty
+            title="Add the role you are targeting"
+            copy={`You have ${claims.length} confirmed ${claims.length === 1 ? "claim" : "claims"}. Add a job posting and we will show which of its requirements your experience already answers.`}
+            href="/dashboard/applications/new"
+            action="Add an application"
+          />
           <PortfolioPublish
             name={workspace.candidateName}
             headline={workspace.candidateHeadline}
+            skills={workspace.candidateSkills}
             evidence={workspace.evidence}
           />
         </div>
@@ -143,6 +144,8 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
           note={application.roleTitle}
         />
       </div>
+
+      <ResumeVersionManager workspace={workspace} />
 
       <div className="grid gap-5 xl:grid-cols-[1.5fr_.5fr]">
         <div className="space-y-4">
@@ -204,11 +207,10 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
             </Link>
           </section>
 
-          <ResumeScore evidence={workspace.evidence} />
-
           <PortfolioPublish
             name={workspace.candidateName}
             headline={workspace.candidateHeadline}
+            skills={workspace.candidateSkills}
             evidence={workspace.evidence}
           />
 

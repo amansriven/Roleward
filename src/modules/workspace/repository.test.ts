@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  createResumeRevision,
   getActiveApplication,
+  getActiveResumeVersion,
   loadWorkspace,
   recommendActions,
   saveApplication,
   saveWorkspaceSnapshot,
   setActiveApplication,
+  updateResumeVersion,
   workspaceSnapshotSchema,
 } from "./repository";
+import type { EvidenceItem } from "@/modules/evidence/schema";
 
 function memoryStorage() {
   const values = new Map<string, string>();
@@ -28,6 +32,23 @@ const application = (id: string) => ({
   createdAt: new Date().toISOString(),
   requirements: [],
 });
+const evidence: EvidenceItem[] = [
+  {
+    id: "item-1",
+    type: "experience",
+    title: "Engineer",
+    summary: "Built developer tools.",
+    verificationStatus: "confirmed",
+    claims: [
+      {
+        id: "claim-1",
+        type: "outcome",
+        content: "Reduced deploy time by 35%.",
+        verificationStatus: "confirmed",
+      },
+    ],
+  },
+];
 describe("workspace repository", () => {
   it("persists multiple applications and switches the active one", () => {
     const storage = memoryStorage();
@@ -53,5 +74,44 @@ describe("workspace repository", () => {
     });
     saveWorkspaceSnapshot(storage, snapshot);
     expect(loadWorkspace(storage)).toEqual(snapshot);
+  });
+  it("migrates existing evidence into one locked original", () => {
+    const storage = memoryStorage();
+    storage.setItem("sweet-plus:evidence-library", JSON.stringify(evidence));
+
+    const workspace = loadWorkspace(storage);
+    expect(workspace.resumeVersions).toHaveLength(1);
+    expect(getActiveResumeVersion(workspace)).toMatchObject({
+      id: "legacy-original",
+      name: "Original résumé",
+      kind: "original",
+    });
+  });
+  it("keeps edits in a named revision and leaves the original unchanged", () => {
+    const storage = memoryStorage();
+    storage.setItem("sweet-plus:evidence-library", JSON.stringify(evidence));
+    const original = getActiveResumeVersion(loadWorkspace(storage))!;
+    const revision = createResumeRevision(
+      storage,
+      original.id,
+      "Acme backend application",
+    );
+    const items = revision.items.map((item) => ({
+      ...item,
+      bullets: item.bullets.map((bullet) => ({
+        ...bullet,
+        content: "Cut deploy time by 35% with safer release automation.",
+      })),
+    }));
+    updateResumeVersion(storage, revision.id, { items });
+
+    const workspace = loadWorkspace(storage);
+    expect(
+      getActiveResumeVersion(workspace)?.items[0]?.bullets[0]?.content,
+    ).toBe("Cut deploy time by 35% with safer release automation.");
+    expect(
+      workspace.resumeVersions.find((version) => version.kind === "original")
+        ?.items[0]?.bullets[0]?.content,
+    ).toBe("Reduced deploy time by 35%.");
   });
 });

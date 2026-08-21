@@ -19,6 +19,7 @@ import { finalizeConfirmedEvidence } from "@/modules/evidence/confirmation";
 import {
   saveCandidateIdentity,
   saveEvidenceAndRefresh,
+  saveOriginalResumeVersion,
 } from "@/modules/workspace/repository";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import {
@@ -28,7 +29,10 @@ import {
   validateResumeFile,
   type ResumeDocument,
 } from "@/modules/resume-kitchen/intake";
-import type { DraftItem } from "@/modules/resume-kitchen/grounding";
+import type {
+  DraftItem,
+  DraftSkillGroup,
+} from "@/modules/resume-kitchen/grounding";
 import { uploadPrivateFile } from "@/modules/uploads/client";
 
 type Step = "upload" | "processing" | "review" | "complete";
@@ -106,6 +110,7 @@ export function ResumeIntakeFlow() {
       const body = (await response.json().catch(() => null)) as {
         fullName?: string;
         headline?: string;
+        skills?: DraftSkillGroup[];
         items?: DraftItem[];
         droppedCount?: number;
         error?: string;
@@ -117,7 +122,12 @@ export function ResumeIntakeFlow() {
       }
 
       if (body.fullName)
-        saveCandidateIdentity(localStorage, body.fullName, body.headline ?? "");
+        saveCandidateIdentity(
+          localStorage,
+          body.fullName,
+          body.headline ?? "",
+          body.skills ?? [],
+        );
       setItems(toEvidenceItems(body.items));
       setDroppedCount(body.droppedCount ?? 0);
       localStorage.setItem("sweet-plus:resume-hash", contentHash);
@@ -169,6 +179,8 @@ export function ResumeIntakeFlow() {
     const byId = new Map(
       [...existing, ...accepted].map((item) => [item.id, item]),
     );
+    const baseName = resume?.fileName.replace(/\.(pdf|docx)$/i, "") || "Résumé";
+    saveOriginalResumeVersion(localStorage, `${baseName} — Original`, accepted);
     saveEvidenceAndRefresh(localStorage, [...byId.values()]);
     setStep("complete");
   }

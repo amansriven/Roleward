@@ -126,6 +126,7 @@ export function scoreResume(resume: ScoredResume): ResumeScore {
   const total = claims.length;
 
   const quantified = claims.filter((claim) => hasNumber(claim.content));
+  const unquantified = claims.filter((claim) => !hasNumber(claim.content));
   const weak = claims.filter((claim) => startsWeakly(claim.content));
   const vague = claims.filter(
     (claim) => vagueTermsIn(claim.content).length > 0,
@@ -175,16 +176,14 @@ export function scoreResume(resume: ScoredResume): ResumeScore {
 
   const findings: Finding[] = [];
 
-  if (total && quantified.length / denominator < 0.5)
+  if (unquantified.length)
     findings.push({
       id: "quantify",
       severity: "high",
-      title: `${total - quantified.length} of ${total} bullets have no number in them`,
+      title: `${unquantified.length} of ${total} bullets have no number in them`,
       detail:
         "A number is what turns a claim into evidence. Scale, time saved, users reached, tests written — any of them. If you genuinely do not know the figure, an approximate one you can defend beats none.",
-      claimIds: claims
-        .filter((claim) => !hasNumber(claim.content))
-        .map((claim) => claim.id),
+      claimIds: unquantified.map((claim) => claim.id),
     });
 
   if (weak.length)

@@ -26,4 +26,14 @@ describe("mergeForMigration", () => {
     expect(merged.candidateName).toBe("Local Name");
     expect(merged.candidateHeadline).toBe("Builder");
   });
+
+  it("migrates locally extracted skills when the cloud has none", () => {
+    const skills = [{ category: "Languages", skills: ["TypeScript", "SQL"] }];
+    const merged = mergeForMigration(
+      workspace(),
+      workspace({ candidateSkills: skills }),
+    );
+
+    expect(merged.candidateSkills).toEqual(skills);
+  });
 });
