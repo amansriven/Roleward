@@ -49,7 +49,7 @@ function dedupeById<T extends { id: string }>(items: T[]) {
   );
 }
 
-function mergeForMigration(
+export function mergeForMigration(
   remote: WorkspaceSnapshot,
   local: WorkspaceSnapshot,
 ): WorkspaceSnapshot {
@@ -65,6 +65,8 @@ function mergeForMigration(
         ? local.activeApplicationId
         : (applications[0]?.id ?? null);
   return workspaceSnapshotSchema.parse({
+    candidateName: remote.candidateName ?? local.candidateName,
+    candidateHeadline: remote.candidateHeadline ?? local.candidateHeadline,
     profile: remote.profile ?? local.profile,
     evidence: remote.evidence.length ? remote.evidence : local.evidence,
     applications,

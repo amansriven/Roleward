@@ -99,3 +99,27 @@ export function resolveHandle(
   }
   return null;
 }
+
+/**
+ * Resolves and atomically claims a readable handle.
+ *
+ * Resolution is pure, but availability can only be decided by the backing
+ * store. Keeping the retry loop here prevents callers from accidentally using
+ * the final candidate after its claim also failed.
+ */
+export async function claimAvailableHandle(
+  name: string,
+  claim: (handle: string) => Promise<boolean>,
+  limit = 10,
+): Promise<string | null> {
+  const unavailable = new Set<string>();
+
+  for (let attempt = 0; attempt < limit; attempt += 1) {
+    const candidate = resolveHandle(name, (handle) => unavailable.has(handle));
+    if (!candidate) return null;
+    if (await claim(candidate)) return candidate;
+    unavailable.add(candidate);
+  }
+
+  return null;
+}

@@ -8,7 +8,10 @@ import {
   getPortfolioForUser,
   putPortfolio,
 } from "@/modules/aws/portfolio-store";
-import { resolveHandle } from "@/modules/portfolio/handle";
+import {
+  claimAvailableHandle,
+  resolveHandle,
+} from "@/modules/portfolio/handle";
 import { portfolioSchema } from "@/modules/portfolio/schema";
 
 export const runtime = "nodejs";
@@ -99,22 +102,16 @@ export async function POST(request: Request) {
 
   // Two candidates with the same name resolve to the same slug, so the handle
   // is claimed conditionally and the loser is moved along to the next one.
-  let taken = handle;
+  let taken: string | null = handle;
   if (!existing) {
-    const attempts = new Set<string>();
-    for (let index = 0; index < 10; index += 1) {
-      if (await claimHandle(taken, session.user.id)) break;
-      attempts.add(taken);
-      const next = resolveHandle(parsed.data.name, (candidate) =>
-        attempts.has(candidate),
+    taken = await claimAvailableHandle(parsed.data.name, (candidate) =>
+      claimHandle(candidate, session.user.id),
+    );
+    if (!taken)
+      return NextResponse.json(
+        { error: "We could not find a free address for that name." },
+        { status: 409 },
       );
-      if (!next || next === taken)
-        return NextResponse.json(
-          { error: "We could not find a free address for that name." },
-          { status: 409 },
-        );
-      taken = next;
-    }
   }
 
   const now = new Date().toISOString();

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { deriveHandle, isUsableHandle, resolveHandle } from "./handle";
+import {
+  claimAvailableHandle,
+  deriveHandle,
+  isUsableHandle,
+  resolveHandle,
+} from "./handle";
 
 const free = () => false;
 
@@ -70,5 +75,31 @@ describe("resolveHandle", () => {
 
   it("returns null for a name that cannot make a handle", () => {
     expect(resolveHandle("!!!", free)).toBeNull();
+  });
+});
+
+describe("claimAvailableHandle", () => {
+  it("returns the first candidate the store successfully claims", async () => {
+    const claimed: string[] = [];
+    const result = await claimAvailableHandle(
+      "Jane Okonkwo",
+      async (handle) => {
+        claimed.push(handle);
+        return handle === "jane-okonkwo-3";
+      },
+    );
+
+    expect(result).toBe("jane-okonkwo-3");
+    expect(claimed).toEqual([
+      "jane-okonkwo",
+      "jane-okonkwo-2",
+      "jane-okonkwo-3",
+    ]);
+  });
+
+  it("never returns a handle whose claim failed", async () => {
+    await expect(
+      claimAvailableHandle("Jane Okonkwo", async () => false, 3),
+    ).resolves.toBeNull();
   });
 });
