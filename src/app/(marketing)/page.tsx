@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ArrowRight, Code2, FileCheck2, Mic2 } from "lucide-react";
 import Link from "next/link";
 
@@ -7,26 +8,32 @@ import { ResumeDemo } from "@/components/demos/resume-demo";
 import { StageDemo } from "@/components/demos/stage-demo";
 import { ZedDemo } from "@/components/demos/zed-demo";
 import { Button } from "@/components/ui/button";
+import { JsonLd } from "@/components/seo/json-ld";
+import { homeStructuredData } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const modules = [
   {
     icon: FileCheck2,
     name: "Resume Kitchen",
-    copy: "A stronger resume. Still yours.",
+    copy: "AI resume tailoring grounded in verified experience.",
     href: "/resume-kitchen",
     product: "resume",
   },
   {
     icon: Code2,
     name: "Zed",
-    copy: "Practice how you think.",
+    copy: "Role-aware coding interview practice and feedback.",
     href: "/zed",
     product: "zed",
   },
   {
     icon: Mic2,
     name: "Stage Fright",
-    copy: "Tell the story like you lived it.",
+    copy: "Behavioral mock interviews grounded in your experience.",
     href: "/stage-fright",
     product: "stage",
   },
@@ -35,6 +42,7 @@ const modules = [
 export default function HomePage() {
   return (
     <main>
+      <JsonLd data={homeStructuredData} />
       <section className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl items-center justify-center overflow-hidden px-5 py-20 sm:px-8 lg:px-12">
         <div className="pointer-events-none absolute inset-x-[12%] top-[18%] h-80 bg-[radial-gradient(ellipse_at_center,rgba(255,122,89,0.12),rgba(255,154,61,0.045)_36%,transparent_70%)] blur-3xl" />
         <div className="relative z-10 mx-auto max-w-5xl text-center">
@@ -146,7 +154,9 @@ export default function HomePage() {
             <span className="roleward-gradient-text">Go further.</span>
           </h2>
           <p className="text-canvas mx-auto mt-5 max-w-xl text-base leading-7">
-            Choose the role. Roleward maps the preparation route.
+            Choose the internship or job. Roleward connects your application,
+            resume, coding interview practice, and mock interview preparation
+            into one focused route.
           </p>
           <Button asChild className="mt-8">
             <Link href="/signup">

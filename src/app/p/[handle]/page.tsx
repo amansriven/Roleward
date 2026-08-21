@@ -4,6 +4,7 @@ import { workspaceStorageConfigured } from "@/modules/aws/config";
 import { getPortfolioByHandle } from "@/modules/aws/portfolio-store";
 import { PublicPortfolio } from "@/components/portfolio/public-portfolio";
 import type { Portfolio } from "@/modules/portfolio/schema";
+import { noIndexMetadata, pageMetadata } from "@/lib/seo";
 
 export const runtime = "nodejs";
 /** Published pages change rarely; a short cache keeps a recruiter's load fast. */
@@ -23,13 +24,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle } = await params;
   const portfolio = await load(handle);
-  if (!portfolio) return { title: "Not found" };
-  return {
-    title: portfolio.headline
-      ? `${portfolio.name} — ${portfolio.headline}`
-      : portfolio.name,
-    description: portfolio.items[0]?.summary?.slice(0, 160),
-  };
+  if (!portfolio)
+    return { title: "Not found", ...noIndexMetadata } satisfies Metadata;
+
+  const title = portfolio.headline
+    ? `${portfolio.name} — ${portfolio.headline}`
+    : portfolio.name;
+  const description =
+    portfolio.items[0]?.summary?.slice(0, 160) ??
+    `Explore ${portfolio.name}'s verified experience and professional portfolio on Roleward.`;
+
+  return pageMetadata({
+    title,
+    description,
+    path: `/p/${encodeURIComponent(handle)}`,
+  });
 }
 
 export default async function PortfolioPage({

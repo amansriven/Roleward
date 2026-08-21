@@ -6,12 +6,14 @@ import Link from "next/link";
 import { ResumeDemo } from "@/components/demos/resume-demo";
 import { ProductVisual } from "@/components/brand/product-visual";
 import { Button } from "@/components/ui/button";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Resume Kitchen",
+export const metadata: Metadata = pageMetadata({
+  title: "AI Resume Review & Tailoring",
   description:
-    "Evidence-backed resume tailoring for your target engineering role.",
-};
+    "Review and tailor your resume for internships and jobs with AI suggestions grounded in verified experience, target-role requirements, and editable evidence.",
+  path: "/resume-kitchen",
+});
 
 const workflow: Array<[LucideIcon, string, string]> = [
   [
@@ -43,8 +45,9 @@ export default function ResumeKitchenPage() {
             <span className="text-amber">Keep the truth.</span>
           </h1>
           <p className="text-canvas mt-6 text-lg leading-8">
-            Match verified experience to a target role, strengthen the evidence,
-            and inspect why every suggestion exists.
+            Get AI resume review and tailoring for internships, new-grad roles,
+            and engineering jobs. Match verified experience to a target role,
+            strengthen the evidence, and inspect why every suggestion exists.
           </p>
           <Button asChild className="bg-amber mt-8">
             <Link href="/signup">

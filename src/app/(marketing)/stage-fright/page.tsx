@@ -6,12 +6,14 @@ import Link from "next/link";
 import { StageDemo } from "@/components/demos/stage-demo";
 import { ProductVisual } from "@/components/brand/product-visual";
 import { Button } from "@/components/ui/button";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Stage Fright",
+export const metadata: Metadata = pageMetadata({
+  title: "AI Mock Interviews & Behavioral Practice",
   description:
-    "Behavioral interview preparation from Stage Fright to Stage Ready.",
-};
+    "Practice behavioral and role-specific mock interviews with an adaptive AI interviewer, then improve story structure, specificity, ownership, and impact.",
+  path: "/stage-fright",
+});
 
 const rehearsalLoop: Array<[LucideIcon, string, string]> = [
   [
@@ -42,6 +44,7 @@ export default function StageFrightPage() {
             <br /> <span className="text-amber">you already lived.</span>
           </h1>
           <p className="text-canvas mt-6 text-lg leading-8">
+            Run AI mock interviews for behavioral and role-specific questions.
             Build flexible stories from real experiences, cover the competencies
             that matter, and rehearse without sounding rehearsed.
           </p>

@@ -1,5 +1,9 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
+import { noIndexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = noIndexMetadata;
 
 export default function OnboardingLayout({
   children,

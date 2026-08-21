@@ -14,6 +14,12 @@ const serverEnvironmentSchema = z.object({
   COGNITO_USER_POOL_ID: z.string().min(1).optional(),
   COGNITO_CLIENT_ID: z.string().min(1).optional(),
   E2B_API_KEY: z.string().min(1).optional(),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  FEEDBACK_TO_EMAIL: z.email().optional(),
+  FEEDBACK_FROM_EMAIL: z
+    .string()
+    .min(1)
+    .default("Roleward Feedback <feedback@roleward.org>"),
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
 });
 

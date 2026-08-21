@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { AmbientWorkshopBackground } from "@/components/brand/ambient-background";
 import { Logo } from "@/components/brand/logo";
+import { noIndexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = noIndexMetadata;
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (

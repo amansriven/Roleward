@@ -60,7 +60,8 @@ body {
 
 a,
 button,
-input {
+input,
+textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -72,6 +73,7 @@ summary {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
+textarea:focus-visible,
 summary:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 3px;
@@ -200,6 +202,21 @@ summary:focus-visible {
 .tech-node:nth-of-type(4) {
   animation-delay: -10s;
   animation-duration: 14s;
+}
+
+.interview-message-enter {
+  animation: interview-message-rise 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes interview-message-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 @keyframes drift-amber {

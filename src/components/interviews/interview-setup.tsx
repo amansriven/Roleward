@@ -61,14 +61,26 @@ function Choice({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={cn(
-        "border-iron bg-workshop/60 rounded-xl border p-4 text-left transition",
-        selected ? "border-plum/70 bg-plum/[.07]" : "hover:border-canvas/40",
+        "group border-iron bg-workshop/60 hover:border-canvas/30 relative min-h-[94px] rounded-2xl border p-4 text-left transition duration-200 hover:-translate-y-0.5",
+        selected
+          ? "border-amber/45 bg-amber/[.055] shadow-[0_12px_30px_rgba(0,0,0,.12),inset_0_1px_0_rgba(255,255,255,.035)]"
+          : "hover:bg-linen/[.02]",
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold">{title}</p>
-        {selected && <Check className="text-plum size-4 shrink-0" />}
+        <span
+          className={cn(
+            "flex size-5 shrink-0 items-center justify-center rounded-full border transition",
+            selected
+              ? "border-amber bg-amber text-night"
+              : "border-iron group-hover:border-canvas/40 text-transparent",
+          )}
+        >
+          <Check className="size-3" />
+        </span>
       </div>
       <p className="text-dust mt-1.5 text-xs leading-5">{detail}</p>
     </button>
@@ -185,262 +197,350 @@ export function InterviewSetup() {
 
   const stepIndex = step === "type" ? 0 : step === "role" ? 1 : 2;
 
+  const steps = [
+    { label: "Interview", detail: "Choose a format" },
+    { label: "Role context", detail: "Personalize questions" },
+    { label: "Session", detail: "Set the pace" },
+  ];
+
   return (
-    <div className="mx-auto max-w-3xl space-y-7">
-      <div>
-        <p className="section-label">Stage Fright</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em]">
-          Set up your mock interview.
+    <div className="mx-auto max-w-4xl space-y-6 lg:space-y-8">
+      <div className="border-iron/80 border-b pb-7">
+        <p className="section-label">Stage Fright · New rehearsal</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-[2.5rem]">
+          Build the room before you enter it.
         </h1>
-        <div className="mt-5 flex gap-1.5">
-          {[0, 1, 2].map((index) => (
-            <span
-              key={index}
-              className={cn(
-                "h-1 flex-1 rounded-full",
-                index <= stepIndex ? "bg-plum" : "bg-iron",
-              )}
-            />
-          ))}
-        </div>
+        <p className="text-canvas mt-3 max-w-2xl text-sm leading-6">
+          Give your interviewer just enough context to make every question feel
+          relevant to the conversation you are preparing for.
+        </p>
       </div>
 
-      {step === "type" && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold">What kind of interview?</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {TYPE_ORDER.map((item) => (
-              <Choice
-                key={item}
-                selected={type === item}
-                onClick={() => setType(item)}
-                title={INTERVIEW_PLANS[item].label}
-                detail={INTERVIEW_PLANS[item].summary}
-              />
-            ))}
-          </div>
-          {type === "coding" && (
+      <nav aria-label="Interview setup progress" className="grid grid-cols-3">
+        {steps.map((item, index) => {
+          const active = index === stepIndex;
+          const complete = index < stepIndex;
+          return (
+            <div key={item.label} className="relative pr-3 last:pr-0">
+              {index < steps.length - 1 && (
+                <span className="bg-iron absolute top-4 right-0 left-8 h-px">
+                  <span
+                    className={cn(
+                      "bg-amber block h-full transition-all duration-500",
+                      complete ? "w-full" : "w-0",
+                    )}
+                  />
+                </span>
+              )}
+              <div className="relative flex items-start gap-2.5">
+                <span
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-full border font-mono text-[10px] transition-all duration-300",
+                    complete
+                      ? "border-amber bg-amber text-night"
+                      : active
+                        ? "border-amber/60 bg-amber/[.08] text-amber shadow-[0_0_0_4px_rgba(255,122,89,.05)]"
+                        : "border-iron bg-workshop text-dust",
+                  )}
+                >
+                  {complete ? <Check className="size-3.5" /> : index + 1}
+                </span>
+                <span className="hidden pt-0.5 sm:block">
+                  <span
+                    className={cn(
+                      "block text-xs font-medium",
+                      active || complete ? "text-linen" : "text-dust",
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                  <span className="text-dust mt-1 block text-[10px]">
+                    {item.detail}
+                  </span>
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </nav>
+
+      <div className="roleward-card rounded-[22px] p-5 sm:p-7">
+        {step === "type" && (
+          <section className="interview-message-enter space-y-5">
             <div>
-              <p className="text-dust mb-2 text-xs">Difficulty</p>
+              <p className="text-amber text-[10px] tracking-[.12em] uppercase">
+                Step 1 of 3
+              </p>
+              <h2 className="mt-2 text-xl font-semibold tracking-[-.025em]">
+                What are you walking into?
+              </h2>
+              <p className="text-dust mt-2 text-xs leading-5">
+                We will shape the interviewer, rubric, and follow-up style
+                around this choice.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {TYPE_ORDER.map((item) => (
+                <Choice
+                  key={item}
+                  selected={type === item}
+                  onClick={() => setType(item)}
+                  title={INTERVIEW_PLANS[item].label}
+                  detail={INTERVIEW_PLANS[item].summary}
+                />
+              ))}
+            </div>
+            {type === "coding" && (
+              <div>
+                <p className="text-dust mb-2 text-xs">Difficulty</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {DIFFICULTIES.map((item) => (
+                    <Choice
+                      key={item}
+                      selected={difficulty === item}
+                      onClick={() => setDifficulty(item)}
+                      title={item[0]!.toUpperCase() + item.slice(1)}
+                      detail={
+                        item === "easy"
+                          ? "Warm-up fundamentals"
+                          : item === "medium"
+                            ? "Typical screen difficulty"
+                            : "Onsite-level challenge"
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {step === "role" && (
+          <section className="interview-message-enter space-y-5">
+            <div>
+              <p className="text-amber text-[10px] tracking-[.12em] uppercase">
+                Step 2 of 3
+              </p>
+              <h2 className="mt-2 text-xl font-semibold tracking-[-.025em]">
+                Which role are you preparing for?
+              </h2>
+              <p className="text-dust mt-2 text-xs leading-5">
+                Specific context creates sharper questions. General practice is
+                always available when you just want repetitions.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {applications.length > 0 && (
+                <Choice
+                  selected={roleMode === "application"}
+                  onClick={() => setRoleMode("application")}
+                  title="A role you saved"
+                  detail="Uses the requirements already in Roleward"
+                />
+              )}
+              <Choice
+                selected={roleMode === "generic"}
+                onClick={() => setRoleMode("generic")}
+                title="Just a general role"
+                detail="Broader practice, no specific posting"
+              />
+              <Choice
+                selected={roleMode === "pasted"}
+                onClick={() => setRoleMode("pasted")}
+                title="Paste a job description"
+                detail="Most accurate for a specific posting"
+              />
+              <Choice
+                selected={roleMode === "url"}
+                onClick={() => setRoleMode("url")}
+                title="Paste a job link"
+                detail="We'll try to read it. Many sites block this."
+              />
+            </div>
+
+            {roleMode === "application" && (
+              <div className="space-y-2">
+                {applications.map((application) => (
+                  <button
+                    key={application.id}
+                    type="button"
+                    onClick={() => setApplicationId(application.id)}
+                    className={cn(
+                      "border-iron bg-workshop/60 hover:border-canvas/30 flex w-full items-center justify-between rounded-xl border p-4 text-left text-sm transition",
+                      applicationId === application.id
+                        ? "border-amber/50 bg-amber/[.05]"
+                        : "",
+                    )}
+                  >
+                    <span>
+                      {application.companyName} · {application.roleTitle}
+                    </span>
+                    {applicationId === application.id && (
+                      <Check className="text-amber size-4" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            {roleMode === "generic" && (
+              <input
+                value={genericLabel}
+                onChange={(event) => setGenericLabel(event.target.value)}
+                placeholder="Software Engineering role"
+                className="border-iron bg-workshop/60 focus:border-amber/40 w-full rounded-xl border px-4 py-3 text-sm transition focus:outline-none"
+              />
+            )}
+            {roleMode === "pasted" && (
+              <textarea
+                value={pasted}
+                onChange={(event) => setPasted(event.target.value)}
+                rows={7}
+                placeholder="Paste the job description here…"
+                className="border-iron bg-workshop/60 focus:border-amber/40 w-full rounded-xl border px-4 py-3 text-sm leading-6 transition focus:outline-none"
+              />
+            )}
+            {roleMode === "url" && (
+              <input
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                placeholder="https://…"
+                className="border-iron bg-workshop/60 focus:border-amber/40 w-full rounded-xl border px-4 py-3 text-sm transition focus:outline-none"
+              />
+            )}
+          </section>
+        )}
+
+        {step === "format" && (
+          <section className="interview-message-enter space-y-7">
+            <div>
+              <p className="text-amber text-[10px] tracking-[.12em] uppercase">
+                Step 3 of 3
+              </p>
+              <h2 className="mt-2 text-xl font-semibold tracking-[-.025em]">
+                Set the pace and pressure.
+              </h2>
+              <p className="text-dust mt-2 text-xs leading-5">
+                Start realistic. Increase the pressure once your answers feel
+                structured and repeatable.
+              </p>
+            </div>
+            <div>
+              <h2 className="mb-3 text-lg font-semibold">How long?</h2>
               <div className="grid gap-3 sm:grid-cols-3">
-                {DIFFICULTIES.map((item) => (
+                {LENGTHS.map((item) => (
                   <Choice
                     key={item}
-                    selected={difficulty === item}
-                    onClick={() => setDifficulty(item)}
+                    selected={length === item}
+                    onClick={() => setLength(item)}
                     title={item[0]!.toUpperCase() + item.slice(1)}
-                    detail={
-                      item === "easy"
-                        ? "Warm-up fundamentals"
-                        : item === "medium"
-                          ? "Typical screen difficulty"
-                          : "Onsite-level challenge"
-                    }
+                    detail={`About ${LENGTH_MINUTES[item]} minutes`}
                   />
                 ))}
               </div>
             </div>
-          )}
-        </section>
-      )}
-
-      {step === "role" && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold">
-            Which role are you preparing for?
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {applications.length > 0 && (
-              <Choice
-                selected={roleMode === "application"}
-                onClick={() => setRoleMode("application")}
-                title="A role you saved"
-                detail="Uses the requirements already in Roleward"
-              />
-            )}
-            <Choice
-              selected={roleMode === "generic"}
-              onClick={() => setRoleMode("generic")}
-              title="Just a general role"
-              detail="Broader practice, no specific posting"
-            />
-            <Choice
-              selected={roleMode === "pasted"}
-              onClick={() => setRoleMode("pasted")}
-              title="Paste a job description"
-              detail="Most accurate for a specific posting"
-            />
-            <Choice
-              selected={roleMode === "url"}
-              onClick={() => setRoleMode("url")}
-              title="Paste a job link"
-              detail="We'll try to read it. Many sites block this."
-            />
-          </div>
-
-          {roleMode === "application" && (
-            <div className="space-y-2">
-              {applications.map((application) => (
+            <div>
+              <h2 className="mb-3 text-lg font-semibold">
+                How hard should it feel?
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {INTENSITIES.map((item) => (
+                  <Choice
+                    key={item}
+                    selected={intensity === item}
+                    onClick={() => setIntensity(item)}
+                    title={item[0]!.toUpperCase() + item.slice(1)}
+                    detail={INTENSITY_COPY[item]}
+                  />
+                ))}
+              </div>
+            </div>
+            <div>
+              <h2 className="mb-3 text-lg font-semibold">Typing or talking?</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
                 <button
-                  key={application.id}
                   type="button"
-                  onClick={() => setApplicationId(application.id)}
+                  onClick={() => setModality("text")}
                   className={cn(
-                    "border-iron bg-workshop/60 flex w-full items-center justify-between rounded-xl border p-4 text-left text-sm",
-                    applicationId === application.id
-                      ? "border-plum/70"
-                      : "hover:border-canvas/40",
+                    "border-iron bg-workshop/60 hover:border-canvas/30 flex items-center gap-3 rounded-xl border p-4 text-left transition hover:-translate-y-0.5",
+                    modality === "text"
+                      ? "border-amber/45 bg-amber/[.055]"
+                      : "",
                   )}
                 >
+                  <Type className="text-amber size-4 shrink-0" />
                   <span>
-                    {application.companyName} · {application.roleTitle}
+                    <span className="block text-sm font-semibold">Text</span>
+                    <span className="text-dust text-xs">Type your answers</span>
                   </span>
-                  {applicationId === application.id && (
-                    <Check className="text-plum size-4" />
-                  )}
                 </button>
-              ))}
-            </div>
-          )}
-          {roleMode === "generic" && (
-            <input
-              value={genericLabel}
-              onChange={(event) => setGenericLabel(event.target.value)}
-              placeholder="Software Engineering role"
-              className="border-iron bg-workshop/60 w-full rounded-xl border px-4 py-3 text-sm"
-            />
-          )}
-          {roleMode === "pasted" && (
-            <textarea
-              value={pasted}
-              onChange={(event) => setPasted(event.target.value)}
-              rows={7}
-              placeholder="Paste the job description here…"
-              className="border-iron bg-workshop/60 w-full rounded-xl border px-4 py-3 text-sm"
-            />
-          )}
-          {roleMode === "url" && (
-            <input
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://…"
-              className="border-iron bg-workshop/60 w-full rounded-xl border px-4 py-3 text-sm"
-            />
-          )}
-        </section>
-      )}
-
-      {step === "format" && (
-        <section className="space-y-6">
-          <div>
-            <h2 className="mb-3 text-lg font-semibold">How long?</h2>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {LENGTHS.map((item) => (
-                <Choice
-                  key={item}
-                  selected={length === item}
-                  onClick={() => setLength(item)}
-                  title={item[0]!.toUpperCase() + item.slice(1)}
-                  detail={`About ${LENGTH_MINUTES[item]} minutes`}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="mb-3 text-lg font-semibold">
-              How hard should it feel?
-            </h2>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {INTENSITIES.map((item) => (
-                <Choice
-                  key={item}
-                  selected={intensity === item}
-                  onClick={() => setIntensity(item)}
-                  title={item[0]!.toUpperCase() + item.slice(1)}
-                  detail={INTENSITY_COPY[item]}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="mb-3 text-lg font-semibold">Typing or talking?</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setModality("text")}
-                className={cn(
-                  "border-iron bg-workshop/60 flex items-center gap-3 rounded-xl border p-4 text-left",
-                  modality === "text"
-                    ? "border-plum/70 bg-plum/[.07]"
-                    : "hover:border-canvas/40",
-                )}
-              >
-                <Type className="text-plum size-4 shrink-0" />
-                <span>
-                  <span className="block text-sm font-semibold">Text</span>
-                  <span className="text-dust text-xs">Type your answers</span>
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setModality("voice")}
-                className={cn(
-                  "border-iron bg-workshop/60 flex items-center gap-3 rounded-xl border p-4 text-left",
-                  modality === "voice"
-                    ? "border-plum/70 bg-plum/[.07]"
-                    : "hover:border-canvas/40",
-                )}
-              >
-                <Mic className="text-plum size-4 shrink-0" />
-                <span>
-                  <span className="block text-sm font-semibold">Voice</span>
-                  <span className="text-dust text-xs">
-                    Speak out loud, like a real call
+                <button
+                  type="button"
+                  onClick={() => setModality("voice")}
+                  className={cn(
+                    "border-iron bg-workshop/60 hover:border-canvas/30 flex items-center gap-3 rounded-xl border p-4 text-left transition hover:-translate-y-0.5",
+                    modality === "voice"
+                      ? "border-amber/45 bg-amber/[.055]"
+                      : "",
+                  )}
+                >
+                  <Mic className="text-amber size-4 shrink-0" />
+                  <span>
+                    <span className="block text-sm font-semibold">Voice</span>
+                    <span className="text-dust text-xs">
+                      Speak out loud, like a real call
+                    </span>
                   </span>
-                </span>
-              </button>
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
-      )}
-
-      {error && <p className="text-kiln text-sm">{error}</p>}
-
-      <div className="border-iron/60 flex items-center justify-between border-t pt-5">
-        <button
-          type="button"
-          onClick={() => setStep(step === "format" ? "role" : "type")}
-          disabled={step === "type"}
-          className="text-canvas hover:text-linen inline-flex items-center gap-2 text-sm disabled:opacity-40"
-        >
-          <ArrowLeft className="size-4" /> Back
-        </button>
-        {step === "format" ? (
-          <button
-            type="button"
-            onClick={() => void start()}
-            disabled={busy}
-            className="bg-plum inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {busy ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" /> Starting…
-              </>
-            ) : (
-              <>
-                Start interview <ArrowRight className="size-4" />
-              </>
-            )}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setStep(step === "type" ? "role" : "format")}
-            className="bg-plum inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white"
-          >
-            Continue <ArrowRight className="size-4" />
-          </button>
+          </section>
         )}
+
+        {error && (
+          <p
+            role="alert"
+            className="border-kiln/20 bg-kiln/[.06] text-kiln mt-5 rounded-xl border px-4 py-3 text-sm"
+          >
+            {error}
+          </p>
+        )}
+
+        <div className="border-iron/60 mt-7 flex items-center justify-between border-t pt-5">
+          <button
+            type="button"
+            onClick={() => setStep(step === "format" ? "role" : "type")}
+            disabled={step === "type"}
+            className="text-canvas hover:text-linen inline-flex items-center gap-2 text-sm disabled:opacity-40"
+          >
+            <ArrowLeft className="size-4" /> Back
+          </button>
+          {step === "format" ? (
+            <button
+              type="button"
+              onClick={() => void start()}
+              disabled={busy}
+              className="bg-amber text-night hover:bg-sunset inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-[0_10px_24px_rgba(255,122,89,.15)] transition hover:-translate-y-0.5 disabled:opacity-60"
+            >
+              {busy ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" /> Starting…
+                </>
+              ) : (
+                <>
+                  Start interview <ArrowRight className="size-4" />
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setStep(step === "type" ? "role" : "format")}
+              className="bg-amber text-night hover:bg-sunset inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-[0_10px_24px_rgba(255,122,89,.15)] transition hover:-translate-y-0.5"
+            >
+              Continue <ArrowRight className="size-4" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

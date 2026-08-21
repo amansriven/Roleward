@@ -6,12 +6,14 @@ import Link from "next/link";
 import { ZedDemo } from "@/components/demos/zed-demo";
 import { ProductVisual } from "@/components/brand/product-visual";
 import { Button } from "@/components/ui/button";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Zed",
+export const metadata: Metadata = pageMetadata({
+  title: "Coding Interview Practice",
   description:
-    "Guided coding interview practice connected to your target role.",
-};
+    "Practice coding interviews with role-aware AI coaching, LeetCode-style problems, progressive hints, test execution, and feedback on reasoning and communication.",
+  path: "/zed",
+});
 
 const observations: Array<[LucideIcon, string, string]> = [
   [
@@ -43,8 +45,9 @@ export default function ZedPage() {
             <span className="text-amber">not the answer.</span>
           </h1>
           <p className="text-canvas mt-6 text-lg leading-8">
-            Build patterns, explain tradeoffs, test edge cases, and ask for the
-            smallest useful hint.
+            Practice coding interviews with LeetCode-style problems connected to
+            your target role. Build patterns, explain tradeoffs, test edge
+            cases, and ask for the smallest useful hint.
           </p>
           <Button asChild className="bg-amber mt-8">
             <Link href="/signup">

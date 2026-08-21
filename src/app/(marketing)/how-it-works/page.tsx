@@ -3,8 +3,14 @@ import { ArrowRight, Check, FileUp, ListTodo, Target } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "How it works" };
+export const metadata: Metadata = pageMetadata({
+  title: "How Roleward Works",
+  description:
+    "See how Roleward turns one internship or job posting into a focused AI preparation plan for applications, resumes, coding, and interviews.",
+  path: "/how-it-works",
+});
 
 const steps = [
   {
@@ -40,8 +46,9 @@ export default function HowItWorksPage() {
           <span className="text-amber">a preparation route.</span>
         </h1>
         <p className="text-canvas mx-auto mt-6 max-w-2xl text-lg leading-8">
-          No opaque score and no generic checklist. Roleward shows what changed,
-          why it matters, and where to work next.
+          Roleward is an AI job search assistant built around your actual target
+          role. No opaque score and no generic checklist—just clear connections
+          between the application, resume, coding practice, and interview prep.
         </p>
       </section>
       <section className="border-iron bg-workshop/60 border-y">

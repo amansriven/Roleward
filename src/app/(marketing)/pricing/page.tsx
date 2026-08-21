@@ -3,8 +3,14 @@ import { Check } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Pricing" };
+export const metadata: Metadata = pageMetadata({
+  title: "AI Career Preparation Pricing",
+  description:
+    "Compare Roleward plans for internship and job application tracking, AI resume tailoring, coding practice, and adaptive mock interviews.",
+  path: "/pricing",
+});
 
 const plans = [
   {
@@ -47,8 +53,9 @@ export default function PricingPage() {
           <span className="text-amber">not anxiety.</span>
         </h1>
         <p className="text-canvas mx-auto mt-6 max-w-xl text-lg leading-8">
-          Start with the core workflow. Upgrade when Roleward becomes part of an
-          active search.
+          Start free with the core AI career preparation workflow. Upgrade when
+          application tracking, resume tailoring, coding practice, and mock
+          interviews become part of an active search.
         </p>
       </section>
       <section className="mx-auto grid max-w-5xl gap-5 px-5 pb-24 sm:px-8 md:grid-cols-2">

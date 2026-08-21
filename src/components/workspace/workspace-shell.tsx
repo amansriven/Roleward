@@ -20,6 +20,7 @@ import {
   type FeatureIconName,
 } from "@/components/brand/feature-icon";
 import { WorkspaceSync } from "@/components/workspace/workspace-sync";
+import { FeedbackDialog } from "@/components/workspace/feedback-dialog";
 import { cn } from "@/lib/utils";
 import {
   getActiveApplication,
@@ -294,10 +295,11 @@ function SidebarContent({
 
             <div
               className={cn(
-                "mt-3 flex",
+                "mt-3 flex flex-wrap",
                 condensed ? "flex-col gap-1" : "items-center gap-1",
               )}
             >
+              <FeedbackDialog compact={condensed} onOpen={onNavigate} />
               <Link
                 href="/dashboard/settings"
                 onClick={onNavigate}
