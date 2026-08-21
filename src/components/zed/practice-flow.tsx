@@ -3,7 +3,9 @@
 import {
   ArrowRight,
   Check,
+  CheckCircle2,
   Braces,
+  Clock3,
   Lightbulb,
   LoaderCircle,
   Maximize2,
@@ -38,7 +40,7 @@ import { renderStub } from "@/modules/zed/stubs";
  * separately. Nothing is revealed until the end — learning you guessed wrong
  * before writing a line would turn the gate into a hint.
  */
-type Stage = "pick" | "classify" | "commit" | "solve" | "coaching";
+type Stage = "pick" | "classify" | "commit" | "review" | "solve" | "coaching";
 
 /**
  * Ids and names only, handed down from the server.
@@ -81,6 +83,18 @@ interface Reveal {
   runs: number;
 }
 
+interface GateFeedback {
+  archetype: { id: string; name: string; tell: string } | null;
+  classificationCorrect: boolean;
+  chosenClassification: string | null;
+  expectedComplexity: { time: string; space: string };
+  complexityCorrect: boolean;
+  chosenComplexity: string | null;
+  edgeCases: string[];
+  chosenEdgeCases: string[];
+  edgeCasesScore: number | null;
+}
+
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
 
 const ORDERED_LANGUAGES: Language[] = [
@@ -117,6 +131,7 @@ export function PracticeFlow({
   const [coaching, setCoaching] = useState<CoachingPoint[]>([]);
   const [skills, setSkills] = useState<SkillObservationView[]>([]);
   const [reveal, setReveal] = useState<Reveal | null>(null);
+  const [gateFeedback, setGateFeedback] = useState<GateFeedback | null>(null);
 
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -165,7 +180,7 @@ export function PracticeFlow({
     if (!problem) return;
     setBusy(true);
     try {
-      await fetch("/api/zed/attempt", {
+      const response = await fetch("/api/zed/attempt", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -176,7 +191,16 @@ export function PracticeFlow({
           edgeCases,
         }),
       });
-      setStage("solve");
+      const body = (await response.json().catch(() => null)) as {
+        feedback?: GateFeedback;
+        error?: string;
+      } | null;
+      if (!response.ok || !body?.feedback) {
+        setError(body?.error ?? "Zed could not grade your plan.");
+        return;
+      }
+      setGateFeedback(body.feedback);
+      setStage("review");
     } finally {
       setBusy(false);
     }
@@ -263,6 +287,7 @@ export function PracticeFlow({
     setCoaching([]);
     setSkills([]);
     setReveal(null);
+    setGateFeedback(null);
     setError("");
   }
 
@@ -433,11 +458,21 @@ export function PracticeFlow({
         </div>
       )}
 
+      {stage === "review" && problem && gateFeedback && (
+        <GateReview
+          problem={problem}
+          feedback={gateFeedback}
+          archetypes={archetypes}
+          onContinue={() => setStage("solve")}
+        />
+      )}
+
       {stage === "solve" && problem && (
         <SolveStage
           expanded={expanded}
           onToggleExpanded={() => setExpanded((current) => !current)}
           problem={problem}
+          feedback={gateFeedback}
           language={language}
           onLanguage={switchLanguage}
           code={code}
@@ -468,6 +503,7 @@ const STEPS: { stage: Stage; label: string }[] = [
   { stage: "pick", label: "Choose" },
   { stage: "classify", label: "Classify" },
   { stage: "commit", label: "Commit" },
+  { stage: "review", label: "Review" },
   { stage: "solve", label: "Solve" },
   { stage: "coaching", label: "Coaching" },
 ];
@@ -495,7 +531,13 @@ function Steps({ stage }: { stage: Stage }) {
   );
 }
 
-function Statement({ problem }: { problem: ClientProblem }) {
+function Statement({
+  problem,
+  feedback,
+}: {
+  problem: ClientProblem;
+  feedback?: GateFeedback | null;
+}) {
   return (
     <div>
       <div className="flex items-center gap-2">
@@ -504,6 +546,17 @@ function Statement({ problem }: { problem: ClientProblem }) {
           {problem.difficulty}
         </span>
       </div>
+      {feedback && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="border-sage/25 bg-sage/[.07] text-sage inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-mono text-[10px]">
+            <Clock3 className="size-3" /> Target{" "}
+            {feedback.expectedComplexity.time} time
+          </span>
+          <span className="border-iron bg-raised text-canvas rounded-lg border px-2.5 py-1.5 font-mono text-[10px]">
+            {feedback.expectedComplexity.space} space
+          </span>
+        </div>
+      )}
       <p className="text-canvas mt-3 text-xs leading-6 whitespace-pre-line">
         {problem.statement}
       </p>
@@ -513,6 +566,147 @@ function Statement({ problem }: { problem: ClientProblem }) {
             <li key={line}>· {line}</li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+function GateReview({
+  problem,
+  feedback,
+  archetypes,
+  onContinue,
+}: {
+  problem: ClientProblem;
+  feedback: GateFeedback;
+  archetypes: ArchetypeOption[];
+  onContinue: () => void;
+}) {
+  const chosenName =
+    archetypes.find((item) => item.id === feedback.chosenClassification)
+      ?.name ?? "Your selection";
+  const actualEdges = new Set(feedback.edgeCases);
+  return (
+    <div className="roleward-card overflow-hidden rounded-[22px]">
+      <div className="border-iron/70 border-b p-5 sm:p-6">
+        <p className="section-label">Plan check</p>
+        <h2 className="mt-2 text-xl font-semibold tracking-[-.035em]">
+          Know the target before you code.
+        </h2>
+        <p className="text-dust mt-2 text-xs leading-5">
+          Your choices are locked. Use this feedback to enter the editor with
+          the right mental model.
+        </p>
+      </div>
+      <div className="bg-iron/70 grid gap-px lg:grid-cols-3">
+        <FeedbackCard
+          correct={feedback.classificationCorrect}
+          label="Pattern"
+          answer={feedback.archetype?.name ?? "Unknown pattern"}
+          chosen={feedback.classificationCorrect ? undefined : chosenName}
+          detail={feedback.archetype?.tell}
+        />
+        <FeedbackCard
+          correct={feedback.complexityCorrect}
+          label="Time complexity"
+          answer={feedback.expectedComplexity.time}
+          chosen={
+            feedback.complexityCorrect
+              ? undefined
+              : (feedback.chosenComplexity ?? undefined)
+          }
+          detail={`Space target: ${feedback.expectedComplexity.space}`}
+          mono
+        />
+        <div className="bg-workshop p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-dust text-[10px] font-semibold tracking-wide uppercase">
+              Edge cases
+            </p>
+            <span className="text-canvas font-mono text-[10px]">
+              {feedback.edgeCasesScore ?? 0}/10
+            </span>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {feedback.chosenEdgeCases.map((item) => (
+              <li
+                key={item}
+                className={cn(
+                  "flex items-start gap-2 text-[11px] leading-5",
+                  actualEdges.has(item) ? "text-sage" : "text-red-400",
+                )}
+              >
+                {actualEdges.has(item) ? (
+                  <Check className="mt-1 size-3 shrink-0" />
+                ) : (
+                  <X className="mt-1 size-3 shrink-0" />
+                )}
+                {item}
+              </li>
+            ))}
+          </ul>
+          {feedback.chosenEdgeCases.length === 0 && (
+            <p className="text-dust mt-4 text-[11px]">
+              No edge cases selected.
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <Statement problem={problem} feedback={feedback} />
+        <button
+          type="button"
+          onClick={onContinue}
+          className="bg-amber text-night inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-xs font-semibold"
+        >
+          Open coding room <ArrowRight className="size-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FeedbackCard({
+  correct,
+  label,
+  answer,
+  chosen,
+  detail,
+  mono = false,
+}: {
+  correct: boolean;
+  label: string;
+  answer: string;
+  chosen?: string;
+  detail?: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="bg-workshop p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-dust text-[10px] font-semibold tracking-wide uppercase">
+          {label}
+        </p>
+        {correct ? (
+          <span className="text-sage flex items-center gap-1 text-[10px] font-semibold">
+            <CheckCircle2 className="size-3.5" /> Correct
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 text-[10px] font-semibold text-red-400">
+            <X className="size-3.5" /> Not quite
+          </span>
+        )}
+      </div>
+      <p className={cn("mt-4 text-base font-semibold", mono && "font-mono")}>
+        {answer}
+      </p>
+      {chosen && (
+        <p className="text-dust mt-1 text-[11px]">
+          You chose <span className="text-canvas">{chosen}</span>
+        </p>
+      )}
+      {detail && (
+        <p className="text-dust mt-3 text-[11px] leading-5">{detail}</p>
       )}
     </div>
   );
@@ -646,6 +840,7 @@ function SolveStage({
   expanded,
   onToggleExpanded,
   problem,
+  feedback,
   language,
   onLanguage,
   code,
@@ -660,6 +855,7 @@ function SolveStage({
   expanded: boolean;
   onToggleExpanded: () => void;
   problem: ClientProblem;
+  feedback: GateFeedback | null;
   language: Language;
   onLanguage: (value: Language) => void;
   code: string;
@@ -694,13 +890,13 @@ function SolveStage({
             // Stacked below xl, side by side above it. Explicit minmax rows
             // stop a long statement from squeezing the editor to nothing, and
             // each pane scrolls inside itself rather than the whole overlay.
-            "bg-night fixed inset-0 z-50 grid grid-rows-[minmax(0,1fr)_minmax(0,1.15fr)] gap-3 overflow-hidden p-3 xl:grid-cols-[.8fr_1.2fr] xl:grid-rows-[minmax(0,1fr)]"
-          : "grid gap-4 xl:grid-cols-[.85fr_1.15fr]",
+            "bg-night fixed inset-0 z-50 grid grid-rows-[minmax(0,1fr)_minmax(0,1.15fr)] gap-3 overflow-hidden p-3 xl:grid-cols-[.82fr_1.18fr] xl:grid-rows-[minmax(0,1fr)]"
+          : "grid gap-4 xl:grid-cols-[.78fr_1.22fr]",
       )}
     >
       <div
         className={cn(
-          "border-iron/80 bg-workshop/75 space-y-5 rounded-2xl border p-5",
+          "roleward-card space-y-6 rounded-[22px] p-5",
           // Scrolls on its own so a long statement cannot push the editor down
           // the page, which is what made the editor three lines tall.
           expanded
@@ -708,7 +904,7 @@ function SolveStage({
             : "max-h-[32rem] overflow-y-auto",
         )}
       >
-        <Statement problem={problem} />
+        <Statement problem={problem} feedback={feedback} />
 
         <div>
           <p className="section-label">Examples</p>
@@ -769,11 +965,11 @@ function SolveStage({
 
       <div
         className={cn(
-          "border-iron/80 bg-workshop/75 flex flex-col overflow-hidden rounded-2xl border",
+          "roleward-card flex flex-col overflow-hidden rounded-[22px]",
           expanded ? "min-h-0" : "min-h-[28rem]",
         )}
       >
-        <div className="border-iron/70 flex items-center justify-between border-b px-4 py-2">
+        <div className="border-iron/70 flex min-h-12 items-center justify-between border-b px-4">
           <div className="flex items-center gap-2">
             <Braces className="text-amber size-3.5" />
             <select
@@ -812,13 +1008,13 @@ function SolveStage({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 bg-[#18191e]">
+        <div className="min-h-0 flex-1 bg-[#111318] shadow-[inset_0_1px_12px_rgba(0,0,0,.25)]">
           <textarea
             value={code}
             onChange={(event) => onCode(event.target.value)}
             spellCheck={false}
             aria-label="Solution"
-            className="text-linen h-full w-full resize-none bg-transparent p-4 font-mono text-xs leading-6 outline-none"
+            className="text-linen selection:bg-amber/30 h-full w-full resize-none bg-transparent p-5 font-mono text-[13px] leading-6 outline-none"
           />
         </div>
 

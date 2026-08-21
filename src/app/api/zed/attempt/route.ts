@@ -69,8 +69,6 @@ export async function POST(request: Request) {
     });
 
   if (parsed.data.action === "commit") {
-    // Correctness is withheld until the end. Learning you guessed wrong before
-    // writing a line turns the gate into a hint.
     if (attempt.committedAt)
       return NextResponse.json({ committed: true, alreadyCommitted: true });
     attempt.classification = parsed.data.classification;
@@ -91,7 +89,23 @@ export async function POST(request: Request) {
     );
     attempt.committedAt = new Date().toISOString();
     await putAttempt(session.user.id, attempt);
-    return NextResponse.json({ committed: true });
+    const archetype = findArchetype(problem.archetypeId);
+    return NextResponse.json({
+      committed: true,
+      feedback: {
+        archetype: archetype
+          ? { id: archetype.id, name: archetype.name, tell: archetype.tell }
+          : null,
+        classificationCorrect: attempt.classificationCorrect,
+        chosenClassification: attempt.classification,
+        expectedComplexity: problem.expectedComplexity,
+        complexityCorrect: attempt.complexityCorrect,
+        chosenComplexity: attempt.complexity,
+        edgeCases: problem.edgeCases,
+        chosenEdgeCases: attempt.edgeCasesChosen,
+        edgeCasesScore: attempt.edgeCasesScore,
+      },
+    });
   }
 
   if (parsed.data.action === "hint") {
