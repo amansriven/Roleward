@@ -13,13 +13,22 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const parsed = requestSchema.safeParse(await request.json().catch(() => null));
+  const parsed = requestSchema.safeParse(
+    await request.json().catch(() => null),
+  );
   if (!parsed.success)
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   try {
-    const { description: _description, ...problem } =
-      await fetchLeetCodeProblem(parsed.data.url);
-    return NextResponse.json({ problem });
+    const problem = await fetchLeetCodeProblem(parsed.data.url);
+    return NextResponse.json({
+      problem: {
+        url: problem.url,
+        slug: problem.slug,
+        title: problem.title,
+        difficulty: problem.difficulty,
+        topics: problem.topics,
+      },
+    });
   } catch (error) {
     if (error instanceof LeetCodeSourceError)
       return NextResponse.json(

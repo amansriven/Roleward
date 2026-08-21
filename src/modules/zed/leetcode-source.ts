@@ -14,7 +14,9 @@ const QUERY = `query questionData($titleSlug: String!) {
   }
 }`;
 
-export async function fetchLeetCodeProblem(rawUrl: string): Promise<LeetCodeProblem> {
+export async function fetchLeetCodeProblem(
+  rawUrl: string,
+): Promise<LeetCodeProblem> {
   const source = parseLeetCodeUrl(rawUrl);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8_000);
@@ -62,7 +64,10 @@ export async function fetchLeetCodeProblem(rawUrl: string): Promise<LeetCodeProb
       );
     const difficulty = String(question.difficulty);
     if (!["Easy", "Medium", "Hard"].includes(difficulty))
-      throw new LeetCodeSourceError("empty", "That problem could not be parsed.");
+      throw new LeetCodeSourceError(
+        "empty",
+        "That problem could not be parsed.",
+      );
     return {
       ...source,
       title: String(question.title ?? source.slug),

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { interviewsConfigured, INTERVIEW_MODEL, openai } from "@/modules/interviews/openai";
+import {
+  interviewsConfigured,
+  INTERVIEW_MODEL,
+  openai,
+} from "@/modules/interviews/openai";
 import { LeetCodeSourceError } from "@/modules/zed/leetcode";
 import { fetchLeetCodeProblem } from "@/modules/zed/leetcode-source";
 
@@ -11,7 +15,12 @@ export const maxDuration = 60;
 const requestSchema = z.object({
   url: z.string().trim().min(1).max(2048),
   messages: z
-    .array(z.object({ role: z.enum(["assistant", "user"]), content: z.string().trim().min(1).max(4000) }))
+    .array(
+      z.object({
+        role: z.enum(["assistant", "user"]),
+        content: z.string().trim().min(1).max(4000),
+      }),
+    )
     .max(20),
 });
 
@@ -20,8 +29,13 @@ export async function POST(request: Request) {
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!interviewsConfigured)
-    return NextResponse.json({ error: "AI coaching is not configured." }, { status: 503 });
-  const parsed = requestSchema.safeParse(await request.json().catch(() => null));
+    return NextResponse.json(
+      { error: "AI coaching is not configured." },
+      { status: 503 },
+    );
+  const parsed = requestSchema.safeParse(
+    await request.json().catch(() => null),
+  );
   if (!parsed.success)
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   try {
@@ -43,7 +57,12 @@ export async function POST(request: Request) {
         },
         ...(parsed.data.messages.length
           ? parsed.data.messages
-          : [{ role: "user" as const, content: "Start the guided walkthrough." }]),
+          : [
+              {
+                role: "user" as const,
+                content: "Start the guided walkthrough.",
+              },
+            ]),
       ],
     });
     const message = response.choices[0]?.message?.content?.trim();
@@ -52,6 +71,9 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof LeetCodeSourceError)
       return NextResponse.json({ error: error.message }, { status: 422 });
-    return NextResponse.json({ error: "Zed could not continue the walkthrough." }, { status: 502 });
+    return NextResponse.json(
+      { error: "Zed could not continue the walkthrough." },
+      { status: 502 },
+    );
   }
 }

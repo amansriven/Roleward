@@ -44,7 +44,10 @@ export function parseLeetCodeUrl(rawUrl: string) {
     );
   const slug = decodeURIComponent(match[1]).trim().toLowerCase();
   if (!/^[a-z0-9-]+$/.test(slug))
-    throw new LeetCodeSourceError("invalid_url", "That problem link is invalid.");
+    throw new LeetCodeSourceError(
+      "invalid_url",
+      "That problem link is invalid.",
+    );
   return {
     slug,
     url: `https://leetcode.com/problems/${slug}/`,
@@ -53,7 +56,7 @@ export function parseLeetCodeUrl(rawUrl: string) {
 
 export function leetCodeHtmlToText(html: string) {
   return html
-    .replace(/<pre\b[^>]*>/gi, "\n")
+    .replace(/<pre\b[^>]*>/gi, "")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(p|li|div|pre|h[1-6])>/gi, "\n")
     .replace(/<[^>]+>/g, " ")

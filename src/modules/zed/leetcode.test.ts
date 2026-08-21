@@ -17,11 +17,12 @@ describe("LeetCode companion parsing", () => {
     expect(() =>
       parseLeetCodeUrl("https://leetcode.com.example.test/problems/two-sum"),
     ).toThrow();
-    expect(() => parseLeetCodeUrl("https://leetcode.com/explore/" )).toThrow();
+    expect(() => parseLeetCodeUrl("https://leetcode.com/explore/")).toThrow();
   });
 
   it("turns the statement HTML into coaching context", () => {
-    expect(leetCodeHtmlToText("<p>Find &lt;x&gt;.</p><pre>nums = [1, 2]</pre>"))
-      .toBe("Find <x>.\nnums = [1, 2]");
+    expect(
+      leetCodeHtmlToText("<p>Find &lt;x&gt;.</p><pre>nums = [1, 2]</pre>"),
+    ).toBe("Find <x>.\nnums = [1, 2]");
   });
 });

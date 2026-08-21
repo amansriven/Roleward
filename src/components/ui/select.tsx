@@ -24,7 +24,7 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "border-iron bg-night/60 text-linen data-[placeholder]:text-dust hover:border-dust/70 hover:bg-raised focus:border-amber/70 focus:shadow-[0_0_0_3px_rgba(255,122,89,0.12)] flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border px-3.5 text-left text-sm transition-[border-color,background-color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-45 [&>span]:truncate",
+        "border-iron bg-night/60 text-linen data-[placeholder]:text-dust hover:border-dust/70 hover:bg-raised focus:border-amber/70 flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border px-3.5 text-left text-sm transition-[border-color,background-color,box-shadow] outline-none focus:shadow-[0_0_0_3px_rgba(255,122,89,0.12)] disabled:cursor-not-allowed disabled:opacity-45 [&>span]:truncate",
         className,
       )}
       {...props}
@@ -50,7 +50,7 @@ export function SelectContent({
         position={position}
         sideOffset={sideOffset}
         className={cn(
-          "border-iron bg-[#171a20]/98 text-linen data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 max-h-[min(22rem,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border p-1.5 shadow-[0_22px_70px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]",
+          "border-iron text-linen data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 max-h-[min(22rem,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border bg-[#171a20]/98 p-1.5 shadow-[0_22px_70px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]",
           className,
         )}
         {...props}
