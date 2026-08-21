@@ -3,7 +3,6 @@ import "server-only";
 import { lookup } from "node:dns/promises";
 
 import { parseJobPostingDocument } from "@/modules/applications/job-posting";
-import { env } from "@/lib/env";
 import { addressBlocked } from "./net-guard";
 
 const MAX_BYTES = 512 * 1024;
@@ -34,20 +33,20 @@ function importerText(value: unknown) {
 }
 
 async function fetchFromImporterService(rawUrl: string) {
-  if (!env.JOB_IMPORTER_URL) return null;
+  const serviceUrl = process.env.JOB_IMPORTER_URL?.trim();
+  const serviceSecret = process.env.JOB_IMPORTER_SECRET?.trim();
+  if (!serviceUrl) return null;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), IMPORTER_TIMEOUT_MS);
   try {
-    const endpoint = new URL("/jobs/import", env.JOB_IMPORTER_URL);
+    const endpoint = new URL("/jobs/import", serviceUrl);
     const response = await fetch(endpoint, {
       method: "POST",
       signal: controller.signal,
       headers: {
         "content-type": "application/json",
-        ...(env.JOB_IMPORTER_SECRET
-          ? { authorization: `Bearer ${env.JOB_IMPORTER_SECRET}` }
-          : {}),
+        ...(serviceSecret ? { authorization: `Bearer ${serviceSecret}` } : {}),
       },
       body: JSON.stringify({ url: rawUrl }),
     });

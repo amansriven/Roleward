@@ -14,8 +14,6 @@ const serverEnvironmentSchema = z.object({
   COGNITO_USER_POOL_ID: z.string().min(1).optional(),
   COGNITO_CLIENT_ID: z.string().min(1).optional(),
   E2B_API_KEY: z.string().min(1).optional(),
-  JOB_IMPORTER_URL: z.url().optional(),
-  JOB_IMPORTER_SECRET: z.string().min(1).optional(),
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
 });
 
