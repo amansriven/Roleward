@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import GitHub from "next-auth/providers/github";
 import { z } from "zod";
 import {
   authenticateWithPassword,
@@ -12,7 +13,54 @@ const authEnvironment = readAuthEnvironment(process.env);
 const authConfigured = authEnvironment.configured;
 
 export { authConfigured };
+export const cognitoAuthEnabled = authEnvironment.cognitoConfigured;
+export const githubAuthEnabled = authEnvironment.githubConfigured;
 export const appleAuthEnabled = process.env.AUTH_APPLE_ENABLED === "true";
+
+const providers = [];
+
+if (cognitoAuthEnabled) {
+  providers.push(
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials) => {
+        if (!emailAuthConfigured) return null;
+        const parsed = z
+          .object({
+            email: z.string().email(),
+            password: z.string().min(8),
+          })
+          .safeParse(credentials);
+        if (!parsed.success) return null;
+        try {
+          return await authenticateWithPassword(
+            parsed.data.email.toLowerCase(),
+            parsed.data.password,
+          );
+        } catch {
+          return null;
+        }
+      },
+    }),
+    createCognitoOAuthProvider({
+      clientId: authEnvironment.cognitoClientId,
+      clientSecret: authEnvironment.cognitoClientSecret,
+      issuer: authEnvironment.cognitoIssuer,
+    }),
+  );
+}
+
+if (githubAuthEnabled) {
+  providers.push(
+    GitHub({
+      clientId: authEnvironment.githubClientId,
+      clientSecret: authEnvironment.githubClientSecret,
+    }),
+  );
+}
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -20,43 +68,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     authEnvironment.authSecret || "build-only-placeholder-not-for-production",
   pages: { signIn: "/login", error: "/login" },
   session: { strategy: "jwt", maxAge: 60 * 60 * 8 },
-  providers: authConfigured
-    ? [
-        Credentials({
-          credentials: {
-            email: { label: "Email", type: "email" },
-            password: { label: "Password", type: "password" },
-          },
-          authorize: async (credentials) => {
-            if (!emailAuthConfigured) return null;
-            const parsed = z
-              .object({
-                email: z.string().email(),
-                password: z.string().min(8),
-              })
-              .safeParse(credentials);
-            if (!parsed.success) return null;
-            try {
-              return await authenticateWithPassword(
-                parsed.data.email.toLowerCase(),
-                parsed.data.password,
-              );
-            } catch {
-              return null;
-            }
-          },
-        }),
-        createCognitoOAuthProvider({
-          clientId: authEnvironment.cognitoClientId,
-          clientSecret: authEnvironment.cognitoClientSecret,
-          issuer: authEnvironment.cognitoIssuer,
-        }),
-      ]
-    : [],
+  providers,
   callbacks: {
     authorized: ({ auth: session }) => Boolean(session?.user),
-    jwt: ({ token, profile, user }) => {
-      if (profile?.sub) token.sub = profile.sub;
+    jwt: ({ token, profile, user, account }) => {
+      if (account?.provider === "github" && account.providerAccountId)
+        token.sub = `github:${account.providerAccountId}`;
+      else if (profile?.sub) token.sub = profile.sub;
       if (user) {
         token.name = user.name;
         token.email = user.email;

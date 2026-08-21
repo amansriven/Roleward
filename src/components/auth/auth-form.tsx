@@ -1,6 +1,11 @@
 import { LockKeyhole } from "lucide-react";
 import Link from "next/link";
-import { appleAuthEnabled, authConfigured } from "@/auth";
+import {
+  appleAuthEnabled,
+  authConfigured,
+  cognitoAuthEnabled,
+  githubAuthEnabled,
+} from "@/auth";
 import { beginManagedLogin } from "@/components/auth/auth-actions";
 import { EmailAuthForm } from "@/components/auth/email-auth-form";
 
@@ -10,22 +15,23 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     return (
       <div className="border-amber/30 bg-amber/[.06] mt-7 rounded-xl border p-4">
         <p className="text-amber text-sm font-semibold">
-          Cognito configuration required
+          Authentication configuration required
         </p>
         <p className="text-canvas mt-2 text-xs leading-5">
-          Add the server-side Cognito client ID, client secret, issuer, and
-          Auth.js secret, then redeploy.
+          Add an Auth.js secret and configure Cognito or GitHub, then redeploy.
         </p>
       </div>
     );
   return (
     <div className="mt-8">
-      <EmailAuthForm mode={mode} />
-      <div className="my-5 flex items-center gap-3" role="separator">
-        <span className="bg-iron/70 h-px flex-1" />
-        <span className="text-dust text-[11px]">or continue with</span>
-        <span className="bg-iron/70 h-px flex-1" />
-      </div>
+      {cognitoAuthEnabled && <EmailAuthForm mode={mode} />}
+      {cognitoAuthEnabled && (
+        <div className="my-5 flex items-center gap-3" role="separator">
+          <span className="bg-iron/70 h-px flex-1" />
+          <span className="text-dust text-[11px]">or continue with</span>
+          <span className="bg-iron/70 h-px flex-1" />
+        </div>
+      )}
       <form action={beginManagedLogin}>
         <input
           type="hidden"
@@ -33,16 +39,18 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           value={signup ? "/onboarding" : "/dashboard"}
         />
         <input type="hidden" name="mode" value={mode} />
-        <div className={appleAuthEnabled ? "grid grid-cols-2 gap-3" : "grid"}>
-          <button
-            className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
-            name="provider"
-            value="google"
-            type="submit"
-          >
-            <GoogleMark /> Google
-          </button>
-          {appleAuthEnabled && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {cognitoAuthEnabled && (
+            <button
+              className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
+              name="provider"
+              value="google"
+              type="submit"
+            >
+              <GoogleMark /> Google
+            </button>
+          )}
+          {cognitoAuthEnabled && appleAuthEnabled && (
             <button
               className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
               name="provider"
@@ -52,13 +60,23 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
               <AppleMark /> Apple
             </button>
           )}
+          {githubAuthEnabled && (
+            <button
+              className="border-iron bg-night/30 text-linen hover:border-canvas/60 flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors"
+              name="provider"
+              value="github"
+              type="submit"
+            >
+              <GitHubMark /> GitHub
+            </button>
+          )}
         </div>
       </form>
       <div className="mt-5 flex items-start gap-3">
         <LockKeyhole className="text-sage mt-0.5 size-4 shrink-0" />
         <p className="text-dust text-xs leading-5">
-          Cognito securely validates your credentials. Roleward never stores
-          your password.
+          Your identity provider securely validates your credentials. Roleward
+          never stores your password.
         </p>
       </div>
       <p className="text-canvas mt-6 text-center text-sm">
@@ -71,6 +89,18 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </Link>
       </p>
     </div>
+  );
+}
+
+function GitHubMark() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-[18px] fill-current"
+      viewBox="0 0 24 24"
+    >
+      <path d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2.23c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.1-.75.41-1.27.74-1.56-2.58-.29-5.29-1.29-5.29-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18a10.95 10.95 0 0 1 5.76 0c2.19-1.49 3.15-1.18 3.15-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.4-2.72 5.38-5.3 5.67.42.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z" />
+    </svg>
   );
 }
 

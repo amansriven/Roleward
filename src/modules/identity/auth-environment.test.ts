@@ -14,6 +14,8 @@ describe("readAuthEnvironment", () => {
     expect(environment).toMatchObject({
       cognitoClientId: "cognito-client-id",
       cognitoClientSecret: "cognito-client-secret",
+      cognitoConfigured: true,
+      githubConfigured: false,
       configured: true,
     });
   });
@@ -33,6 +35,10 @@ describe("readAuthEnvironment", () => {
       cognitoClientSecret: "cognito-client-secret",
       cognitoIssuer:
         "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_example",
+      githubClientId: "",
+      githubClientSecret: "",
+      cognitoConfigured: true,
+      githubConfigured: false,
       configured: true,
     });
   });
@@ -46,5 +52,21 @@ describe("readAuthEnvironment", () => {
           "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_example",
       }).configured,
     ).toBe(false);
+  });
+
+  it("supports GitHub as the only configured authentication provider", () => {
+    expect(
+      readAuthEnvironment({
+        AUTH_SECRET: "auth-secret",
+        AUTH_GITHUB_ID: "github-client-id",
+        AUTH_GITHUB_SECRET: "github-client-secret",
+      }),
+    ).toMatchObject({
+      githubClientId: "github-client-id",
+      githubClientSecret: "github-client-secret",
+      cognitoConfigured: false,
+      githubConfigured: true,
+      configured: true,
+    });
   });
 });
