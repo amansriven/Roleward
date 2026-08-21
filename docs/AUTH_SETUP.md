@@ -82,6 +82,11 @@ secret shown under **Social and external providers → Google**. Google’s
 credentials connect Google to Cognito; the Cognito app-client credentials
 connect Sweet+ and Auth.js to Cognito’s token endpoint.
 
+The Auth.js Cognito provider explicitly enables PKCE, state, and nonce checks.
+This is required for federated sign-in because Cognito automatically adds a
+nonce to third-party ID tokens when the authorization request omits one. Sweet+
+sends its own nonce so Auth.js can validate the returned value.
+
 ## Verification
 
 1. Open `/login` and continue to Cognito managed login.

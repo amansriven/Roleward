@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import Cognito from "next-auth/providers/cognito";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import {
@@ -7,6 +6,7 @@ import {
   emailAuthConfigured,
 } from "@/modules/identity/cognito-server";
 import { readAuthEnvironment } from "@/modules/identity/auth-environment";
+import { createCognitoOAuthProvider } from "@/modules/identity/cognito-oauth";
 
 const authEnvironment = readAuthEnvironment(process.env);
 const authConfigured = authEnvironment.configured;
@@ -46,16 +46,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             }
           },
         }),
-        Cognito({
+        createCognitoOAuthProvider({
           clientId: authEnvironment.cognitoClientId,
           clientSecret: authEnvironment.cognitoClientSecret,
           issuer: authEnvironment.cognitoIssuer,
-          authorization: {
-            params: {
-              response_type: "code",
-              scope: "openid email profile",
-            },
-          },
         }),
       ]
     : [],
