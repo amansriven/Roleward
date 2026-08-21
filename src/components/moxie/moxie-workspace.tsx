@@ -47,6 +47,8 @@ const contextSources = [
   "Interviews",
 ];
 
+const historyPreferenceKey = "roleward:moxie-history-open";
+
 const clockTime = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, {
     hour: "numeric",
@@ -66,14 +68,23 @@ export function MoxieWorkspace() {
   useEffect(() => {
     queueMicrotask(() => {
       setLibrary(loadMoxieLibrary(localStorage));
-      // The rail docks beside the chat from md up; below that it would cover it.
-      setHistoryOpen(window.innerWidth >= 768);
+      // Remembered preference wins; otherwise the rail docks from md up, where
+      // there is room for it beside the chat.
+      const stored = localStorage.getItem(historyPreferenceKey);
+      setHistoryOpen(
+        stored === null ? window.innerWidth >= 768 : stored === "true",
+      );
     });
   }, []);
   useEffect(
     () => bottom.current?.scrollIntoView({ behavior: "smooth" }),
     [library, busy],
   );
+
+  function toggleHistory(open: boolean) {
+    setHistoryOpen(open);
+    localStorage.setItem(historyPreferenceKey, String(open));
+  }
 
   function persist(next: MoxieLibrary) {
     setLibrary(next);
@@ -168,13 +179,13 @@ export function MoxieWorkspace() {
             activeId={library.activeId}
             onSelect={(id) => {
               persist({ ...library, activeId: id });
-              if (window.innerWidth < 768) setHistoryOpen(false);
+              if (window.innerWidth < 768) toggleHistory(false);
             }}
             onRename={(id, title) =>
               persist(renameMoxieConversation(library, id, title))
             }
             onDelete={(id) => persist(removeMoxieConversation(library, id))}
-            onClose={() => setHistoryOpen(false)}
+            onClose={() => toggleHistory(false)}
           />
         )}
       </div>
@@ -182,7 +193,7 @@ export function MoxieWorkspace() {
         <button
           type="button"
           aria-label="Close chat history"
-          onClick={() => setHistoryOpen(false)}
+          onClick={() => toggleHistory(false)}
           className="bg-night/60 absolute inset-0 z-20 md:hidden"
         />
       )}
@@ -197,7 +208,7 @@ export function MoxieWorkspace() {
           {!historyOpen && (
             <button
               type="button"
-              onClick={() => setHistoryOpen(true)}
+              onClick={() => toggleHistory(true)}
               aria-label="Show chat history"
               className="border-iron text-canvas hover:border-canvas/40 hover:text-linen flex size-9 shrink-0 items-center justify-center rounded-xl border transition"
             >
@@ -299,18 +310,18 @@ export function MoxieWorkspace() {
                 const key = `${message.createdAt}-${index}`;
                 if (message.role === "user")
                   return (
-                    <article key={key} className="ml-auto max-w-[80%]">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-amber/10 border-amber/20 text-linen min-w-0 rounded-2xl border px-4 py-3 text-sm leading-6 whitespace-pre-wrap sm:px-5">
+                    <article key={key} className="flex justify-end gap-3">
+                      <div className="flex max-w-[80%] min-w-0 flex-col items-end">
+                        <div className="bg-amber/10 border-amber/20 text-linen rounded-2xl border px-4 py-3 text-sm leading-6 whitespace-pre-wrap sm:px-5">
                           {message.content}
                         </div>
-                        <span className="bg-amber/15 text-amber mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
-                          You
-                        </span>
+                        <p className="text-dust mt-1.5 text-[10px]">
+                          {clockTime(message.createdAt)}
+                        </p>
                       </div>
-                      <p className="text-dust mt-1.5 pr-11 text-right text-[10px]">
-                        {clockTime(message.createdAt)}
-                      </p>
+                      <span className="bg-amber/15 text-amber mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                        You
+                      </span>
                     </article>
                   );
                 return (
