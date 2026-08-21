@@ -105,11 +105,11 @@ The UI separates observable measures from interpretation. For example, “162 wo
 
 ### Global launcher
 
-A 48px Moxie avatar button sits above the workspace feedback control. It shows a restrained sage availability dot and a short tooltip. The launcher never obscures primary page actions.
+A compact Moxie avatar button sits in the top-right of every dashboard surface. It shows a restrained sage availability dot and a short label. The launcher never obscures primary page actions.
 
 ### Contextual drawer
 
-Desktop uses a 420–480px right drawer. Mobile uses a full-height sheet. Opening it does not navigate away or discard in-progress forms or code.
+Desktop uses a non-modal 420–480px right dock. The visible page remains interactive while Moxie is open, so users can reference or edit their work during the conversation. Mobile uses a modal full-height sheet. Opening it does not navigate away or discard in-progress forms or code.
 
 Drawer anatomy:
 
@@ -176,3 +176,7 @@ Moxie responses can contain:
 8. Audio-derived coaching after privacy and retention review.
 
 The first release must remain read-only. It can analyze, explain, plan, coach from existing text, and draft content, but it cannot change workspace records.
+
+## Milestone 8 — response design system
+
+Moxie's answers should be composed for scanning, not rendered as undifferentiated chat text. This milestone adds semantic typography for headings, paragraphs, lists, inline emphasis, and code; then expands into grounded source chips, plan steps, comparison tables, draft cards, coaching observations, and action previews. Every block must remain readable in both the docked companion and the immersive workspace, with comfortable line length and clear visual hierarchy.

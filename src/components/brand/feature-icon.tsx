@@ -5,6 +5,7 @@ import {
   CookingPot,
   House,
   MicVocal,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,7 +16,8 @@ export type FeatureIconName =
   | "resume-kitchen"
   | "evidence"
   | "zed"
-  | "stage-fright";
+  | "stage-fright"
+  | "moxie";
 
 const icons: Record<FeatureIconName, LucideIcon> = {
   home: House,
@@ -24,6 +26,7 @@ const icons: Record<FeatureIconName, LucideIcon> = {
   evidence: BookOpenCheck,
   zed: Braces,
   "stage-fright": MicVocal,
+  moxie: Sparkles,
 };
 
 const sizes = {

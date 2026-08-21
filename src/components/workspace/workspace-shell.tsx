@@ -20,6 +20,7 @@ import {
   type FeatureIconName,
 } from "@/components/brand/feature-icon";
 import { WorkspaceSync } from "@/components/workspace/workspace-sync";
+import { MoxieDrawer } from "@/components/moxie/moxie-drawer";
 import { FeedbackDialog } from "@/components/workspace/feedback-dialog";
 import { cn } from "@/lib/utils";
 import {
@@ -53,6 +54,7 @@ const navigation = [
     href: "/dashboard/stage-fright",
     feature: "stage-fright",
   },
+  { label: "Moxie", href: "/dashboard/moxie", feature: "moxie" },
 ] as const satisfies ReadonlyArray<{
   label: string;
   href: string;
@@ -392,16 +394,19 @@ export function WorkspaceShell({
     });
   };
 
+  const isMoxie = pathname.startsWith("/dashboard/moxie");
+
   return (
     <div
       className={cn(
-        "bg-night min-h-screen lg:grid lg:transition-[grid-template-columns] lg:duration-200",
+        "bg-night lg:grid lg:transition-[grid-template-columns] lg:duration-200",
+        isMoxie ? "h-dvh overflow-hidden" : "min-h-screen",
         collapsed
           ? "lg:grid-cols-[5rem_minmax(0,1fr)]"
           : "lg:grid-cols-[16rem_minmax(0,1fr)]",
       )}
     >
-      <aside className="bg-workshop border-iron/80 relative z-40 hidden h-screen flex-col border-r lg:sticky lg:top-0 lg:flex">
+      <aside className="bg-workshop border-iron/80 relative z-40 hidden h-dvh flex-col border-r lg:sticky lg:top-0 lg:flex">
         <SidebarContent
           compact={collapsed}
           pathname={pathname}
@@ -410,7 +415,13 @@ export function WorkspaceShell({
         />
       </aside>
 
-      <div className="min-w-0">
+      <div
+        className={cn(
+          "flex min-w-0 flex-col",
+          // Moxie owns the full viewport so its rail and chat can scroll independently.
+          isMoxie ? "h-dvh overflow-hidden" : "min-h-screen",
+        )}
+      >
         <header className="bg-night/90 border-iron/80 sticky top-0 z-40 flex h-16 items-center gap-3 border-b px-4 backdrop-blur-xl sm:px-7 lg:hidden">
           <button
             type="button"
@@ -440,9 +451,16 @@ export function WorkspaceShell({
           />
         )}
 
-        <main className="mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-7 lg:px-10 lg:py-12 xl:px-12">
+        <main
+          className={cn(
+            isMoxie
+              ? "min-h-0 flex-1 overflow-hidden p-0"
+              : "mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-7 lg:px-10 lg:py-12 xl:px-12",
+          )}
+        >
           {children}
         </main>
+        <MoxieDrawer />
       </div>
     </div>
   );

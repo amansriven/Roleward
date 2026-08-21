@@ -9,6 +9,7 @@ export const INTERVIEW_MODEL =
   process.env.OPENAI_INTERVIEW_MODEL || "gpt-4.1-mini";
 export const RESEARCH_MODEL =
   process.env.OPENAI_RESEARCH_MODEL || "gpt-4.1-mini";
+export const MOXIE_MODEL = process.env.OPENAI_MOXIE_MODEL || "gpt-4.1-mini";
 export const REALTIME_MODEL =
   process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1";
 
