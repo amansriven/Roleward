@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
 import { getAttempt, putAttempt } from "@/modules/aws/practice-store";
 import { getProblem } from "@/modules/aws/problem-store";
-import { findArchetype } from "@/modules/guru/archetypes";
+import { findArchetype } from "@/modules/zed/archetypes";
 import {
   buildCoaching,
   complexityMatches,
@@ -12,9 +12,9 @@ import {
   MAX_HINTS,
   offeredEdgeCases,
   scoreEdgeCases,
-} from "@/modules/guru/practice";
-import { practiceAttemptSchema } from "@/modules/guru/schema";
-import { observeAttempt } from "@/modules/guru/skills";
+} from "@/modules/zed/practice";
+import { practiceAttemptSchema } from "@/modules/zed/schema";
+import { observeAttempt } from "@/modules/zed/skills";
 
 export const runtime = "nodejs";
 

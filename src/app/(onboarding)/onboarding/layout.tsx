@@ -7,7 +7,7 @@ export default function OnboardingLayout({
   children: ReactNode;
 }) {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_50%_0%,rgba(232,166,75,.08),transparent_35%)]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_50%_0%,rgba(223,124,104,.08),transparent_35%)]">
       <header className="border-iron/70 border-b px-5 py-5 sm:px-8">
         <Logo />
       </header>

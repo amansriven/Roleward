@@ -26,7 +26,7 @@ export const RESERVED_HANDLES = new Set([
   "contact",
   "dashboard",
   "docs",
-  "guru",
+  "zed",
   "help",
   "home",
   "login",

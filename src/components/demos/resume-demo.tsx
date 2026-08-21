@@ -11,7 +11,7 @@ export function ResumeDemo() {
     <div className="surface overflow-hidden rounded-2xl">
       <div className="border-iron flex items-center justify-between border-b px-5 py-4">
         <p className="flex items-center gap-2 text-sm font-semibold">
-          <FileText className="tool-accent size-4" aria-hidden="true" />
+          <FileText className="text-amber size-4" aria-hidden="true" />
           Résumé suggestion
         </p>
         <span className="text-dust font-mono text-[10px] tracking-[0.08em] uppercase">
@@ -38,7 +38,7 @@ export function ResumeDemo() {
             </div>
           )}
           <Button
-            className="tool-button mt-6"
+            className="bg-amber mt-6"
             onClick={() => setSeasoned(true)}
             disabled={seasoned}
           >
@@ -46,7 +46,7 @@ export function ResumeDemo() {
           </Button>
         </div>
         <div className="border-iron bg-raised border-t p-5 sm:p-7 md:border-t-0 md:border-l">
-          <p className="tool-accent font-mono text-[10px] uppercase">
+          <p className="text-amber font-mono text-[10px] uppercase">
             Why this is safe
           </p>
           <ul className="text-canvas mt-4 space-y-4 text-sm leading-6">

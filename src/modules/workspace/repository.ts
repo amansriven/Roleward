@@ -103,27 +103,39 @@ export interface RecommendedAction {
 }
 
 const keys = {
-  profile: "sweet-plus:candidate-profile",
-  evidence: "sweet-plus:evidence-library",
-  applications: "sweet-plus:applications",
-  active: "sweet-plus:active-application-id",
-  interviews: "sweet-plus:interview-summaries",
-  candidate: "sweet-plus:candidate-identity",
-  resumeVersions: "sweet-plus:resume-versions",
-  activeResumeVersion: "sweet-plus:active-resume-version-id",
+  profile: "backstage:candidate-profile",
+  evidence: "backstage:evidence-library",
+  applications: "backstage:applications",
+  active: "backstage:active-application-id",
+  interviews: "backstage:interview-summaries",
+  candidate: "backstage:candidate-identity",
+  resumeVersions: "backstage:resume-versions",
+  activeResumeVersion: "backstage:active-resume-version-id",
 } as const;
-export const workspaceUpdatedEvent = "sweet-plus:workspace-updated";
+export const workspaceUpdatedEvent = "backstage:workspace-updated";
+const priorStoragePrefix = ["sweet", "plus"].join("-");
+
 function announceWorkspaceUpdate() {
   if (typeof window !== "undefined")
     window.dispatchEvent(new CustomEvent(workspaceUpdatedEvent));
 }
+
+function storedValue(storage: Pick<Storage, "getItem">, key: string) {
+  const current = storage.getItem(key);
+  if (current !== null) return current;
+
+  const separator = key.indexOf(":");
+  const suffix = separator === -1 ? key : key.slice(separator + 1);
+  return storage.getItem(`${priorStoragePrefix}:${suffix}`);
+}
+
 function read<T>(
   storage: Pick<Storage, "getItem">,
   key: string,
   fallback: T,
 ): T {
   try {
-    return JSON.parse(storage.getItem(key) ?? "") as T;
+    return JSON.parse(storedValue(storage, key) ?? "") as T;
   } catch {
     return fallback;
   }
@@ -137,7 +149,7 @@ export function loadWorkspace(
     keys.applications,
     [],
   );
-  const activeId = storage.getItem(keys.active);
+  const activeId = storedValue(storage, keys.active);
   const identity = read<{
     name: string | null;
     headline: string | null;
@@ -165,7 +177,7 @@ export function loadWorkspace(
         now: "2000-01-01T00:00:00.000Z",
       }),
     ];
-  const requestedResumeVersion = storage.getItem(keys.activeResumeVersion);
+  const requestedResumeVersion = storedValue(storage, keys.activeResumeVersion);
   return {
     candidateName: identity.name,
     candidateHeadline: identity.headline,
@@ -441,7 +453,7 @@ export function recommendActions(
       {
         id: "confirm-evidence",
         title: "Confirm the experience from your résumé",
-        detail: "Build the trusted evidence used across Sweet+",
+        detail: "Build the trusted evidence used across Backstage",
         minutes: 5,
         href: "/dashboard/resume-kitchen/intake",
         area: "resume",

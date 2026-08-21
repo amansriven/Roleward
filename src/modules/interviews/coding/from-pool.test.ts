@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { describeRuns, toStoredCodingProblem } from "./from-pool";
 import type { CodingRun } from "../schema";
-import type { GeneratedProblem } from "@/modules/guru/schema";
+import type { GeneratedProblem } from "@/modules/zed/schema";
 
 const problem = {
   id: "problem-1",

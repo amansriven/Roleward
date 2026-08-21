@@ -24,7 +24,7 @@ export default function SignupPage() {
         <div className="mt-9 grid gap-3">
           {[
             ["01", "Resume Kitchen", "Shape credible, role-specific evidence."],
-            ["02", "Guru", "Know what to learn and practice next."],
+            ["02", "Zed", "Know what to learn and practice next."],
             [
               "03",
               "Stage Fright",

@@ -25,7 +25,7 @@ export function InterviewReportView({
   const plan = INTERVIEW_PLANS[session.config.type];
 
   return (
-    <div className="theme-stage mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <p className="section-label">
           {plan.label} · {session.roleLabel}

@@ -57,12 +57,12 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       <div className="mt-5 flex items-start gap-3">
         <LockKeyhole className="text-sage mt-0.5 size-4 shrink-0" />
         <p className="text-dust text-xs leading-5">
-          Cognito securely validates your credentials. Sweet+ never stores your
-          password.
+          Cognito securely validates your credentials. Backstage never stores
+          your password.
         </p>
       </div>
       <p className="text-canvas mt-6 text-center text-sm">
-        {signup ? "Already have an account? " : "New to Sweet+? "}
+        {signup ? "Already have an account? " : "New to Backstage? "}
         <Link
           className="text-amber font-semibold hover:underline"
           href={signup ? "/login" : "/signup"}

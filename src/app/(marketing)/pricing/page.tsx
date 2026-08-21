@@ -14,24 +14,24 @@ const plans = [
     features: [
       "One active target job",
       "One tailored résumé version",
-      "Selected Guru problems",
+      "Selected Zed problems",
       "Stage Fright story bank",
     ],
     action: "Start free",
     featured: false,
   },
   {
-    name: "Sweet+",
+    name: "Backstage",
     price: "$12",
     note: "For an active internship or new-grad search.",
     features: [
       "Unlimited target-job workspaces",
       "Full résumé version history",
-      "Complete Guru practice modes",
+      "Complete Zed practice modes",
       "Adaptive Stage Fright rehearsals",
       "Weekly preparation route",
     ],
-    action: "Start with Sweet+",
+    action: "Start with Backstage",
     featured: true,
   },
 ] as const;
@@ -47,8 +47,8 @@ export default function PricingPage() {
           <span className="text-amber">not anxiety.</span>
         </h1>
         <p className="text-canvas mx-auto mt-6 max-w-xl text-lg leading-8">
-          Start with the core workflow. Upgrade when Sweet+ becomes part of an
-          active search.
+          Start with the core workflow. Upgrade when Backstage becomes part of
+          an active search.
         </p>
       </section>
       <section className="mx-auto grid max-w-5xl gap-5 px-5 pb-24 sm:px-8 md:grid-cols-2">

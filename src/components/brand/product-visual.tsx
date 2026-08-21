@@ -6,6 +6,7 @@ import {
   MessageSquareText,
 } from "lucide-react";
 
+import { FeatureIcon } from "@/components/brand/feature-icon";
 import { cn } from "@/lib/utils";
 
 function ResumeVisual() {
@@ -42,7 +43,7 @@ function ResumeVisual() {
   );
 }
 
-function GuruVisual() {
+function ZedVisual() {
   return (
     <div className="grid h-full grid-cols-[1.2fr_.8fr] gap-3 p-5 sm:p-7">
       <div className="border-cobalt/35 rounded-xl border bg-[#18191e] p-4 font-mono">
@@ -66,11 +67,14 @@ function GuruVisual() {
         </div>
       </div>
       <div className="flex flex-col justify-between">
-        <div>
-          <p className="text-dust font-mono text-[8px] uppercase">
-            Next pattern
-          </p>
-          <p className="mt-2 text-xs font-semibold">Graph traversal</p>
+        <div className="flex items-center gap-2.5">
+          <FeatureIcon feature="zed" size="md" active />
+          <div>
+            <p className="text-dust font-mono text-[8px] uppercase">
+              Zed recommends
+            </p>
+            <p className="mt-1 text-xs font-semibold">Graph traversal</p>
+          </div>
         </div>
         <div className="space-y-2">
           <div className="bg-iron h-1.5 rounded-full">
@@ -125,7 +129,7 @@ function StageVisual() {
 
 const visuals = {
   resume: ResumeVisual,
-  guru: GuruVisual,
+  zed: ZedVisual,
   stage: StageVisual,
 } as const;
 
@@ -141,7 +145,7 @@ export function ProductVisual({
   return (
     <figure
       className={cn(
-        "tool-border bg-workshop relative aspect-[4/3] overflow-hidden rounded-2xl border shadow-[inset_0_1px_rgba(242,235,221,.04)]",
+        "border-amber/40 bg-workshop relative aspect-[4/3] overflow-hidden rounded-2xl border shadow-[inset_0_1px_rgba(242,235,221,.04)]",
         className,
       )}
     >

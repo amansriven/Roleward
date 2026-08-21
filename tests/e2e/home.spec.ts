@@ -1,15 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-test("shows the Sweet+ product foundation", async ({ page }) => {
+test("shows the Backstage product foundation", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "One role in",
   );
-  await expect(
-    page.getByRole("heading", { name: "Resume Kitchen" }),
-  ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Guru" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Resume Kitchen" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Zed" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Stage Fright", exact: true }),
   ).toBeVisible();
@@ -20,7 +18,7 @@ test("landing-page demos respond to candidate choices", async ({ page }) => {
 
   await page.getByRole("button", { name: "Backend" }).click();
   await expect(
-    page.getByText("Practice one SQL join problem in Guru"),
+    page.getByText("Practice one SQL join problem in Zed"),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Season this bullet" }).click();

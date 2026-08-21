@@ -31,14 +31,14 @@ export default async function LoginPage({
             “Preparation should feel focused, not scattered.”
           </p>
           <p className="text-dust mt-2 font-mono text-[10px] tracking-[0.08em] uppercase">
-            The Sweet+ approach
+            The Backstage approach
           </p>
         </div>
       </section>
       <section className="surface w-full rounded-3xl p-7 sm:p-10">
         <p className="section-label">Welcome back</p>
         <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">
-          Log in to Sweet+
+          Log in to Backstage
         </h2>
         <p className="text-canvas mt-3 text-sm leading-6">
           Choose the same method you used when creating your account.

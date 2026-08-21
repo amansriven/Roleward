@@ -10,8 +10,8 @@ import {
 import {
   generatedProblemSchema,
   type GeneratedProblem,
-} from "@/modules/guru/schema";
-import type { PoolCell } from "@/modules/guru/pool-policy";
+} from "@/modules/zed/schema";
+import type { PoolCell } from "@/modules/zed/pool-policy";
 import { awsRegion, workspaceTable } from "./config";
 
 const client = DynamoDBDocumentClient.from(
@@ -202,7 +202,7 @@ export async function markSeen(
   }
   // Losing the race three times means the id may go unrecorded and the problem
   // could be offered again. A repeat is a far smaller cost than a failed claim.
-  console.warn("guru pool: seen record contended", { cell });
+  console.warn("zed pool: seen record contended", { cell });
 }
 
 /**

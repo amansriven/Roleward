@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Sweet+ could not read that link. Paste the description instead.",
+          "Backstage could not read that link. Paste the description instead.",
       },
       { status: 502 },
     );

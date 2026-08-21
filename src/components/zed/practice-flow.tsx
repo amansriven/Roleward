@@ -24,10 +24,10 @@ import {
   type ExecutionResult,
   type Language,
 } from "@/modules/execution/port";
-import type { Difficulty } from "@/modules/guru/archetypes";
-import type { CoachingPoint, PracticeGate } from "@/modules/guru/practice";
-import type { ClientProblem } from "@/modules/guru/schema";
-import { renderStub } from "@/modules/guru/stubs";
+import type { Difficulty } from "@/modules/zed/archetypes";
+import type { CoachingPoint, PracticeGate } from "@/modules/zed/practice";
+import type { ClientProblem } from "@/modules/zed/schema";
+import { renderStub } from "@/modules/zed/stubs";
 
 /**
  * The practice loop.
@@ -122,16 +122,23 @@ export function PracticeFlow({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function start() {
+  async function start(selection?: {
+    archetypeId: string;
+    difficulty: Difficulty;
+  }) {
+    if (selection) {
+      setArchetypeId(selection.archetypeId);
+      setDifficulty(selection.difficulty);
+    }
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/guru/problem", {
+      const response = await fetch("/api/zed/problem", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          archetypeId: archetypeId || undefined,
-          difficulty,
+          archetypeId: selection?.archetypeId || archetypeId || undefined,
+          difficulty: selection?.difficulty ?? difficulty,
         }),
       });
       const body = (await response.json().catch(() => null)) as {
@@ -140,7 +147,7 @@ export function PracticeFlow({
         error?: string;
       } | null;
       if (!response.ok || !body?.problem || !body.gate) {
-        setError(body?.error ?? "Guru could not find a problem.");
+        setError(body?.error ?? "Zed could not find a problem.");
         return;
       }
       setProblem(body.problem);
@@ -148,7 +155,7 @@ export function PracticeFlow({
       setCode(renderStub(body.problem.signature, language));
       setStage("classify");
     } catch {
-      setError("Guru could not reach the problem pool.");
+      setError("Zed could not reach the problem pool.");
     } finally {
       setBusy(false);
     }
@@ -158,7 +165,7 @@ export function PracticeFlow({
     if (!problem) return;
     setBusy(true);
     try {
-      await fetch("/api/guru/attempt", {
+      await fetch("/api/zed/attempt", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -179,7 +186,7 @@ export function PracticeFlow({
     if (!problem) return;
     setBusy(true);
     try {
-      const response = await fetch("/api/guru/attempt", {
+      const response = await fetch("/api/zed/attempt", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "hint", problemId: problem.id }),
@@ -198,7 +205,7 @@ export function PracticeFlow({
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/guru/run", {
+      const response = await fetch("/api/zed/run", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ problemId: problem.id, language, code }),
@@ -208,12 +215,12 @@ export function PracticeFlow({
         error?: string;
       } | null;
       if (!response.ok) {
-        setError(body?.error ?? "Guru could not run that.");
+        setError(body?.error ?? "Zed could not run that.");
         return;
       }
       setResult(body?.result ?? null);
     } catch {
-      setError("Guru could not reach the judge.");
+      setError("Zed could not reach the judge.");
     } finally {
       setBusy(false);
     }
@@ -223,7 +230,7 @@ export function PracticeFlow({
     if (!problem) return;
     setBusy(true);
     try {
-      const response = await fetch("/api/guru/attempt", {
+      const response = await fetch("/api/zed/attempt", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "finish", problemId: problem.id }),
@@ -270,7 +277,7 @@ export function PracticeFlow({
 
   return (
     <div className="space-y-4">
-      <Steps stage={stage} />
+      {stage !== "pick" && <Steps stage={stage} />}
       {error && (
         <p className="rounded-lg border border-red-500/30 bg-red-500/5 p-3 text-xs text-red-400">
           {error}
@@ -281,10 +288,12 @@ export function PracticeFlow({
         <PickStage
           archetypes={archetypes}
           recommendation={recommendation}
-          onAcceptRecommendation={() => {
+          onStartRecommendation={() => {
             if (!recommendation) return;
-            setArchetypeId(recommendation.archetypeId);
-            setDifficulty(recommendation.difficulty);
+            void start({
+              archetypeId: recommendation.archetypeId,
+              difficulty: recommendation.difficulty,
+            });
           }}
           archetypeId={archetypeId}
           setArchetypeId={setArchetypeId}
@@ -296,7 +305,7 @@ export function PracticeFlow({
       )}
 
       {stage === "classify" && problem && gate && (
-        <div className="border-iron/80 bg-workshop/75 space-y-5 rounded-2xl border p-5">
+        <div className="border-iron/80 space-y-6 border-y py-6">
           <Statement problem={problem} />
           <div>
             <p className="text-sm font-semibold">
@@ -315,7 +324,7 @@ export function PracticeFlow({
                   className={cn(
                     "rounded-xl border p-3 text-left text-xs font-semibold transition",
                     classification === choice.id
-                      ? "border-cobalt bg-cobalt/10 text-linen"
+                      ? "border-amber bg-amber/10 text-linen"
                       : "border-iron text-canvas hover:text-linen",
                   )}
                 >
@@ -328,7 +337,7 @@ export function PracticeFlow({
             type="button"
             disabled={!classification}
             onClick={() => setStage("commit")}
-            className="bg-cobalt inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold text-white disabled:opacity-40"
+            className="bg-amber text-night inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold disabled:opacity-40"
           >
             Continue <ArrowRight className="size-3.5" />
           </button>
@@ -336,7 +345,7 @@ export function PracticeFlow({
       )}
 
       {stage === "commit" && problem && gate && (
-        <div className="border-iron/80 bg-workshop/75 space-y-5 rounded-2xl border p-5">
+        <div className="border-iron/80 space-y-6 border-y py-6">
           <Statement problem={problem} />
           <div>
             <p className="text-sm font-semibold">
@@ -355,7 +364,7 @@ export function PracticeFlow({
                   className={cn(
                     "rounded-xl border p-3 text-left font-mono text-xs transition",
                     complexity === choice
-                      ? "border-cobalt bg-cobalt/10 text-linen"
+                      ? "border-amber bg-amber/10 text-linen"
                       : "border-iron text-canvas hover:text-linen",
                   )}
                 >
@@ -389,14 +398,14 @@ export function PracticeFlow({
                     className={cn(
                       "flex items-center gap-2.5 rounded-xl border p-3 text-left text-xs transition",
                       chosen
-                        ? "border-cobalt bg-cobalt/10 text-linen"
+                        ? "border-amber bg-amber/10 text-linen"
                         : "border-iron text-canvas hover:text-linen",
                     )}
                   >
                     <span
                       className={cn(
                         "flex size-4 shrink-0 items-center justify-center rounded border",
-                        chosen ? "border-cobalt bg-cobalt" : "border-iron",
+                        chosen ? "border-amber bg-amber" : "border-iron",
                       )}
                     >
                       {chosen && <Check className="size-3 text-white" />}
@@ -412,7 +421,7 @@ export function PracticeFlow({
             type="button"
             disabled={!complexity || busy}
             onClick={() => void commit()}
-            className="bg-cobalt inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold text-white disabled:opacity-40"
+            className="bg-amber text-night inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold disabled:opacity-40"
           >
             {busy ? (
               <LoaderCircle className="size-3.5 animate-spin" />
@@ -466,23 +475,20 @@ const STEPS: { stage: Stage; label: string }[] = [
 function Steps({ stage }: { stage: Stage }) {
   const current = STEPS.findIndex((item) => item.stage === stage);
   return (
-    <ol className="flex flex-wrap items-center gap-2">
+    <ol className="border-iron/80 flex items-center gap-5 overflow-x-auto border-b pb-4">
       {STEPS.map((item, index) => (
-        <li key={item.stage} className="flex items-center gap-2">
+        <li key={item.stage} className="flex shrink-0 items-center gap-2">
           <span
             className={cn(
-              "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold",
-              index < current && "border-sage/40 text-sage",
-              index === current && "border-cobalt bg-cobalt/10 text-linen",
-              index > current && "border-iron text-dust",
+              "flex items-center gap-1.5 text-[10px] font-semibold tracking-wide uppercase",
+              index < current && "text-sage",
+              index === current && "text-amber",
+              index > current && "text-dust",
             )}
           >
-            {index < current && <Check className="size-3" />}
+            <span className="font-mono">0{index + 1}</span>
             {item.label}
           </span>
-          {index < STEPS.length - 1 && (
-            <span className="bg-iron h-px w-4" aria-hidden />
-          )}
         </li>
       ))}
     </ol>
@@ -515,7 +521,7 @@ function Statement({ problem }: { problem: ClientProblem }) {
 function PickStage({
   archetypes,
   recommendation,
-  onAcceptRecommendation,
+  onStartRecommendation,
   archetypeId,
   setArchetypeId,
   difficulty,
@@ -525,7 +531,7 @@ function PickStage({
 }: {
   archetypes: ArchetypeOption[];
   recommendation: RecommendationView | null;
-  onAcceptRecommendation: () => void;
+  onStartRecommendation: () => void;
   archetypeId: string;
   setArchetypeId: (value: string) => void;
   difficulty: Difficulty;
@@ -534,114 +540,104 @@ function PickStage({
   onStart: () => void;
 }) {
   return (
-    <div className="border-iron/80 bg-workshop/75 space-y-5 rounded-2xl border p-5">
-      <div>
-        <p className="text-sm font-semibold">What do you want to practice?</p>
-        <p className="text-dust mt-1 text-xs">
-          Every problem is generated and proved correct before you see it, so
-          there is nothing to memorize and nothing to look up.
-        </p>
-      </div>
-
-      {recommendation && (
-        <div className="border-cobalt/40 bg-cobalt/5 rounded-xl border p-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="text-cobalt size-3.5" />
-            <p className="text-xs font-semibold">Recommended next</p>
-          </div>
-          <p className="text-canvas mt-2 text-xs leading-6">
-            {recommendation.reason}
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={onAcceptRecommendation}
-              className="border-cobalt/60 text-linen hover:bg-cobalt/10 inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold"
-            >
-              {recommendation.archetypeName}
-              <span className="text-dust capitalize">
-                · {recommendation.difficulty} · ~
-                {recommendation.estimatedMinutes} min
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div>
-        <p className="section-label">Pattern</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setArchetypeId("")}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition",
-              archetypeId === ""
-                ? "border-cobalt bg-cobalt/10 text-linen"
-                : "border-iron text-canvas hover:text-linen",
-            )}
-          >
+    <div className="border-iron/80 border-y">
+      <div className="grid gap-7 py-7 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+        <div>
+          <div className="text-amber flex items-center gap-2">
             <Sparkles className="size-3.5" />
-            Surprise me
-          </button>
-          {archetypes.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setArchetypeId(item.id)}
-              className={cn(
-                "rounded-lg border px-3 py-2 text-xs font-semibold transition",
-                archetypeId === item.id
-                  ? "border-cobalt bg-cobalt/10 text-linen"
-                  : "border-iron text-canvas hover:text-linen",
-              )}
-            >
-              {item.name}
-            </button>
-          ))}
-        </div>
-        {archetypeId === "" && (
-          <p className="text-dust mt-3 text-[11px]">
-            Picking the pattern yourself makes the next step easy. Surprise me
-            is the honest test of whether you can recognize it.
+            <p className="font-mono text-[10px] tracking-wide uppercase">
+              {recommendation ? "Recommended next" : "Mixed practice"}
+            </p>
+          </div>
+          <h3 className="mt-3 text-2xl font-semibold tracking-[-.035em]">
+            {recommendation?.archetypeName ?? "Let Zed choose the pattern"}
+          </h3>
+          <p className="text-canvas mt-2 max-w-2xl text-sm leading-6">
+            {recommendation?.reason ??
+              "You will see the problem before the pattern. This is the closest practice to recognizing it in an interview."}
           </p>
-        )}
-      </div>
-
-      <div>
-        <p className="section-label">Difficulty</p>
-        <div className="mt-3 flex gap-2">
-          {DIFFICULTIES.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setDifficulty(item)}
-              className={cn(
-                "rounded-lg border px-3 py-2 text-xs font-semibold capitalize transition",
-                difficulty === item
-                  ? "border-cobalt bg-cobalt/10 text-linen"
-                  : "border-iron text-canvas hover:text-linen",
-              )}
-            >
-              {item}
-            </button>
-          ))}
+          <p className="text-dust mt-4 text-[11px] capitalize">
+            {recommendation
+              ? `${recommendation.difficulty} · about ${recommendation.estimatedMinutes} minutes`
+              : `${difficulty} · generated and validated before it reaches you`}
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={recommendation ? onStartRecommendation : onStart}
+          disabled={busy}
+          className="bg-amber text-night inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-40"
+        >
+          {busy ? (
+            <LoaderCircle className="size-4 animate-spin" />
+          ) : (
+            <Play className="size-4" />
+          )}
+          {busy ? "Preparing…" : "Start session"}
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={onStart}
-        disabled={busy}
-        className="bg-cobalt inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold text-white disabled:opacity-40"
-      >
-        {busy ? (
-          <LoaderCircle className="size-3.5 animate-spin" />
-        ) : (
-          <Play className="size-3.5" />
-        )}
-        {busy ? "Finding a problem…" : "Start practising"}
-      </button>
+      <details className="group border-iron/70 border-t py-4">
+        <summary className="text-canvas hover:text-linen flex list-none items-center justify-between text-xs font-semibold [&::-webkit-details-marker]:hidden">
+          Choose a different focus
+          <span className="text-dust font-mono text-[10px] group-open:hidden">
+            Optional
+          </span>
+          <span className="text-dust hidden font-mono text-[10px] group-open:inline">
+            Close
+          </span>
+        </summary>
+        <div className="border-iron/60 mt-5 grid gap-5 border-t pt-5 sm:grid-cols-2">
+          <label>
+            <span className="text-dust text-[10px] font-semibold tracking-wide uppercase">
+              Pattern
+            </span>
+            <select
+              value={archetypeId}
+              onChange={(event) => setArchetypeId(event.target.value)}
+              className="border-iron bg-raised text-linen mt-2 min-h-11 w-full rounded-xl border px-3 text-xs outline-none"
+            >
+              <option value="">Surprise me</option>
+              {archetypes.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div>
+            <p className="text-dust text-[10px] font-semibold tracking-wide uppercase">
+              Difficulty
+            </p>
+            <div className="mt-2 flex gap-2">
+              {DIFFICULTIES.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setDifficulty(item)}
+                  className={cn(
+                    "min-h-11 flex-1 rounded-xl border px-3 text-xs font-semibold capitalize transition",
+                    difficulty === item
+                      ? "border-amber/40 bg-amber/10 text-linen"
+                      : "border-iron text-canvas hover:text-linen",
+                  )}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onStart}
+          disabled={busy}
+          className="border-iron text-canvas hover:border-canvas/50 hover:text-linen mt-5 inline-flex min-h-10 items-center gap-2 rounded-xl border px-4 text-xs font-semibold disabled:opacity-40"
+        >
+          <Play className="size-3.5" /> Start this focus
+        </button>
+      </details>
     </div>
   );
 }
@@ -698,7 +694,7 @@ function SolveStage({
             // Stacked below xl, side by side above it. Explicit minmax rows
             // stop a long statement from squeezing the editor to nothing, and
             // each pane scrolls inside itself rather than the whole overlay.
-            "theme-guru bg-night fixed inset-0 z-50 grid grid-rows-[minmax(0,1fr)_minmax(0,1.15fr)] gap-3 overflow-hidden p-3 xl:grid-cols-[.8fr_1.2fr] xl:grid-rows-[minmax(0,1fr)]"
+            "bg-night fixed inset-0 z-50 grid grid-rows-[minmax(0,1fr)_minmax(0,1.15fr)] gap-3 overflow-hidden p-3 xl:grid-cols-[.8fr_1.2fr] xl:grid-rows-[minmax(0,1fr)]"
           : "grid gap-4 xl:grid-cols-[.85fr_1.15fr]",
       )}
     >
@@ -779,7 +775,7 @@ function SolveStage({
       >
         <div className="border-iron/70 flex items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2">
-            <Braces className="text-cobalt size-3.5" />
+            <Braces className="text-amber size-3.5" />
             <select
               value={language}
               onChange={(event) => onLanguage(event.target.value as Language)}
@@ -887,7 +883,7 @@ function SolveStage({
                 ? "Run against the tests"
                 : `${LANGUAGE_LABELS[language]} cannot be run yet`
             }
-            className="bg-cobalt inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-white disabled:opacity-40"
+            className="bg-amber text-night inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold disabled:opacity-40"
           >
             {busy ? (
               <LoaderCircle className="size-3.5 animate-spin" />
@@ -918,7 +914,7 @@ function CoachingStage({
   return (
     <div className="space-y-4">
       {reveal?.archetype && (
-        <div className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+        <div className="backstage-card rounded-[22px] p-5">
           <p className="section-label">The pattern</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <p className="text-lg font-semibold">{reveal.archetype.name}</p>
@@ -971,10 +967,10 @@ function CoachingStage({
       )}
 
       {skills.length > 0 && (
-        <div className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+        <div className="backstage-card rounded-[22px] p-5">
           <p className="section-label">What this session measured</p>
           <p className="text-dust mt-1 text-xs">
-            Only the skills this problem actually tested. Guru cannot hear you
+            Only the skills this problem actually tested. Zed cannot hear you
             explain, so it does not pretend to score that.
           </p>
           <div className="mt-4 space-y-3">
@@ -992,7 +988,7 @@ function CoachingStage({
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      item.score >= 7 ? "bg-sage" : "bg-cobalt",
+                      item.score >= 7 ? "bg-sage" : "bg-amber",
                     )}
                     style={{ width: `${item.score * 10}%` }}
                   />
@@ -1018,7 +1014,7 @@ function CoachingStage({
               {point.tone === "good" ? (
                 <Check className="text-sage size-3.5" />
               ) : (
-                <ArrowRight className="text-cobalt size-3.5" />
+                <ArrowRight className="text-amber size-3.5" />
               )}
               <p className="text-xs font-semibold">{point.title}</p>
             </div>
@@ -1030,7 +1026,7 @@ function CoachingStage({
       </div>
 
       {reveal && reveal.followUps.length > 0 && (
-        <div className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+        <div className="backstage-card rounded-[22px] p-5">
           <p className="section-label">What an interviewer would ask next</p>
           <ul className="mt-3 space-y-3">
             {reveal.followUps.map((item) => (
@@ -1048,7 +1044,7 @@ function CoachingStage({
       <button
         type="button"
         onClick={onAgain}
-        className="bg-cobalt inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold text-white"
+        className="bg-amber text-night inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold"
       >
         <RotateCcw className="size-3.5" />
         Practise another

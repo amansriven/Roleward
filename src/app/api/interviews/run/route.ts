@@ -27,7 +27,7 @@ const requestSchema = z.object({
 /**
  * Runs the candidate's code against the problem's real tests, mid-interview.
  *
- * Separate from /api/guru/run because the verdict is not only shown to the
+ * Separate from /api/zed/run because the verdict is not only shown to the
  * candidate: it is recorded on the session, which is how the interviewer comes
  * to know whether the code works instead of inferring it from an edit log.
  */

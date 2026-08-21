@@ -117,7 +117,7 @@ export async function claimProblem(
 
 /**
  * Copies the problem into the candidate's own namespace, which is where
- * /api/guru/run looks for its hidden tests, and records that they have seen it.
+ * /api/zed/run looks for its hidden tests, and records that they have seen it.
  */
 async function serve(
   userId: string,
@@ -169,7 +169,7 @@ export async function refillCell(
         for (const item of attempts)
           if (!item.outcome.ok)
             rejections.push(`${item.outcome.reason}: ${item.outcome.detail}`);
-        console.warn("guru pool: generation rejected", { cell, rejections });
+        console.warn("zed pool: generation rejected", { cell, rejections });
         break;
       }
       await putPooledProblem(cell, problem);

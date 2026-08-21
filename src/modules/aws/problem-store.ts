@@ -9,7 +9,7 @@ import {
 import {
   generatedProblemSchema,
   type GeneratedProblem,
-} from "@/modules/guru/schema";
+} from "@/modules/zed/schema";
 import { awsRegion, workspaceTable } from "./config";
 
 const client = DynamoDBDocumentClient.from(

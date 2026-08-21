@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 
 import { ProductVisual } from "@/components/brand/product-visual";
-import { GuruDemo } from "@/components/demos/guru-demo";
+import { ZedDemo } from "@/components/demos/zed-demo";
 import { ReadinessDemo } from "@/components/demos/readiness-demo";
 import { ResumeDemo } from "@/components/demos/resume-demo";
 import { StageDemo } from "@/components/demos/stage-demo";
@@ -23,16 +23,14 @@ const modules = [
     copy: "Turn verified experience into role-specific résumé evidence.",
     href: "/resume-kitchen",
     product: "resume",
-    theme: "theme-resume",
   },
   {
     icon: Code2,
     index: "02",
-    name: "Guru",
+    name: "Zed",
     copy: "Practice the reasoning and coding patterns your target role will test.",
-    href: "/guru",
-    product: "guru",
-    theme: "theme-guru",
+    href: "/zed",
+    product: "zed",
   },
   {
     icon: MessageSquareText,
@@ -41,7 +39,6 @@ const modules = [
     copy: "Build a reusable story bank and rehearse without memorizing scripts.",
     href: "/stage-fright",
     product: "stage",
-    theme: "theme-stage",
   },
 ] as const;
 
@@ -57,9 +54,9 @@ export default function HomePage() {
             <span className="text-amber">A prep route out.</span>
           </h1>
           <p className="text-canvas mt-7 max-w-xl text-lg leading-8">
-            Sweet+ connects your résumé, coding practice, and behavioral stories
-            to the engineering role you actually want—then tells you what
-            matters next.
+            Backstage connects your résumé, coding practice, and behavioral
+            stories to the engineering role you actually want—then tells you
+            what matters next.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild>
@@ -100,10 +97,10 @@ export default function HomePage() {
             {modules.map((item) => (
               <article
                 key={item.name}
-                className={`group border-iron border-b py-7 last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0 ${item.theme}`}
+                className="group border-iron border-b py-7 last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0"
               >
                 <div className="flex items-center justify-between">
-                  <item.icon className="tool-accent size-5" />
+                  <item.icon className="text-amber size-5" />
                   <span className="text-dust font-mono text-xs">
                     {item.index}
                   </span>
@@ -114,7 +111,7 @@ export default function HomePage() {
                   {item.copy}
                 </p>
                 <Link
-                  className="tool-accent mt-6 inline-flex items-center gap-2 text-sm font-semibold"
+                  className="text-amber mt-6 inline-flex items-center gap-2 text-sm font-semibold"
                   href={item.href}
                 >
                   Explore workspace{" "}
@@ -127,7 +124,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl space-y-24 px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
-        <div className="theme-resume grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
           <div>
             <p className="section-label">Resume Kitchen</p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
@@ -138,7 +135,7 @@ export default function HomePage() {
               what gets accepted.
             </p>
             <Link
-              className="tool-accent mt-6 inline-flex items-center gap-2 text-sm font-semibold"
+              className="text-amber mt-6 inline-flex items-center gap-2 text-sm font-semibold"
               href="/resume-kitchen"
             >
               See evidence-first tailoring <ArrowRight className="size-4" />
@@ -146,26 +143,26 @@ export default function HomePage() {
           </div>
           <ResumeDemo />
         </div>
-        <div className="theme-guru grid gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
-          <GuruDemo />
+        <div className="grid gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+          <ZedDemo />
           <div className="lg:pl-6">
-            <p className="section-label">Guru</p>
+            <p className="section-label">Zed</p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
               A coach for the part between stuck and solved.
             </h2>
             <p className="text-canvas mt-5 text-base leading-7">
-              Guru tracks how you reason, test, communicate, and use hints—not
+              Zed tracks how you reason, test, communicate, and use hints—not
               only whether the final code passes.
             </p>
             <Link
-              className="tool-accent mt-6 inline-flex items-center gap-2 text-sm font-semibold"
-              href="/guru"
+              className="text-amber mt-6 inline-flex items-center gap-2 text-sm font-semibold"
+              href="/zed"
             >
               Practice with intention <ArrowRight className="size-4" />
             </Link>
           </div>
         </div>
-        <div className="theme-stage grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
           <div>
             <p className="section-label">Stage Fright</p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
@@ -176,7 +173,7 @@ export default function HomePage() {
               until the structure feels natural.
             </p>
             <Link
-              className="tool-accent mt-6 inline-flex items-center gap-2 text-sm font-semibold"
+              className="text-amber mt-6 inline-flex items-center gap-2 text-sm font-semibold"
               href="/stage-fright"
             >
               Find your voice <ArrowRight className="size-4" />
@@ -221,7 +218,7 @@ export default function HomePage() {
           Bring one résumé and one target job.
         </h2>
         <p className="text-canvas mx-auto mt-5 max-w-2xl text-lg leading-8">
-          Sweet+ will turn them into a preparation route you can understand,
+          Backstage will turn them into a preparation route you can understand,
           edit, and complete.
         </p>
         <Button asChild className="mt-8">

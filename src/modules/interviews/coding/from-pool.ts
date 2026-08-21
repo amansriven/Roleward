@@ -9,8 +9,8 @@
  * Pure, so it can be tested without the pool, the judge, or a model.
  */
 
-import { findArchetype } from "@/modules/guru/archetypes";
-import type { GeneratedProblem } from "@/modules/guru/schema";
+import { findArchetype } from "@/modules/zed/archetypes";
+import type { GeneratedProblem } from "@/modules/zed/schema";
 import type { CodingRun, StoredCodingProblem } from "../schema";
 
 export function toStoredCodingProblem(

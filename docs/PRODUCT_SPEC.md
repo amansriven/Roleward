@@ -1,8 +1,8 @@
-# Sweet+ Product Specification
+# Backstage Product Specification
 
 ## 1. Product vision
 
-Sweet+ is a personalized application and interview-preparation workspace for aspiring software engineers. It turns a candidate's verified experience and a target job description into a practical preparation plan across resume tailoring, coding interviews, and behavioral interviews.
+Backstage is a personalized application and interview-preparation workspace for aspiring software engineers. It turns a candidate's verified experience and a target job description into a practical preparation plan across resume tailoring, coding interviews, and behavioral interviews.
 
 ### Core promise
 
@@ -23,17 +23,17 @@ The initial focus is candidates targeting large technology companies and similar
 
 Candidates prepare across disconnected products: job boards, resume editors, coding platforms, notes, spreadsheets, and general AI chatbots. Those tools do not share context, so candidates struggle to prioritize work for a specific opportunity.
 
-Sweet+ connects preparation to a target job and maintains a verified record of the candidate's real experience.
+Backstage connects preparation to a target job and maintains a verified record of the candidate's real experience.
 
 ## 2. Product principles
 
 1. **Evidence before generation.** Resume suggestions must be supported by user-confirmed experience.
 2. **Explain every assessment.** Readiness labels must expose their underlying evidence.
-3. **Coach rather than answer.** Guru and Stage Fright should help candidates improve, not do the interview for them.
+3. **Coach rather than answer.** Zed and Stage Fright should help candidates improve, not do the interview for them.
 4. **Job-specific preparation.** Recommendations should respond to the user's target role.
 5. **One next action.** The home experience should always make the next useful step clear.
-6. **Private by default.** Resumes, stories, attempts, and recordings are sensitive.
-7. **No outcome guarantees.** Sweet+ measures preparation activity and demonstrated capability, not employability.
+6. **Private by default.** Résumés, stories, attempts, and recordings are sensitive.
+7. **No outcome guarantees.** Backstage measures preparation activity and demonstrated capability, not employability.
 
 ## 3. Product structure
 
@@ -42,7 +42,7 @@ Sweet+ connects preparation to a target job and maintains a verified record of t
 - Home
 - Applications
 - Resume Kitchen
-- Guru
+- Zed
 - Stage Fright
 - Profile and settings
 
@@ -100,7 +100,7 @@ Priority labels:
 - **P1:** important shortly after validation
 - **P2:** later expansion
 
-### Home: Today in Sweet+
+### Home: Today in Backstage
 
 | Priority | Feature                                               |
 | -------- | ----------------------------------------------------- |
@@ -160,7 +160,7 @@ Resume feedback dimensions:
 - Readability
 - Formatting compatibility
 
-### Guru
+### Zed
 
 Practice modes:
 
@@ -187,7 +187,7 @@ Practice modes:
 | P2       | System design practice                            |
 | P2       | Company-tagged practice where legally appropriate |
 
-Guru evaluates separate dimensions:
+Zed evaluates separate dimensions:
 
 - Problem comprehension
 - Communication
@@ -260,19 +260,19 @@ Example explanation:
 
 > Technical: Developing. You consistently complete array and hash-map problems, but have not completed a timed tree or graph problem without substantial hints.
 
-Sweet+ must never convert these statuses into a predicted probability of receiving an interview or offer.
+Backstage must never convert these statuses into a predicted probability of receiving an interview or offer.
 
 ## 6. MVP user journey
 
 1. User creates an account.
 2. User selects internship or new-grad track and completes a short profile.
 3. User uploads a base resume.
-4. Sweet+ extracts candidate evidence; the user confirms or corrects it.
+4. Backstage extracts candidate evidence; the user confirms or corrects it.
 5. User pastes a target job description.
-6. Sweet+ extracts requirements; the user confirms them.
-7. Sweet+ builds the first Readiness Map.
+6. Backstage extracts requirements; the user confirms them.
+7. Backstage builds the first Readiness Map.
 8. User receives no more than three recommended actions.
-9. User completes a Resume Kitchen, Guru, or Stage Fright activity.
+9. User completes a Resume Kitchen, Zed, or Stage Fright activity.
 10. The Readiness Map updates and explains what changed.
 
 ## 7. Explicit non-goals for MVP

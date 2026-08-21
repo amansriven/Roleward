@@ -251,12 +251,12 @@ export async function generateProblemDraft(
     },
   });
 
-  // Generation is the one part of Guru that costs money per call, and it runs
+  // Generation is the one part of Zed that costs money per call, and it runs
   // mostly from a background refill nobody is watching. Logged so the spend
   // shows up somewhere other than the OpenAI dashboard.
   const usage = response.usage;
   if (usage)
-    console.info("guru generation usage", {
+    console.info("zed generation usage", {
       archetypeId: archetype.id,
       difficulty,
       promptTokens: usage.prompt_tokens,

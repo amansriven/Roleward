@@ -7,10 +7,10 @@ import {
   lambdaExecutionAdapter,
 } from "@/modules/execution/lambda-adapter";
 import { ExecutionUnavailableError } from "@/modules/execution/port";
-import { ARCHETYPE_IDS } from "@/modules/guru/archetypes";
-import { claimProblem, refillCell } from "@/modules/guru/pool";
-import { buildGate } from "@/modules/guru/practice";
-import { toClientProblem } from "@/modules/guru/schema";
+import { ARCHETYPE_IDS } from "@/modules/zed/archetypes";
+import { claimProblem, refillCell } from "@/modules/zed/pool";
+import { buildGate } from "@/modules/zed/practice";
+import { toClientProblem } from "@/modules/zed/schema";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 
 export const runtime = "nodejs";
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
             deadline,
           );
         } catch (error) {
-          console.error("guru pool refill failed", error);
+          console.error("zed pool refill failed", error);
         }
       });
 

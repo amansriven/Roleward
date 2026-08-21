@@ -110,7 +110,7 @@ export function EvidenceLibrary() {
 
   if (!items.length)
     return (
-      <div className="border-iron bg-workshop/70 rounded-2xl border py-20 text-center">
+      <div className="backstage-card rounded-[22px] py-20 text-center">
         <Database className="text-dust mx-auto size-7" />
         <h2 className="mt-5 text-xl font-semibold">
           Your evidence pantry is empty.

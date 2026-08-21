@@ -4,9 +4,9 @@ import {
   executionConfigured,
   lambdaExecutionAdapter,
 } from "@/modules/execution/lambda-adapter";
-import { refillCell, warmShallowestCell } from "@/modules/guru/pool";
-import { findArchetype } from "@/modules/guru/archetypes";
-import { POOL_TARGET } from "@/modules/guru/pool-policy";
+import { refillCell, warmShallowestCell } from "@/modules/zed/pool";
+import { findArchetype } from "@/modules/zed/archetypes";
+import { POOL_TARGET } from "@/modules/zed/pool-policy";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 
 export const runtime = "nodejs";
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
     const result = await warmShallowestCell(lambdaExecutionAdapter, deadline);
     return NextResponse.json(result);
   } catch (error) {
-    console.error("guru pool warm failed", error);
+    console.error("zed pool warm failed", error);
     return NextResponse.json(
       { error: "Warming failed", code: "warm_failed", detail: String(error) },
       { status: 502 },

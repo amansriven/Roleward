@@ -50,6 +50,17 @@ const evidence: EvidenceItem[] = [
   },
 ];
 describe("workspace repository", () => {
+  it("keeps pre-rebrand browser workspaces available", () => {
+    const storage = memoryStorage();
+    const priorPrefix = ["sweet", "plus"].join("-");
+    storage.setItem(
+      `${priorPrefix}:candidate-identity`,
+      JSON.stringify({ name: "Aman", headline: "Engineer", skills: [] }),
+    );
+
+    expect(loadWorkspace(storage).candidateName).toBe("Aman");
+  });
+
   it("persists multiple applications and switches the active one", () => {
     const storage = memoryStorage();
     saveApplication(storage, application("one"));
@@ -77,7 +88,7 @@ describe("workspace repository", () => {
   });
   it("migrates existing evidence into one locked original", () => {
     const storage = memoryStorage();
-    storage.setItem("sweet-plus:evidence-library", JSON.stringify(evidence));
+    storage.setItem("backstage:evidence-library", JSON.stringify(evidence));
 
     const workspace = loadWorkspace(storage);
     expect(workspace.resumeVersions).toHaveLength(1);
@@ -89,7 +100,7 @@ describe("workspace repository", () => {
   });
   it("keeps edits in a named revision and leaves the original unchanged", () => {
     const storage = memoryStorage();
-    storage.setItem("sweet-plus:evidence-library", JSON.stringify(evidence));
+    storage.setItem("backstage:evidence-library", JSON.stringify(evidence));
     const original = getActiveResumeVersion(loadWorkspace(storage))!;
     const revision = createResumeRevision(
       storage,

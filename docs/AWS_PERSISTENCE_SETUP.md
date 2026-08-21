@@ -1,6 +1,6 @@
 # AWS persistence setup
 
-Sweet+ stores each authenticated user's structured workspace in DynamoDB and uploads private résumé/recording files directly to S3 with five-minute presigned URLs. Every API derives ownership from the server-side Auth.js/Cognito session; clients never submit a user ID.
+Backstage stores each authenticated user's structured workspace in DynamoDB and uploads private résumé/recording files directly to S3 with five-minute presigned URLs. Every API derives ownership from the server-side Auth.js/Cognito session; clients never submit a user ID.
 
 ## DynamoDB
 
@@ -41,7 +41,7 @@ Add this CORS configuration, replacing the production origin after a custom doma
 
 ## Least-privilege IAM principal
 
-Create a dedicated deploy identity for Sweet+ and restrict it to the table and bucket. Replace the account ID and bucket name:
+Create a dedicated deploy identity for Backstage and restrict it to the table and bucket. Replace the account ID and bucket name:
 
 ```json
 {

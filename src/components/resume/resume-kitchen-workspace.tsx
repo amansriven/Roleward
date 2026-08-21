@@ -173,7 +173,7 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
         </div>
 
         <div className="space-y-5">
-          <section className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+          <section className="backstage-card rounded-[22px] p-5">
             <div className="flex items-center gap-2">
               <FileText className="text-copper size-4" />
               <p className="font-semibold">Your pantry</p>
@@ -214,7 +214,7 @@ function Kitchen({ workspace }: { workspace: WorkspaceSnapshot }) {
             evidence={workspace.evidence}
           />
 
-          <section className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+          <section className="backstage-card rounded-[22px] p-5">
             <ShieldCheck className="text-sage size-4" />
             <p className="mt-3 text-sm font-semibold">
               Nothing is invented for you
@@ -280,7 +280,7 @@ function RequirementCard({
   const strength = requirement.matchStrength;
 
   return (
-    <article className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+    <article className="backstage-card rounded-[22px] p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-semibold">{requirement.content}</p>
@@ -402,7 +402,7 @@ function Stat({
   note: string;
 }) {
   return (
-    <section className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+    <section className="backstage-card rounded-[22px] p-5">
       <p className="section-label">{label}</p>
       <p className="mt-2 truncate text-2xl font-semibold">{value}</p>
       <p className="text-dust mt-1 text-xs">{note}</p>
@@ -422,14 +422,14 @@ function Empty({
   action: string;
 }) {
   return (
-    <section className="border-iron/80 bg-workshop/75 rounded-2xl border p-8 text-center">
+    <section className="backstage-card rounded-[22px] p-8 text-center">
       <p className="text-lg font-semibold">{title}</p>
       <p className="text-canvas mx-auto mt-2 max-w-md text-sm leading-6">
         {copy}
       </p>
       <Link
         href={href}
-        className="tool-button text-night mt-6 inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold"
+        className="bg-amber text-night mt-6 inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold"
       >
         {action}
       </Link>

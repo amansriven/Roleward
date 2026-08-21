@@ -9,20 +9,27 @@ export function PageIntro({
   title,
   copy,
   action,
+  icon,
 }: {
   eyebrow?: string;
   title: string;
   copy: string;
   action?: ReactNode;
+  icon?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-      <div>
-        {eyebrow && <p className="section-label">{eyebrow}</p>}
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">
-          {title}
-        </h1>
-        <p className="text-canvas mt-2 max-w-2xl text-sm leading-6">{copy}</p>
+    <div className="border-iron/80 flex flex-col justify-between gap-6 border-b pb-8 sm:flex-row sm:items-end lg:pb-10">
+      <div className="flex items-start gap-4">
+        {icon}
+        <div>
+          {eyebrow && <p className="section-label">{eyebrow}</p>}
+          <h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-[2.65rem]">
+            {title}
+          </h1>
+          <p className="text-canvas mt-3 max-w-3xl text-sm leading-6 sm:text-[15px]">
+            {copy}
+          </p>
+        </div>
       </div>
       {action}
     </div>
@@ -37,12 +44,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section
-      className={cn(
-        "border-iron/80 bg-workshop/75 rounded-2xl border",
-        className,
-      )}
-    >
+    <section className={cn("backstage-card rounded-[22px]", className)}>
       {children}
     </section>
   );
@@ -68,7 +70,7 @@ export function ReadinessCard({
   return (
     <Link
       href={href}
-      className="group border-iron/80 bg-workshop/75 hover:border-canvas/40 rounded-2xl border p-5 transition hover:-translate-y-0.5"
+      className="backstage-card group hover:border-canvas/40 rounded-[22px] p-5 transition hover:-translate-y-0.5"
     >
       <div className="flex items-center justify-between">
         <div className="bg-linen/[.05] flex size-9 items-center justify-center rounded-lg">

@@ -7,7 +7,7 @@
  * not produce a bad suggestion, it produces a fabricated credential the
  * candidate has personally signed off on.
  *
- * The defence is the same one Guru uses for expected outputs: do not trust the
+ * The defence is the same one Zed uses for expected outputs: do not trust the
  * model's word for anything checkable. Every claim must quote the résumé, the
  * quote is checked against the extracted text, and a claim whose quote is not
  * there is dropped rather than shown.

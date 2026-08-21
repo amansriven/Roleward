@@ -44,7 +44,7 @@ export interface SkillObservation {
 /**
  * What one attempt says about each skill.
  *
- * Only skills with a real signal appear. Speaking skills never do — Guru is a
+ * Only skills with a real signal appear. Speaking skills never do — Zed is a
  * silent editor, and a silence is not evidence of anything.
  */
 export function observeAttempt(attempt: AttemptSkillInput): SkillObservation[] {
@@ -91,8 +91,8 @@ export interface SkillScore {
   /** 0-10, or null when nothing has measured this skill yet. */
   score: number | null;
   samples: number;
-  /** Where the evidence would come from, for skills Guru cannot see. */
-  measuredBy: "guru" | "stage_fright";
+  /** Where the evidence would come from, for skills Zed cannot see. */
+  measuredBy: "zed" | "stage_fright";
 }
 
 /** Speaking is Stage Fright's to judge; it is the side with a conversation. */
@@ -147,7 +147,7 @@ export function aggregateSkills(attempts: AttemptSkillInput[]): SkillScore[] {
       samples: entry?.n ?? 0,
       measuredBy: CONVERSATIONAL_SKILLS.includes(skill)
         ? ("stage_fright" as const)
-        : ("guru" as const),
+        : ("zed" as const),
     };
   });
 }

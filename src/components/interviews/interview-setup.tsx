@@ -134,7 +134,7 @@ export function InterviewSetup() {
     if (!response.ok || !body?.description) {
       setError(
         body?.error ??
-          "Sweet+ could not read that link. Paste the description instead.",
+          "Backstage could not read that link. Paste the description instead.",
       );
       return null;
     }
@@ -172,7 +172,7 @@ export function InterviewSetup() {
         error?: string;
       } | null;
       if (!response.ok || !body?.session) {
-        setError(body?.error ?? "Sweet+ could not start that interview.");
+        setError(body?.error ?? "Backstage could not start that interview.");
         return;
       }
       router.push(`/dashboard/stage-fright/session/${body.session.id}`);
@@ -186,7 +186,7 @@ export function InterviewSetup() {
   const stepIndex = step === "type" ? 0 : step === "role" ? 1 : 2;
 
   return (
-    <div className="theme-stage mx-auto max-w-3xl space-y-7">
+    <div className="mx-auto max-w-3xl space-y-7">
       <div>
         <p className="section-label">Stage Fright</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em]">
@@ -255,7 +255,7 @@ export function InterviewSetup() {
                 selected={roleMode === "application"}
                 onClick={() => setRoleMode("application")}
                 title="A role you saved"
-                detail="Uses the requirements already in Sweet+"
+                detail="Uses the requirements already in Backstage"
               />
             )}
             <Choice

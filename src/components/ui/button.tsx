@@ -10,9 +10,9 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "border border-amber bg-amber text-night shadow-[0_0_0_rgba(232,166,75,0)] hover:-translate-y-px hover:bg-[#f0b45c] hover:shadow-[0_0_28px_rgba(232,166,75,0.16)]",
+          "border border-amber bg-amber text-night shadow-[0_0_0_rgba(223,124,104,0)] hover:-translate-y-px hover:bg-[#eb8a76] hover:shadow-[0_0_28px_rgba(223,124,104,0.16)]",
         secondary:
-          "border border-iron bg-raised text-linen hover:-translate-y-px hover:border-canvas hover:bg-[#332e28]",
+          "border border-iron bg-raised text-linen hover:-translate-y-px hover:border-canvas hover:bg-[#202228]",
         quiet:
           "border border-transparent text-canvas hover:border-iron hover:bg-linen/[0.04] hover:text-linen",
         destructive:

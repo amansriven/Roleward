@@ -20,7 +20,7 @@ import {
   type ExecutionResult,
   type Language,
 } from "@/modules/execution/port";
-import { renderStub } from "@/modules/guru/stubs";
+import { renderStub } from "@/modules/zed/stubs";
 
 /** Runnable languages first, since only those get a verdict. */
 const ORDERED_LANGUAGES: Language[] = [

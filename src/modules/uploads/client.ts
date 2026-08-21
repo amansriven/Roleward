@@ -18,7 +18,7 @@ export async function uploadPrivateFile(
   if (response.status === 401)
     throw new Error("Your session expired. Log in again before uploading.");
   if (!response.ok)
-    throw new Error("Sweet+ could not prepare a secure upload URL.");
+    throw new Error("Backstage could not prepare a secure upload URL.");
   const result = (await response.json()) as {
     uploadUrl: string;
     objectKey: string;

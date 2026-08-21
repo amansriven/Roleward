@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Panel, ReadinessCard, TaskRow } from "./dashboard-ui";
+import { PageIntro, Panel, ReadinessCard, TaskRow } from "./dashboard-ui";
 import {
   applicationReadiness,
   getActiveApplication,
@@ -43,15 +43,14 @@ export function LiveDashboard() {
   const primary = actions[0];
   const readiness = app ? applicationReadiness(app, workspace) : null;
   return (
-    <div className="space-y-8">
-      <div>
-        <p className="text-canvas text-sm">Welcome back</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">
-          Here’s the one thing to do next.
-        </h1>
-      </div>
+    <div className="space-y-10">
+      <PageIntro
+        eyebrow="Your workspace"
+        title="Today in Backstage"
+        copy="One clear next step, selected from your active application, evidence gaps, and recent practice. The deeper detail is here when you need it—not before."
+      />
       {primary && (
-        <section className="bg-workshop/80 border-amber/25 relative overflow-hidden rounded-[22px] border p-6 shadow-[0_18px_60px_rgba(0,0,0,.18)] sm:p-8">
+        <section className="backstage-card backstage-card-accent relative overflow-hidden rounded-[28px] p-6 sm:p-8">
           <div className="relative max-w-2xl">
             <div className="text-amber flex items-center gap-2">
               <Sparkles className="size-4" />
@@ -135,7 +134,7 @@ export function LiveDashboard() {
                 level={readiness.technical.level.replace("_", " ")}
                 value={readiness.technical.score}
                 color="text-cobalt"
-                href="/dashboard/guru"
+                href="/dashboard/zed"
                 detail={readiness.technical.explanation[0] ?? ""}
               />
               <ReadinessCard

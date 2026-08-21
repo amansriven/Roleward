@@ -4,7 +4,7 @@ export const domainModules = [
   "evidence",
   "applications",
   "resume-kitchen",
-  "guru",
+  "zed",
   "stage-fright",
   "readiness",
   "planning",

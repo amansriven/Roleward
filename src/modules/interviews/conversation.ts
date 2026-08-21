@@ -134,7 +134,7 @@ const reportJsonSchema = {
           area: {
             type: "string",
             enum: ["resume", "coding", "stories"],
-            description: "Which part of Sweet+ helps them practice this.",
+            description: "Which part of Backstage helps them practice this.",
           },
         },
       },

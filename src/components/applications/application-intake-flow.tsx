@@ -48,7 +48,7 @@ export function ApplicationIntakeFlow() {
     setError("");
     try {
       const contentHash = await hashDescription(description);
-      const existing = localStorage.getItem("sweet-plus:job-hash");
+      const existing = localStorage.getItem("backstage:job-hash");
       if (existing === contentHash) {
         setError(
           "You already added this exact job description. We’ll reuse its requirement snapshot.",
@@ -66,7 +66,7 @@ export function ApplicationIntakeFlow() {
         createdAt: new Date().toISOString(),
       });
       setApplication(next);
-      localStorage.setItem("sweet-plus:job-hash", contentHash);
+      localStorage.setItem("backstage:job-hash", contentHash);
       setStep("requirements");
 
       // Read from the posting itself. The keyword table this replaced returned
@@ -115,7 +115,7 @@ export function ApplicationIntakeFlow() {
       return;
     }
     const evidence = JSON.parse(
-      localStorage.getItem("sweet-plus:evidence-library") ?? "[]",
+      localStorage.getItem("backstage:evidence-library") ?? "[]",
     ) as EvidenceItem[];
     setEvidenceConfirmed(
       evidence.some((item) =>

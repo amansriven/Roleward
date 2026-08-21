@@ -4,10 +4,7 @@ import {
   DocumentReadError,
   extractDocumentText,
 } from "@/modules/resume-kitchen/document-text";
-import {
-  ExtractionError,
-  extractEvidence,
-} from "@/modules/resume-kitchen/extraction";
+import { ExtractionError, extractEvidence } from "@/modules/resume-kitchen/extraction";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 
 export const runtime = "nodejs";

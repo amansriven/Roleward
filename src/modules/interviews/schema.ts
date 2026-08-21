@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { signatureSchema, testCaseSchema } from "@/modules/guru/signature";
+import { signatureSchema, testCaseSchema } from "@/modules/zed/signature";
 
 export const competencySchema = z.enum([
   "leadership",
@@ -121,7 +121,7 @@ export type InterviewReport = z.infer<typeof interviewReportSchema>;
 /**
  * What the interview needs in order to actually run the candidate's code.
  *
- * Present only on problems drawn from the Guru pool. Sessions created before
+ * Present only on problems drawn from the Zed pool. Sessions created before
  * the pool existed, and any created while the judge is unconfigured, carry null
  * here and fall back to the interviewer inferring correctness from an edit log.
  */

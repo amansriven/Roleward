@@ -10,7 +10,7 @@ import {
 } from "@/modules/workspace/cloud-sync";
 import { workspaceUpdatedEvent } from "@/modules/workspace/repository";
 
-export function WorkspaceSync() {
+export function WorkspaceSync({ compact = false }: { compact?: boolean }) {
   const [state, setState] = useState<
     "loading" | "cloud" | WorkspaceSyncFailure
   >("loading");
@@ -60,19 +60,20 @@ export function WorkspaceSync() {
       ) : (
         <CloudOff className="size-3" />
       )}
-      {state === "loading"
-        ? "Syncing"
-        : state === "cloud"
-          ? "Synced"
-          : state === "unconfigured"
-            ? "AWS setup needed"
-            : state === "table_not_found"
-              ? "Table not found"
-              : state === "credentials"
-                ? "AWS key rejected"
-                : state === "access_denied"
-                  ? "AWS access denied"
-                  : "Sync error"}
+      {!compact &&
+        (state === "loading"
+          ? "Syncing"
+          : state === "cloud"
+            ? "Synced"
+            : state === "unconfigured"
+              ? "AWS setup needed"
+              : state === "table_not_found"
+                ? "Table not found"
+                : state === "credentials"
+                  ? "AWS key rejected"
+                  : state === "access_denied"
+                    ? "AWS access denied"
+                    : "Sync error")}
     </span>
   );
 }

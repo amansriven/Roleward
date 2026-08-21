@@ -7,11 +7,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Sweet+",
-    template: "%s | Sweet+",
+    default: "Backstage",
+    template: "%s | Backstage",
   },
   description:
-    "Personalized preparation for software engineering internships and new-grad roles.",
+    "Your private workspace for applications, résumés, coding practice, and interview preparation.",
 };
 
 export default function RootLayout({

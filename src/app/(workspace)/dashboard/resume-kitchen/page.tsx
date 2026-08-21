@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { FeatureIcon } from "@/components/brand/feature-icon";
 import { ResumeKitchenWorkspace } from "@/components/resume/resume-kitchen-workspace";
 import { PageIntro } from "@/components/workspace/dashboard-ui";
 
 export default function ResumeKitchenPage() {
   return (
-    <div className="theme-resume space-y-7">
+    <div className="space-y-8">
       <PageIntro
-        eyebrow="Resume Kitchen"
-        title="Tailor with proof, not guesswork."
-        copy="Your confirmed experience is the pantry. The posting's requirements are the recipe. Every suggestion names the claims it came from, and cannot contain a figure those claims do not."
+        icon={<FeatureIcon feature="resume-kitchen" size="lg" active />}
+        eyebrow="Your career record"
+        title="Resume Kitchen"
+        copy="Keep your original résumé untouched, create separately named versions for each role, and trace every suggested change back to experience you confirmed."
         action={
           <div className="flex items-center gap-3">
             <Link
@@ -19,7 +21,7 @@ export default function ResumeKitchenPage() {
             </Link>
             <Link
               href="/dashboard/resume-kitchen/intake"
-              className="tool-button text-night inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold"
+              className="bg-amber text-night inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold"
             >
               Import résumé
             </Link>

@@ -10,7 +10,7 @@ import {
 import {
   practiceAttemptSchema,
   type PracticeAttempt,
-} from "@/modules/guru/schema";
+} from "@/modules/zed/schema";
 import { awsRegion, workspaceTable } from "./config";
 
 const client = DynamoDBDocumentClient.from(

@@ -1,10 +1,10 @@
-# Sweet+ Delivery Roadmap
+# Backstage Delivery Roadmap
 
 ## 1. Delivery strategy
 
 Build a narrow vertical slice before completing any single product area. The first usable release should let one candidate add evidence, add a job, receive explainable gaps, complete one preparation action, and observe readiness change.
 
-Avoid building Resume Kitchen, Guru, and Stage Fright as three disconnected applications.
+Avoid building Resume Kitchen, Zed, and Stage Fright as three disconnected applications.
 
 ## 2. Phase 0: Product and engineering foundation
 
@@ -32,7 +32,7 @@ Avoid building Resume Kitchen, Guru, and Stage Fright as three disconnected appl
 - Integrate Better Auth with PostgreSQL-backed users, accounts, sessions, and verification records
 - Support Google, GitHub, Apple, and email/password signup and login
 - Require email verification for email/password accounts before sensitive preparation data is stored
-- Link multiple providers to one internal Sweet+ user without creating duplicate preparation histories
+- Link multiple providers to one internal Backstage user without creating duplicate preparation histories
 - Require an authenticated session and recent verification before linking or unlinking a provider
 - Add session rotation, revocation, device/session history, and global sign-out
 - Add a **Forgot password?** flow that accepts an email without revealing whether an account exists
@@ -49,7 +49,7 @@ Avoid building Resume Kitchen, Guru, and Stage Fright as three disconnected appl
 - A developer can reproduce the local environment from documentation.
 - Staging deploys automatically.
 - A user can sign in and access only their own empty workspace.
-- A user can use Google, GitHub, Apple, or verified email/password without creating duplicate Sweet+ histories.
+- A user can use Google, GitHub, Apple, or verified email/password without creating duplicate Backstage histories.
 - A user who forgets an email-account password can request a reset, use one valid expiring link, choose a new password, and sign in again.
 - Password-reset requests return the same public response for existing and unknown email addresses.
 - Budget and error alerts are active.
@@ -93,7 +93,7 @@ Avoid building Resume Kitchen, Guru, and Stage Fright as three disconnected appl
 - Original content is always recoverable.
 - Exported resumes pass visual and text-extraction checks.
 
-## 5. Phase 3: Guru MVP
+## 5. Phase 3: Zed MVP
 
 ### Build
 
@@ -187,7 +187,7 @@ Recruit a small cohort of internship and new-grad applicants. Include different 
 - One base resume
 - One or a small number of active applications on the free plan
 - Resume Kitchen core workflow
-- Foundational Guru problem set
+- Foundational Zed problem set
 - Stage Fright Story Bank and Rehearsal
 - Explainable readiness
 - Weekly plan
@@ -238,7 +238,7 @@ Potential additions should be validated individually:
 
 **Decision:** Use relational storage rather than a document database.
 
-**Reason:** Sweet+ has strong relationships among candidates, evidence, applications, versions, attempts, stories, and assessments.
+**Reason:** Backstage has strong relationships among candidates, evidence, applications, versions, attempts, stories, and assessments.
 
 ### ADR-003: AI suggestions require traceability
 

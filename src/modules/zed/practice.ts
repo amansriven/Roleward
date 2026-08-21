@@ -199,7 +199,7 @@ export interface CoachingPoint {
  * What the candidate is told once the problem is closed.
  *
  * Every point is grounded in something that actually happened — a judged
- * verdict, a recorded answer, a hint they opened. Guru's whole claim is that it
+ * verdict, a recorded answer, a hint they opened. Zed's whole claim is that it
  * separates recognizing the pattern from implementing it, so those are reported
  * separately even when both went the same way.
  */

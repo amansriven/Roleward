@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 const nav = [
   ["Resume Kitchen", "/resume-kitchen"],
-  ["Guru", "/guru"],
+  ["Zed", "/zed"],
   ["Stage Fright", "/stage-fright"],
   ["How it works", "/how-it-works"],
   ["Pricing", "/pricing"],

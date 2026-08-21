@@ -58,7 +58,7 @@ export function OnboardingFlow() {
       interviewTimeline: timeline,
     });
     localStorage.setItem(
-      "sweet-plus:candidate-profile",
+      "backstage:candidate-profile",
       JSON.stringify(profile),
     );
     router.push("/dashboard");
@@ -194,7 +194,7 @@ export function OnboardingFlow() {
             Build a plan you can keep.
           </h1>
           <p className="text-canvas mt-2 text-sm">
-            Sweet+ will keep daily recommendations within this preparation
+            Backstage will keep daily recommendations within this preparation
             budget.
           </p>
           <label className="mt-8 block text-xs font-semibold">
@@ -203,7 +203,7 @@ export function OnboardingFlow() {
               {weeklyMinutes / 60} hours
             </span>
             <input
-              className="mt-4 block w-full accent-[#e8a64b]"
+              className="mt-4 block w-full accent-[#df7c68]"
               type="range"
               min="60"
               max="900"

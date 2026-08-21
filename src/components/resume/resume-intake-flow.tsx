@@ -29,14 +29,11 @@ import {
   validateResumeFile,
   type ResumeDocument,
 } from "@/modules/resume-kitchen/intake";
-import type {
-  DraftItem,
-  DraftSkillGroup,
-} from "@/modules/resume-kitchen/grounding";
+import type { DraftItem, DraftSkillGroup } from "@/modules/resume-kitchen/grounding";
 import { uploadPrivateFile } from "@/modules/uploads/client";
 
 type Step = "upload" | "processing" | "review" | "complete";
-const storageKey = "sweet-plus:evidence-library";
+const storageKey = "backstage:evidence-library";
 
 /**
  * Everything arrives as "proposed". Nothing is verified until the candidate
@@ -79,7 +76,7 @@ export function ResumeIntakeFlow() {
     try {
       const contentHash = await hashFile(file);
       const storageKey = await uploadPrivateFile(file, "resume");
-      const existingHash = localStorage.getItem("sweet-plus:resume-hash");
+      const existingHash = localStorage.getItem("backstage:resume-hash");
       if (existingHash === contentHash) {
         setError(
           "This exact resume has already been processed. Opening its evidence instead of creating a duplicate.",
@@ -130,7 +127,7 @@ export function ResumeIntakeFlow() {
         );
       setItems(toEvidenceItems(body.items));
       setDroppedCount(body.droppedCount ?? 0);
-      localStorage.setItem("sweet-plus:resume-hash", contentHash);
+      localStorage.setItem("backstage:resume-hash", contentHash);
       setStep("review");
     } catch (problem) {
       setError(
@@ -194,7 +191,7 @@ export function ResumeIntakeFlow() {
             event.preventDefault();
             void receive(event.dataTransfer.files[0]);
           }}
-          className="border-iron bg-workshop/70 rounded-2xl border p-5 sm:p-8"
+          className="backstage-card rounded-[22px] p-5 sm:p-8"
         >
           <button
             onClick={() => input.current?.click()}

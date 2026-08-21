@@ -1,9 +1,9 @@
 # Code execution setup (AWS Lambda judge)
 
-Guru generates coding problems with a model and then proves them correct by
+Zed generates coding problems with a model and then proves them correct by
 running code. That means an execution service. This document covers creating it.
 
-Infrastructure names stay in the existing `sweetplus-*` family. Renaming AWS
+Infrastructure names stay in the existing `backstage-*` family. Renaming AWS
 resources buys nothing user-visible and risks the two things that cannot be
 recovered: accounts and uploaded files.
 
@@ -119,7 +119,7 @@ AWS_JUDGE_FUNCTION=sweetplus-judge-python
 
 Then redeploy Vercel so the build picks it up.
 
-Guru also needs `OPENAI_API_KEY`, which you already have, and a secret for the
+Zed also needs `OPENAI_API_KEY`, which you already have, and a secret for the
 pool warmer below:
 
 ```env
@@ -127,7 +127,7 @@ CRON_SECRET=
 ```
 
 Any long random string. Vercel presents it to scheduled invocations as a bearer
-token; `/api/guru/pool/warm` returns `401` to everything else, and refuses to
+token; `/api/zed/pool/warm` returns `401` to everything else, and refuses to
 run at all when the variable is unset rather than falling open.
 
 ---
@@ -142,8 +142,8 @@ archetype and difficulty.
 Problems are not user-specific, so one pool serves everyone. A pooled problem is
 lent rather than consumed: it stays in the cell after being served, and a
 per-user set of seen ids is what stops anyone being given the same problem
-twice. `/api/guru/problem` claims an unseen one, copies it into the caller's
-namespace so `/api/guru/run` can find its tests, and tops the cell up
+twice. `/api/zed/problem` claims an unseen one, copies it into the caller's
+namespace so `/api/zed/run` can find its tests, and tops the cell up
 after the response via `after`.
 
 Three things fill the pool:
@@ -167,14 +167,14 @@ proven without waiting for the rotation to reach it:
 
 ```bash
 curl -H "authorization: Bearer $CRON_SECRET" \
-  "$APP_URL/api/guru/pool/warm?archetype=graph-bfs&difficulty=medium"
+  "$APP_URL/api/zed/pool/warm?archetype=graph-bfs&difficulty=medium"
 ```
 
 Refills take a DynamoDB lock per cell, so a burst against a cold cell does not
 pay for the same problems several times over. A cell with nothing unseen left
 still generates inline, so an empty pool means the old latency, not an error.
 
-Pool size constants live in `src/modules/guru/pool-policy.ts`.
+Pool size constants live in `src/modules/zed/pool-policy.ts`.
 
 ---
 
@@ -183,7 +183,7 @@ Pool size constants live in `src/modules/guru/pool-policy.ts`.
 With a signed-in session:
 
 ```bash
-curl -sS https://sweetplus.vercel.app/api/guru/problem \
+curl -sS https://sweetplus.vercel.app/api/zed/problem \
   -X POST -H 'content-type: application/json' \
   -d '{"archetypeId":"sliding-window","difficulty":"medium"}'
 ```
@@ -258,7 +258,7 @@ still fails.
 ## Adding languages later
 
 Only Python runs today; the other nine render editor stubs but are rejected by
-`/api/guru/run` with `unsupported_language`.
+`/api/zed/run` with `unsupported_language`.
 
 Adding a compiled language means a container-image Lambda with the toolchain
 baked in, then extending `EXECUTABLE_LANGUAGES` in

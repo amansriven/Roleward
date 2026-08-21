@@ -1,18 +1,20 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { ApplicationList } from "@/components/applications/application-list";
+import { FeatureIcon } from "@/components/brand/feature-icon";
 import { PageIntro } from "@/components/workspace/dashboard-ui";
 export default function ApplicationsPage() {
   return (
     <div className="space-y-7">
       <PageIntro
-        eyebrow="Applications"
-        title="Your target roles"
-        copy="Ordered by what needs attention first — an approaching interview, a deadline, or preparation that is still thin. Open one to track its status and see what its requirements are missing."
+        icon={<FeatureIcon feature="applications" size="lg" active />}
+        eyebrow="Your search"
+        title="Applications"
+        copy="Keep every role, deadline, résumé version, and practice plan together. Backstage surfaces the application that needs attention now without turning your search into a spreadsheet."
         action={
           <Link
             href="/dashboard/applications/new"
-            className="bg-amber text-night flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold"
+            className="bg-amber text-night flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
           >
             <Plus className="size-4" /> Add application
           </Link>

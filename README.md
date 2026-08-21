@@ -1,18 +1,19 @@
 <div align="center">
-  <img src="src/app/icon.svg" alt="Sweet+" width="72" height="72" />
+  <img src="src/app/icon.svg" alt="Backstage" width="72" height="72" />
 
-  # Sweet+
-  **A calmer, more connected way to prepare for the role you want.**
+# Backstage
 
-  Sweet+ brings résumé tailoring, technical practice, and behavioral rehearsal
-  into one focused workspace built around each target job.
+**A calmer, more connected way to prepare for the role you want.**
 
-  [![Production](https://img.shields.io/badge/production-sweetplus.vercel.app-E8A64B?style=flat-square)](https://sweetplus.vercel.app)
-  ![Next.js](https://img.shields.io/badge/Next.js-16-171512?style=flat-square&logo=next.js)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-6-5577E0?style=flat-square&logo=typescript&logoColor=white)
-  ![Amazon Cognito](https://img.shields.io/badge/Auth-Amazon_Cognito-D97745?style=flat-square&logo=amazonwebservices&logoColor=white)
+Backstage brings résumé tailoring, technical practice, and behavioral rehearsal
+into one focused workspace built around each target job.
 
-  [Explore the app](https://sweetplus.vercel.app) · [Product specification](docs/PRODUCT_SPEC.md) · [Roadmap](docs/ROADMAP.md)
+[![Production](https://img.shields.io/badge/production-sweetplus.vercel.app-DF7C68?style=flat-square)](https://sweetplus.vercel.app)
+![Next.js](https://img.shields.io/badge/Next.js-16-0D0E10?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-68A5B8?style=flat-square&logo=typescript&logoColor=white)
+![Amazon Cognito](https://img.shields.io/badge/Auth-Amazon_Cognito-DF7C68?style=flat-square&logo=amazonwebservices&logoColor=white)
+
+[Explore the app](https://sweetplus.vercel.app) · [Product specification](docs/PRODUCT_SPEC.md) · [Roadmap](docs/ROADMAP.md)
 </div>
 
 ---
@@ -21,7 +22,7 @@
 
 <p align="center">
   <a href="https://sweetplus.vercel.app">
-    <img src="docs/images/product-home.jpg" alt="Sweet+ homepage showing a role-specific preparation workspace and readiness plan" width="100%" />
+    <img src="docs/images/product-home.jpg" alt="Backstage homepage showing a role-specific preparation workspace and readiness plan" width="100%" />
   </a>
 </p>
 
@@ -30,10 +31,10 @@
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/images/product-login.jpg" alt="Sweet+ login page with email, Google, and Apple authentication" width="100%" />
+      <img src="docs/images/product-login.jpg" alt="Backstage login page with email, Google, and Apple authentication" width="100%" />
     </td>
     <td width="50%">
-      <img src="docs/images/product-signup.jpg" alt="Sweet+ account creation page introducing Resume Kitchen, Guru, and Stage Fright" width="100%" />
+      <img src="docs/images/product-signup.jpg" alt="Backstage account creation page introducing Resume Kitchen, Zed, and Stage Fright" width="100%" />
     </td>
   </tr>
   <tr>
@@ -44,13 +45,13 @@
 
 ## One workspace, three focused tools
 
-| | Tool | Purpose |
-|---|---|---|
-| **01** | **Resume Kitchen** | Turn verified experience into credible, role-specific résumé evidence. |
-| **02** | **Guru** | Identify technical gaps and organize deliberate interview practice. |
-| **03** | **Stage Fright** | Develop and rehearse behavioral stories until delivery feels natural. |
+|        | Tool             | Purpose                                                                |
+| ------ | ---------------- | ---------------------------------------------------------------------- |
+| **01** | **Resume Kitchen**      | Turn verified experience into credible, role-specific résumé evidence. |
+| **02** | **Zed**          | Identify technical gaps and organize deliberate interview practice.    |
+| **03** | **Stage Fright** | Develop and rehearse behavioral stories until delivery feels natural.  |
 
-Sweet+ does not promise interviews or offers. It helps candidates understand what a role requires, recognize preparation gaps, and choose the most useful thing to work on next.
+Backstage does not promise interviews or offers. It helps candidates understand what a role requires, recognize preparation gaps, and choose the most useful thing to work on next.
 
 ## What works today
 
@@ -61,18 +62,18 @@ Sweet+ does not promise interviews or offers. It helps candidates understand wha
 - Candidate onboarding and preparation preferences
 - Résumé intake with evidence confirmation
 - Target-job requirements and readiness mapping
-- Dedicated application, evidence, Resume Kitchen, Guru, and Stage Fright workspaces
+- Dedicated application, evidence, Resume Kitchen, Zed, and Stage Fright workspaces
 
 ## Technology
 
-| Layer | Technology |
-|---|---|
-| **Application** | Next.js 16, React 19, TypeScript 6 |
-| **Interface** | Tailwind CSS, Geist, Lucide |
-| **Identity** | Auth.js, Amazon Cognito, AWS SDK |
-| **Validation** | Zod |
-| **Testing** | Vitest, Testing Library, Playwright |
-| **Deployment** | Vercel |
+| Layer           | Technology                          |
+| --------------- | ----------------------------------- |
+| **Application** | Next.js 16, React 19, TypeScript 6  |
+| **Interface**   | Tailwind CSS, Geist, Lucide         |
+| **Identity**    | Auth.js, Amazon Cognito, AWS SDK    |
+| **Validation**  | Zod                                 |
+| **Testing**     | Vitest, Testing Library, Playwright |
+| **Deployment**  | Vercel                              |
 
 The codebase follows a modular-monolith structure: routes and layouts live in `src/app`, reusable interface components in `src/components`, and product domains in `src/modules`.
 
@@ -129,16 +130,16 @@ Open [localhost:3000](http://localhost:3000).
 ## Authentication flow
 
 ```text
-Email + password ──→ Sweet+ interface ──→ Cognito validation ──→ Dashboard
+Email + password ──→ Backstage interface ──→ Cognito validation ──→ Dashboard
 Google            ──→ Google consent   ──→ Cognito callback   ──→ Dashboard
 ```
 
-Email registration, verification codes, login, and password recovery stay inside the Sweet+ interface. Cognito remains the secure identity store, while Auth.js creates and validates the application session.
+Email registration, verification codes, login, and password recovery stay inside the Backstage interface. Cognito remains the secure identity store, while Auth.js creates and validates the application session.
 
-| Environment | Cognito callback |
-|---|---|
-| Local | `http://localhost:3000/api/auth/callback/cognito` |
-| Production | `https://sweetplus.vercel.app/api/auth/callback/cognito` |
+| Environment | Cognito callback                                         |
+| ----------- | -------------------------------------------------------- |
+| Local       | `http://localhost:3000/api/auth/callback/cognito`        |
+| Production  | `https://sweetplus.vercel.app/api/auth/callback/cognito` |
 
 See the [authentication setup guide](docs/AUTH_SETUP.md) for app-client settings, OAuth scopes, Google federation, and Vercel environment configuration.
 
@@ -155,13 +156,13 @@ npm run build         # Production build
 
 ## Documentation
 
-| Document | What it covers |
-|---|---|
+| Document                                      | What it covers                             |
+| --------------------------------------------- | ------------------------------------------ |
 | [Product specification](docs/PRODUCT_SPEC.md) | Product goals, users, and feature behavior |
-| [System architecture](docs/ARCHITECTURE.md) | Services, modules, and system boundaries |
-| [Data model](docs/DATA_MODEL.md) | Core entities and relationships |
-| [Delivery roadmap](docs/ROADMAP.md) | Milestones and implementation sequence |
-| [Authentication setup](docs/AUTH_SETUP.md) | Cognito, OAuth, callbacks, and deployment |
+| [System architecture](docs/ARCHITECTURE.md)   | Services, modules, and system boundaries   |
+| [Data model](docs/DATA_MODEL.md)              | Core entities and relationships            |
+| [Delivery roadmap](docs/ROADMAP.md)           | Milestones and implementation sequence     |
+| [Authentication setup](docs/AUTH_SETUP.md)    | Cognito, OAuth, callbacks, and deployment  |
 
 ---
 

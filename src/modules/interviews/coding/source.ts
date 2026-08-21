@@ -1,11 +1,11 @@
 import "server-only";
 
-import { ARCHETYPES } from "@/modules/guru/archetypes";
+import { ARCHETYPES } from "@/modules/zed/archetypes";
 import {
   executionConfigured,
   lambdaExecutionAdapter,
 } from "@/modules/execution/lambda-adapter";
-import { claimProblem } from "@/modules/guru/pool";
+import { claimProblem } from "@/modules/zed/pool";
 import type { CodingDifficulty, StoredCodingProblem } from "../schema";
 import { toStoredCodingProblem } from "./from-pool";
 import { selectProblem } from "./problems";

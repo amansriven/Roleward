@@ -3,16 +3,17 @@
 import { CheckCircle2, Play, Terminal } from "lucide-react";
 import { useState } from "react";
 
+import { FeatureIcon } from "@/components/brand/feature-icon";
 import { Button } from "@/components/ui/button";
 
-export function GuruDemo() {
+export function ZedDemo() {
   const [ran, setRan] = useState(false);
   const [hint, setHint] = useState(false);
   return (
     <div className="surface overflow-hidden rounded-2xl">
       <div className="border-iron flex items-center justify-between border-b px-5 py-4">
         <p className="flex items-center gap-2 text-sm font-semibold">
-          <Terminal className="tool-accent size-4" />
+          <Terminal className="text-amber size-4" />
           Two Sum · Warm-up
         </p>
         <span className="text-dust font-mono text-[10px] uppercase">
@@ -26,16 +27,16 @@ export function GuruDemo() {
         >
           <p>
             <span className="text-dust">01</span>{" "}
-            <span className="tool-accent">function</span>{" "}
+            <span className="text-amber">function</span>{" "}
             <span className="text-linen">twoSum(nums, target) {"{"}</span>
           </p>
           <p>
             <span className="text-dust">02</span>　
-            <span className="tool-accent">const</span> seen = new Map();
+            <span className="text-amber">const</span> seen = new Map();
           </p>
           <p>
             <span className="text-dust">03</span>　
-            <span className="tool-accent">for</span> (let i = 0; i &lt;
+            <span className="text-amber">for</span> (let i = 0; i &lt;
             nums.length; i++) {"{"}
           </p>
           <p>
@@ -56,11 +57,7 @@ export function GuruDemo() {
             <span className="text-dust">08</span> {"}"}
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Button
-              className="tool-button"
-              size="sm"
-              onClick={() => setRan(true)}
-            >
+            <Button className="bg-amber" size="sm" onClick={() => setRan(true)}>
               <Play className="size-3.5" />
               Run samples
             </Button>
@@ -70,9 +67,13 @@ export function GuruDemo() {
           </div>
         </div>
         <div className="border-iron border-t p-5 sm:p-7 lg:border-t-0 lg:border-l">
-          <p className="tool-accent font-mono text-[10px] uppercase">
-            Guru is listening
-          </p>
+          <div className="flex items-center gap-2.5">
+            <FeatureIcon feature="zed" size="md" active />
+            <div>
+              <p className="text-amber font-mono text-[10px] uppercase">Zed</p>
+              <p className="text-dust text-[10px]">Your coding coach</p>
+            </div>
+          </div>
           <p className="text-canvas mt-3 text-sm leading-6">
             Explain why the map lookup keeps this solution linear.
           </p>

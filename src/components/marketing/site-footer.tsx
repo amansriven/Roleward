@@ -7,12 +7,12 @@ const groups = [
     title: "Workspaces",
     links: [
       ["Resume Kitchen", "/resume-kitchen"],
-      ["Guru", "/guru"],
+      ["Zed", "/zed"],
       ["Stage Fright", "/stage-fright"],
     ],
   },
   {
-    title: "Sweet+",
+    title: "Backstage",
     links: [
       ["How it works", "/how-it-works"],
       ["Pricing", "/pricing"],

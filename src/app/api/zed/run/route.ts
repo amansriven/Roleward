@@ -11,7 +11,7 @@ import {
   ExecutionUnavailableError,
   isExecutable,
 } from "@/modules/execution/port";
-import { submissionSchema } from "@/modules/guru/schema";
+import { submissionSchema } from "@/modules/zed/schema";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;

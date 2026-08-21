@@ -1,11 +1,15 @@
-# Sweet+ / Backstage — handoff notes
+# Backstage — handoff notes
 
 Interview-prep platform. Next.js 16 on Vercel (`sweetplus.vercel.app`), AWS in
 `us-east-2`, auth via Cognito + Auth.js, persistence in one DynamoDB table.
 
-Renaming is planned but has NOT happened: the product is still "Sweet+" in code,
-"Guru" is being renamed to "Zed", and the whole product to "Backstage". Do not
-start renaming anything unless asked.
+The product, routes, feature modules, and UI now use the Backstage naming system:
+Applications, Resume Kitchen, Zed, and Stage Fright.
+
+Existing AWS resource IDs and the current Vercel hostname retain their original
+physical names. They are deployment identifiers, not product copy. Do not
+recreate Cognito, DynamoDB, S3, Lambda, or IAM resources solely to rename them;
+move them only through an explicit data and identity migration.
 
 ---
 
@@ -64,10 +68,10 @@ If you add a feature where a model produces something checkable, check it.
 ## What is real, and what is not
 
 **Stage Fright** (interviews) — real. Text and OpenAI Realtime voice, scored
-reports. Its coding interview draws from the Guru pool and runs the candidate's
+reports. Its coding interview draws from the Zed pool and runs the candidate's
 code through the real judge, feeding actual verdicts to the interviewer.
 
-**Guru** (renaming to Zed) — real end to end. 30 archetypes generate validated
+**Zed** — real end to end. 30 archetypes generate validated
 problems into a shared warm pool; the practice loop is classify → commit to a
 complexity → pick edge cases → solve → coaching, all graded server-side. A
 competency graph scores five of seven skills; the two conversational ones stay
@@ -82,7 +86,7 @@ bullets → deterministic résumé score → publishable portfolio.
 - Skills are extracted and stored but the portfolio page does not render them.
 - Rewritten bullets are copy-to-clipboard; they do not write back to the
   evidence library, so the score does not move as you fix things.
-- The Guru pool is only a few cells deep out of 90, so practice often generates
+- The Zed pool is only a few cells deep out of 90, so practice often generates
   inline and takes 11–28s.
 - `CRON_SECRET` may still be unset in Vercel, in which case the daily warm cron
   does nothing.
@@ -93,7 +97,7 @@ bullets → deterministic résumé score → publishable portfolio.
 
 ```
 src/modules/execution/      port.ts (pure contract) + lambda-adapter.ts
-src/modules/guru/           archetypes, generator, validation, pool, practice,
+src/modules/zed/           archetypes, generator, validation, pool, practice,
                             skills, stubs, signature — pure except pool/generator
 src/modules/resume-kitchen/ grounding, extraction, requirements, tailoring,
                             scoring, document-text
@@ -145,7 +149,7 @@ For pool/judge work, warm one cell directly:
 
 ```bash
 curl -H "authorization: Bearer $CRON_SECRET" \
-  "$APP_URL/api/guru/pool/warm?archetype=graph-bfs&difficulty=medium"
+  "$APP_URL/api/zed/pool/warm?archetype=graph-bfs&difficulty=medium"
 ```
 
 ---
@@ -158,7 +162,7 @@ curl -H "authorization: Bearer $CRON_SECRET" \
 3. Keyword gap: the résumé's skills and the posting's requirements are both
    structured already, so "this role asks for Kubernetes twice and your résumé
    never mentions it" is nearly free.
-4. Warm the Guru pool, and set `CRON_SECRET` in Vercel.
+4. Warm the Zed pool, and set `CRON_SECRET` in Vercel.
 5. Larger, discussed but not started: a LeetCode companion mode (link out, never
    copy statements, so it can only be the conversational side — no judge), and
    interview-date-aware readiness across applications.

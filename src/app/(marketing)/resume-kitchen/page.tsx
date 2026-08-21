@@ -22,7 +22,7 @@ const workflow: Array<[LucideIcon, string, string]> = [
   [
     ShieldCheck,
     "Confirm the evidence",
-    "Approve the projects, metrics, and responsibilities Sweet+ may use.",
+    "Approve the projects, metrics, and responsibilities Backstage may use.",
   ],
   [
     FileCheck2,
@@ -33,20 +33,20 @@ const workflow: Array<[LucideIcon, string, string]> = [
 
 export default function ResumeKitchenPage() {
   return (
-    <main className="theme-resume">
+    <main>
       <section className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-12 lg:py-28">
         <div>
           <p className="section-label">Resume Kitchen</p>
           <h1 className="mt-5 text-5xl leading-[1.02] font-semibold tracking-[-0.045em] text-balance sm:text-6xl">
             Tailor the résumé.
             <br />
-            <span className="tool-accent">Keep the truth.</span>
+            <span className="text-amber">Keep the truth.</span>
           </h1>
           <p className="text-canvas mt-6 text-lg leading-8">
             Match verified experience to a target role, strengthen the evidence,
             and inspect why every suggestion exists.
           </p>
-          <Button asChild className="tool-button mt-8">
+          <Button asChild className="bg-amber mt-8">
             <Link href="/signup">
               Open Resume Kitchen <ArrowRight className="size-4" />
             </Link>
@@ -73,7 +73,7 @@ export default function ResumeKitchenPage() {
                 className="border-iron border-t pt-6"
               >
                 <span className="text-dust font-mono text-xs">0{i + 1}</span>
-                <Icon className="tool-accent mt-8 size-5" />
+                <Icon className="text-amber mt-8 size-5" />
                 <h2 className="mt-5 text-xl font-semibold">{String(title)}</h2>
                 <p className="text-canvas mt-3 text-sm leading-6">
                   {String(copy)}
@@ -88,7 +88,7 @@ export default function ResumeKitchenPage() {
           Stronger is useful. Defensible is essential.
         </h2>
         <p className="text-canvas mx-auto mt-5 max-w-2xl">
-          Sweet+ shows the job requirement, source evidence, rationale, and
+          Backstage shows the job requirement, source evidence, rationale, and
           revision together.
         </p>
       </section>

@@ -63,7 +63,5 @@ test("candidate reaches a live dashboard from signup, evidence, and a target job
   await expect(
     page.getByText("Stripe · Software Engineer, New Grad").first(),
   ).toBeVisible();
-  await expect(
-    page.getByText("Here’s the one thing to do next."),
-  ).toBeVisible();
+  await expect(page.getByText("Today in Backstage")).toBeVisible();
 });

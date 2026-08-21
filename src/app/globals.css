@@ -1,38 +1,38 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-night: #171512;
-  --color-workshop: #211e1a;
-  --color-raised: #2b2722;
-  --color-amber: #e8a64b;
-  --color-sage: #79a897;
-  --color-linen: #f2ebdd;
-  --color-canvas: #b9b0a2;
-  --color-dust: #8c857a;
-  --color-iron: #514b43;
-  --color-kiln: #d56b5c;
-  --color-copper: #d97745;
-  --color-cobalt: #5577e0;
-  --color-plum: #9a5c8a;
+  --color-night: #0d0e10;
+  --color-workshop: #121418;
+  --color-raised: #191b20;
+  --color-amber: #df7c68;
+  --color-sage: #73a897;
+  --color-linen: #f5f2ed;
+  --color-canvas: #a9aab2;
+  --color-dust: #73757e;
+  --color-iron: #2a2d34;
+  --color-kiln: #df7c68;
+  --color-copper: #df7c68;
+  --color-cobalt: #68a5b8;
+  --color-plum: #a9799f;
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 :root {
   color-scheme: dark;
-  --night: #171512;
-  --workshop: #211e1a;
-  --raised: #2b2722;
-  --amber: #e8a64b;
-  --sage: #79a897;
-  --linen: #f2ebdd;
-  --canvas: #b9b0a2;
-  --dust: #8c857a;
-  --iron: #514b43;
-  --kiln: #d56b5c;
-  --copper: #d97745;
-  --cobalt: #5577e0;
-  --plum: #9a5c8a;
+  --night: #0d0e10;
+  --workshop: #121418;
+  --raised: #191b20;
+  --amber: #df7c68;
+  --sage: #73a897;
+  --linen: #f5f2ed;
+  --canvas: #a9aab2;
+  --dust: #73757e;
+  --iron: #2a2d34;
+  --kiln: #df7c68;
+  --copper: #df7c68;
+  --cobalt: #68a5b8;
+  --plum: #a9799f;
 }
 
 * {
@@ -81,15 +81,15 @@ summary:focus-visible {
 }
 
 .surface {
-  border: 1px solid rgb(81 75 67 / 82%);
-  background: rgb(33 30 26 / 94%);
+  border: 1px solid rgb(42 45 52 / 92%);
+  background: rgb(18 20 24 / 94%);
   box-shadow:
     inset 0 1px 0 rgb(242 235 221 / 4%),
     0 16px 48px rgb(0 0 0 / 24%);
 }
 
 .surface-raised {
-  border: 1px solid rgb(81 75 67 / 92%);
+  border: 1px solid rgb(42 45 52 / 96%);
   background: var(--raised);
   box-shadow:
     inset 0 1px 0 rgb(242 235 221 / 5%),
@@ -103,6 +103,26 @@ summary:focus-visible {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.backstage-card {
+  border: 1px solid rgb(42 45 52 / 92%);
+  background: linear-gradient(145deg, rgb(25 27 32 / 96%), rgb(18 20 24 / 96%));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 3%),
+    0 24px 70px rgb(0 0 0 / 18%);
+}
+
+.backstage-card-accent {
+  border-color: rgb(223 124 104 / 38%);
+  background:
+    radial-gradient(circle at 10% 50%, rgb(223 124 104 / 8%), transparent 28%),
+    linear-gradient(145deg, rgb(25 27 32 / 98%), rgb(18 20 24 / 98%));
+}
+
+.backstage-empty {
+  border: 1px dashed rgb(115 117 126 / 28%);
+  background: rgb(18 20 24 / 46%);
 }
 
 .text-balance {
@@ -171,44 +191,6 @@ summary:focus-visible {
 .tech-node:nth-of-type(4) {
   animation-delay: -10s;
   animation-duration: 14s;
-}
-
-.theme-resume {
-  --tool-accent: var(--copper);
-  --tool-glow: rgb(217 119 69 / 22%);
-}
-.theme-guru {
-  --tool-accent: var(--cobalt);
-  --tool-glow: rgb(85 119 224 / 24%);
-}
-.theme-stage {
-  --tool-accent: var(--plum);
-  --tool-glow: rgb(154 92 138 / 24%);
-}
-
-.theme-resume .section-label,
-.theme-guru .section-label,
-.theme-stage .section-label {
-  color: var(--tool-accent);
-}
-
-.tool-accent {
-  color: var(--tool-accent);
-}
-.tool-border {
-  border-color: color-mix(in srgb, var(--tool-accent) 46%, var(--iron));
-}
-.tool-glow {
-  box-shadow: 0 24px 80px var(--tool-glow);
-}
-.tool-button {
-  border-color: var(--tool-accent);
-  background: var(--tool-accent);
-  box-shadow: 0 0 0 var(--tool-glow);
-}
-.tool-button:hover {
-  background: var(--tool-accent);
-  box-shadow: 0 0 30px var(--tool-glow);
 }
 
 @keyframes drift-amber {

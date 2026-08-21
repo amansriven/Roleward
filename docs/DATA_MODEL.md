@@ -1,4 +1,4 @@
-# Sweet+ Core Data Model
+# Backstage Core Data Model
 
 ## 1. Modeling principles
 
@@ -190,7 +190,7 @@ Atomic claims prevent the application from treating an entire experience block a
 - `status`
 - timestamps
 
-## 7. Guru
+## 7. Zed
 
 ### `coding_problems`
 
@@ -368,7 +368,7 @@ Private test cases must never be returned to the browser.
 
 - `id`
 - `plan_id`
-- `domain` — resume_kitchen, guru, stage_fright
+- `domain` — resume_kitchen, zed, stage_fright
 - `resource_type`
 - `resource_id`
 - `title`

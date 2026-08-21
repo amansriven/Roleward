@@ -1,4 +1,4 @@
-# Sweet+ System Architecture
+# Backstage System Architecture
 
 ## 1. Architecture goals
 
@@ -12,7 +12,7 @@
 
 ## 2. Architecture style
 
-Sweet+ begins as a **modular monolith** with asynchronous workers.
+Backstage begins as a **modular monolith** with asynchronous workers.
 
 The Next.js application owns the user interface, authenticated API, domain logic, and orchestration. Domain modules communicate through application services rather than reaching into each other's internals. Long-running or retryable work is published to queues and processed by workers.
 
@@ -60,7 +60,7 @@ src/
     evidence/
     applications/
     resume-kitchen/
-    guru/
+    zed/
     stage-fright/
     readiness/
     planning/
@@ -90,7 +90,7 @@ Owns target jobs, job-description snapshots, application stages, deadlines, and 
 
 Owns resume documents, versions, sections, bullet suggestions, and evidence-to-requirement explanations.
 
-### Guru
+### Zed
 
 Owns problems, test cases, submissions, execution results, hint events, topic mastery, and interview sessions.
 
@@ -197,7 +197,7 @@ Each stored AI artifact records:
 
 ### Prompt-injection boundary
 
-Resumes and job descriptions are untrusted content. They must be placed in clearly delimited data sections and never treated as system instructions. Extracted URLs or instructions must not cause tools, network requests, or data access automatically.
+Résumés and job descriptions are untrusted content. They must be placed in clearly delimited data sections and never treated as system instructions. Extracted URLs or instructions must not cause tools, network requests, or data access automatically.
 
 ## 7. Secure code execution
 
@@ -208,7 +208,7 @@ Execution flow:
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant A as Sweet+ API
+    participant A as Backstage API
     participant X as E2B sandbox
     participant D as PostgreSQL
 
@@ -326,7 +326,7 @@ Do not introduce a service until measurements justify it.
 
 Likely future separations:
 
-1. Code-execution orchestration if Guru load dominates
+1. Code-execution orchestration if Zed load dominates
 2. AI evaluation workers if queue volume becomes substantial
 3. Document generation if exports require a container runtime
 4. Analytics pipeline if transactional reporting becomes expensive

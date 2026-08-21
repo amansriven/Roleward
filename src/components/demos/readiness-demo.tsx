@@ -7,17 +7,17 @@ const plans = {
   Frontend: {
     score: 68,
     gap: "React performance",
-    next: "Profile one rendering problem in Guru",
+    next: "Profile one rendering problem in Zed",
   },
   Backend: {
     score: 61,
     gap: "SQL joins",
-    next: "Practice one SQL join problem in Guru",
+    next: "Practice one SQL join problem in Zed",
   },
   Fullstack: {
     score: 65,
     gap: "System boundaries",
-    next: "Map one API flow in Guru",
+    next: "Map one API flow in Zed",
   },
 } as const;
 

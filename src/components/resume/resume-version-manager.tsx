@@ -84,12 +84,12 @@ function VersionManagerContent({
   );
 
   return (
-    <section className="border-iron/80 bg-workshop/75 overflow-hidden rounded-2xl border">
+    <section className="backstage-card overflow-hidden rounded-[26px]">
       <div className="border-iron/70 flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <FileText className="text-copper size-4" />
-            <p className="font-semibold">Résumé versions</p>
+            <p className="font-semibold">Your résumé versions</p>
           </div>
           <p className="text-dust mt-1 text-xs leading-5">
             The original is locked. Every revision is a separately named copy
@@ -99,7 +99,7 @@ function VersionManagerContent({
         <button
           type="button"
           onClick={() => setCreating((value) => !value)}
-          className="bg-copper text-night inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold"
+          className="bg-amber text-night inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold"
         >
           <CopyPlus className="size-3.5" /> New named version
         </button>

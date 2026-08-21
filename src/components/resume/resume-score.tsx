@@ -68,7 +68,7 @@ export function ResumeScore({
   if (!claims.length) return null;
 
   return (
-    <section className="border-iron/80 bg-workshop/75 rounded-2xl border p-5">
+    <section className="backstage-card rounded-[22px] p-5">
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-semibold">Résumé score</p>
         <div className="text-right">

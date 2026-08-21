@@ -10,7 +10,7 @@ export interface CodingProblem {
   edgeCases: string[];
 }
 
-/** Topics follow the Guru taxonomy in docs/ROADMAP.md §5. */
+/** Topics follow the Zed taxonomy in docs/ROADMAP.md §5. */
 export const CODING_PROBLEMS: CodingProblem[] = [
   {
     id: "two-sum",

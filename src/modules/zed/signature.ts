@@ -5,7 +5,7 @@ import { z } from "zod";
  *
  * Both the interview and the editor need these, and both reach them from the
  * browser. Everything else in schema.ts pulls in the archetype catalogue, whose
- * tells and confusable lists are the answers to Guru's gates — so they must not
+ * tells and confusable lists are the answers to Zed's gates — so they must not
  * travel with a type definition.
  */
 /**

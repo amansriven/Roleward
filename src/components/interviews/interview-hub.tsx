@@ -3,6 +3,7 @@
 import { ArrowRight, Mic, Plus, Sparkles, Type } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FeatureIcon } from "@/components/brand/feature-icon";
 import { Metric, PageIntro, Panel } from "@/components/workspace/dashboard-ui";
 import { INTERVIEW_PLANS } from "@/modules/interviews/plan";
 import {
@@ -48,8 +49,9 @@ export function InterviewHub() {
 
   if (!summaries.length)
     return (
-      <div className="theme-stage space-y-7">
+      <div className="space-y-7">
         <PageIntro
+          icon={<FeatureIcon feature="stage-fright" size="lg" active />}
           eyebrow="Stage Fright"
           title="Practice the interview before it counts."
           copy="Pick the kind of interview, the role, and how hard it should feel. Answer by typing or out loud, then get scored feedback on what to fix."
@@ -74,8 +76,9 @@ export function InterviewHub() {
     );
 
   return (
-    <div className="theme-stage space-y-7">
+    <div className="space-y-7">
       <PageIntro
+        icon={<FeatureIcon feature="stage-fright" size="lg" active />}
         eyebrow="Stage Fright"
         title="Practice the interview before it counts."
         copy="Every interview is scored and stored, so you can watch specific weaknesses close over time."

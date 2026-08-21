@@ -1,13 +1,10 @@
 "use client";
 
 import {
-  BriefcaseBusiness,
-  ChefHat,
-  Code2,
-  Home,
-  Menu,
   LogOut,
-  MessageSquareText,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Settings,
   UserRound,
@@ -16,8 +13,12 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { Logo } from "@/components/brand/logo";
 import { endSession } from "@/components/auth/auth-actions";
+import { Logo } from "@/components/brand/logo";
+import {
+  FeatureIcon,
+  type FeatureIconName,
+} from "@/components/brand/feature-icon";
 import { WorkspaceSync } from "@/components/workspace/workspace-sync";
 import { cn } from "@/lib/utils";
 import {
@@ -26,77 +27,36 @@ import {
   workspaceUpdatedEvent,
 } from "@/modules/workspace/repository";
 
+const sidebarPreferenceKey = "backstage:workspace-sidebar-collapsed";
+
 const navigation = [
-  { label: "Home", note: "Your next step", href: "/dashboard", icon: Home },
+  { label: "Home", href: "/dashboard", feature: "home" },
   {
     label: "Applications",
-    note: "Jobs you’re preparing for",
     href: "/dashboard/applications",
-    icon: BriefcaseBusiness,
+    feature: "applications",
   },
   {
-    label: "Resume",
-    note: "Resume Kitchen",
+    label: "Resume Kitchen",
     href: "/dashboard/resume-kitchen",
-    icon: ChefHat,
-    color: "text-copper",
+    feature: "resume-kitchen",
   },
   {
-    label: "Coding",
-    note: "Guru practice",
-    href: "/dashboard/guru",
-    icon: Code2,
-    color: "text-cobalt",
+    label: "Evidence",
+    href: "/dashboard/evidence",
+    feature: "evidence",
   },
+  { label: "Zed", href: "/dashboard/zed", feature: "zed" },
   {
-    label: "Stories",
-    note: "Stage Fright practice",
+    label: "Stage Fright",
     href: "/dashboard/stage-fright",
-    icon: MessageSquareText,
-    color: "text-plum",
+    feature: "stage-fright",
   },
-] as const;
-
-function ActiveTarget({ card = false }: { card?: boolean }) {
-  const [label, setLabel] = useState("No active application");
-  const [deadline, setDeadline] = useState(
-    "Add a role to personalize your plan",
-  );
-  useEffect(() => {
-    const refresh = () => {
-      const app = getActiveApplication(loadWorkspace(localStorage));
-      if (app) {
-        setLabel(app.companyName + " · " + app.roleTitle);
-        setDeadline(
-          app.deadline
-            ? "Deadline " + app.deadline
-            : app.requirements.length + " requirements confirmed",
-        );
-      }
-    };
-    queueMicrotask(refresh);
-    window.addEventListener(workspaceUpdatedEvent, refresh);
-    return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
-  }, []);
-  if (!card)
-    return (
-      <span className="text-dust hidden max-w-64 truncate text-xs sm:block">
-        {label}
-      </span>
-    );
-  return (
-    <div className="border-iron/60 bg-night/35 mb-3 rounded-xl border p-3">
-      <p className="text-dust text-[10px]">Preparing for</p>
-      <Link
-        href="/dashboard/applications"
-        className="hover:text-amber mt-1 block truncate text-sm font-medium"
-      >
-        {label}
-      </Link>
-      <p className="text-sage mt-2 text-[10px]">{deadline}</p>
-    </div>
-  );
-}
+] as const satisfies ReadonlyArray<{
+  label: string;
+  href: string;
+  feature: FeatureIconName;
+}>;
 
 type WorkspaceUser = {
   name?: string | null;
@@ -104,8 +64,36 @@ type WorkspaceUser = {
   image?: string | null;
 };
 
+function ActiveTarget({ compact = false }: { compact?: boolean }) {
+  const [label, setLabel] = useState("No active application");
+
+  useEffect(() => {
+    const refresh = () => {
+      const app = getActiveApplication(loadWorkspace(localStorage));
+      setLabel(
+        app ? `${app.companyName} · ${app.roleTitle}` : "No active application",
+      );
+    };
+    queueMicrotask(refresh);
+    window.addEventListener(workspaceUpdatedEvent, refresh);
+    return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
+  }, []);
+
+  if (compact) return null;
+
+  return (
+    <Link
+      href="/dashboard/applications"
+      className="text-dust hover:text-linen mt-2 block truncate text-[11px] transition-colors"
+      title={label}
+    >
+      {label}
+    </Link>
+  );
+}
+
 function initials(user: WorkspaceUser) {
-  const source = user.name || user.email || "Sweet+";
+  const source = user.name || user.email || "Backstage";
   return source
     .split(/[\s@._-]+/)
     .filter(Boolean)
@@ -133,97 +121,247 @@ function UserAvatar({ user }: { user: WorkspaceUser }) {
   );
 }
 
-function Sidebar({ close, user }: { close?: () => void; user: WorkspaceUser }) {
-  const pathname = usePathname();
+function NavigationLink({
+  item,
+  pathname,
+  compact = false,
+  onClick,
+}: {
+  item: (typeof navigation)[number];
+  pathname: string;
+  compact?: boolean;
+  onClick?: () => void;
+}) {
+  const active =
+    item.href === "/dashboard"
+      ? pathname === item.href
+      : pathname.startsWith(item.href);
+
   return (
-    <aside className="bg-workshop/95 border-iron/60 flex h-full w-[252px] shrink-0 flex-col border-r px-4 py-5">
-      <div className="flex items-center justify-between px-2">
-        <Logo />
-        {close && (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      title={compact ? item.label : undefined}
+      aria-label={compact ? item.label : undefined}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "group relative flex min-h-11 items-center rounded-xl text-sm transition-colors",
+        compact ? "justify-center px-2" : "gap-3 px-3",
+        active
+          ? "bg-linen/[.07] text-linen"
+          : "text-canvas hover:bg-linen/[.035] hover:text-linen",
+      )}
+    >
+      <FeatureIcon feature={item.feature} size="sm" active={active} />
+      {!compact && <span className="truncate">{item.label}</span>}
+      {active && (
+        <span className="bg-amber absolute top-2 bottom-2 left-0 w-0.5 rounded-full" />
+      )}
+    </Link>
+  );
+}
+
+function SidebarContent({
+  compact,
+  mobile = false,
+  pathname,
+  user,
+  onNavigate,
+  onToggle,
+}: {
+  compact: boolean;
+  mobile?: boolean;
+  pathname: string;
+  user: WorkspaceUser;
+  onNavigate?: () => void;
+  onToggle?: () => void;
+}) {
+  const condensed = mobile ? false : compact;
+  const settingsActive = pathname.startsWith("/dashboard/settings");
+
+  return (
+    <>
+      <div
+        className={cn(
+          "border-iron/80 relative flex h-[72px] shrink-0 items-center border-b",
+          condensed ? "justify-center px-3" : "justify-between px-5",
+        )}
+      >
+        <Logo compact={condensed} href="/dashboard" />
+        {mobile ? (
           <button
-            onClick={close}
-            className="text-dust lg:hidden"
+            type="button"
+            onClick={onNavigate}
+            className="text-dust hover:text-linen flex size-9 items-center justify-center rounded-lg transition-colors"
             aria-label="Close navigation"
           >
-            <X className="size-5" />
+            <X className="size-4" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggle}
+            className={cn(
+              "text-dust hover:bg-linen/[.04] hover:text-linen flex size-9 items-center justify-center rounded-lg transition-colors",
+              condensed &&
+                "bg-workshop border-iron absolute -right-[18px] border shadow-lg",
+            )}
+            aria-label={condensed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!condensed}
+          >
+            {condensed ? (
+              <PanelLeftOpen className="size-4" />
+            ) : (
+              <PanelLeftClose className="size-4" />
+            )}
           </button>
         )}
       </div>
-      <nav className="mt-9 space-y-1.5" aria-label="Workspace navigation">
-        {navigation.map((item) => {
-          const active =
-            item.href === "/dashboard"
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-          return (
-            <Link
+
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col overflow-y-auto",
+          condensed ? "px-2" : "px-3",
+        )}
+      >
+        {!condensed && (
+          <p className="text-dust px-3 pt-7 pb-2 font-mono text-[9px] tracking-[0.13em] uppercase">
+            Workspace
+          </p>
+        )}
+        <nav
+          className={cn("space-y-1", condensed && "pt-5")}
+          aria-label="Workspace navigation"
+        >
+          {navigation.map((item) => (
+            <NavigationLink
               key={item.href}
-              href={item.href}
-              onClick={close}
+              item={item}
+              pathname={pathname}
+              compact={condensed}
+              onClick={onNavigate}
+            />
+          ))}
+        </nav>
+
+        <div className="mt-auto pb-4">
+          <div
+            className={cn(
+              "border-iron/80 border-t pt-4",
+              condensed ? "flex flex-col items-center gap-3" : "px-3",
+            )}
+          >
+            <WorkspaceSync compact={condensed} />
+            <ActiveTarget compact={condensed} />
+
+            <Link
+              href="/dashboard/applications/new"
+              onClick={onNavigate}
+              title={condensed ? "New application" : undefined}
+              aria-label={condensed ? "New application" : undefined}
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-3 transition-colors",
-                active
-                  ? "bg-linen/[.075] text-linen"
-                  : "text-canvas hover:bg-linen/[.035] hover:text-linen",
+                "bg-amber text-night hover:bg-amber/90 inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition-colors",
+                condensed ? "size-10 p-0" : "mt-4 w-full gap-2 px-4",
               )}
             >
-              <span
-                className={cn(
-                  "bg-linen/[.035] flex size-8 shrink-0 items-center justify-center rounded-lg",
-                  active && "bg-linen/[.07]",
-                )}
-              >
-                <item.icon
-                  className={cn(
-                    "size-4",
-                    "color" in item
-                      ? item.color
-                      : active
-                        ? "text-amber"
-                        : "text-canvas",
-                  )}
-                />
-              </span>
-              <span>
-                <span className="block text-sm font-medium">{item.label}</span>
-                <span className="text-dust mt-0.5 block text-[10px]">
-                  {item.note}
-                </span>
-              </span>
+              <Plus className="size-4" />
+              {!condensed && "New application"}
             </Link>
-          );
-        })}
-      </nav>
-      <div className="mt-auto">
-        <ActiveTarget card />
-        <Link
-          href="/dashboard/settings"
-          className="text-canvas hover:bg-linen/[.035] flex items-center gap-3 rounded-lg px-3 py-2 text-xs"
-        >
-          <Settings className="size-4" /> Settings
-        </Link>
-        <div className="mt-2 flex items-center gap-3 px-3 py-2">
-          <UserAvatar user={user} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium">
-              {user.name || user.email?.split("@")[0] || "Your workspace"}
-            </p>
-            <p className="text-dust truncate text-[10px]">
-              {user.email || "Cognito protected"}
-            </p>
           </div>
-          <form action={endSession}>
-            <button
-              aria-label="Log out"
-              className="text-dust hover:text-linen"
-              type="submit"
+
+          <div
+            className={cn(
+              "border-iron/80 mt-4 border-t pt-4",
+              condensed ? "flex flex-col items-center gap-3" : "px-3",
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center",
+                condensed ? "justify-center" : "gap-3",
+              )}
             >
-              <LogOut className="size-4" />
-            </button>
-          </form>
+              <UserAvatar user={user} />
+              {!condensed && (
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium">
+                    {user.name || user.email?.split("@")[0] || "Your workspace"}
+                  </p>
+                  <p className="text-dust truncate text-[10px]">{user.email}</p>
+                </div>
+              )}
+            </div>
+
+            <div
+              className={cn(
+                "mt-3 flex",
+                condensed ? "flex-col gap-1" : "items-center gap-1",
+              )}
+            >
+              <Link
+                href="/dashboard/settings"
+                onClick={onNavigate}
+                title={condensed ? "Settings" : undefined}
+                aria-label={condensed ? "Settings" : undefined}
+                className={cn(
+                  "text-dust hover:bg-linen/[.04] hover:text-linen flex min-h-9 items-center rounded-lg text-xs transition-colors",
+                  condensed ? "w-9 justify-center" : "flex-1 gap-2 px-2",
+                  settingsActive && "bg-linen/[.07] text-linen",
+                )}
+                aria-current={settingsActive ? "page" : undefined}
+              >
+                <Settings className="size-3.5" />
+                {!condensed && "Settings"}
+              </Link>
+              <form action={endSession}>
+                <button
+                  type="submit"
+                  title={condensed ? "Log out" : undefined}
+                  aria-label="Log out"
+                  className={cn(
+                    "text-dust hover:bg-linen/[.04] hover:text-linen flex min-h-9 items-center rounded-lg text-xs transition-colors",
+                    condensed ? "w-9 justify-center" : "gap-2 px-2",
+                  )}
+                >
+                  <LogOut className="size-3.5" />
+                  {!condensed && "Log out"}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+}
+
+function MobileNavigation({
+  close,
+  pathname,
+  user,
+}: {
+  close: () => void;
+  pathname: string;
+  user: WorkspaceUser;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 lg:hidden">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        aria-label="Close navigation"
+        onClick={close}
+      />
+      <aside className="bg-workshop border-iron relative flex h-full w-[min(310px,88vw)] flex-col border-r shadow-2xl">
+        <SidebarContent
+          compact={false}
+          mobile
+          pathname={pathname}
+          user={user}
+          onNavigate={close}
+        />
+      </aside>
+    </div>
   );
 }
 
@@ -234,45 +372,73 @@ export function WorkspaceShell({
   children: ReactNode;
   user: WorkspaceUser;
 }) {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setCollapsed(localStorage.getItem(sidebarPreferenceKey) === "true");
+    });
+  }, []);
+
+  const toggleSidebar = () => {
+    setCollapsed((current) => {
+      const next = !current;
+      localStorage.setItem(sidebarPreferenceKey, String(next));
+      return next;
+    });
+  };
+
   return (
-    <div className="bg-night flex min-h-screen [background-image:radial-gradient(circle_at_72%_0%,rgba(232,166,75,.045),transparent_32%)]">
-      <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">
-        <Sidebar user={user} />
-      </div>
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            className="absolute inset-0 bg-black/65"
-            aria-label="Close navigation"
-            onClick={() => setOpen(false)}
-          />
-          <div className="relative h-full w-fit">
-            <Sidebar close={() => setOpen(false)} user={user} />
-          </div>
-        </div>
+    <div
+      className={cn(
+        "bg-night min-h-screen lg:grid lg:transition-[grid-template-columns] lg:duration-200",
+        collapsed
+          ? "lg:grid-cols-[5rem_minmax(0,1fr)]"
+          : "lg:grid-cols-[16rem_minmax(0,1fr)]",
       )}
-      <div className="min-w-0 flex-1 lg:pl-[252px]">
-        <header className="bg-night/82 border-iron/50 sticky top-0 z-30 flex h-16 items-center border-b px-4 backdrop-blur-xl sm:px-7">
+    >
+      <aside className="bg-workshop border-iron/80 relative z-40 hidden h-screen flex-col border-r lg:sticky lg:top-0 lg:flex">
+        <SidebarContent
+          compact={collapsed}
+          pathname={pathname}
+          user={user}
+          onToggle={toggleSidebar}
+        />
+      </aside>
+
+      <div className="min-w-0">
+        <header className="bg-night/90 border-iron/80 sticky top-0 z-40 flex h-16 items-center gap-3 border-b px-4 backdrop-blur-xl sm:px-7 lg:hidden">
           <button
-            className="text-canvas lg:hidden"
-            onClick={() => setOpen(true)}
+            type="button"
+            className="text-canvas hover:text-linen flex size-9 items-center justify-center rounded-lg transition-colors"
+            onClick={() => setMobileOpen(true)}
             aria-label="Open navigation"
+            aria-expanded={mobileOpen}
           >
             <Menu className="size-5" />
           </button>
-          <div className="ml-auto flex items-center gap-3">
-            <WorkspaceSync />
-            <ActiveTarget />
-            <Link
-              href="/dashboard/applications/new"
-              className="border-iron bg-workshop hover:border-canvas/50 text-canvas flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs"
-            >
-              <Plus className="size-3.5" /> New application
-            </Link>
-          </div>
+          <Logo compact href="/dashboard" />
+          <Link
+            href="/dashboard/applications/new"
+            className="bg-amber text-night ml-auto inline-flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-semibold"
+          >
+            <Plus className="size-3.5" />
+            <span className="hidden sm:inline">New application</span>
+            <span className="sm:hidden">New</span>
+          </Link>
         </header>
-        <main className="mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-7 lg:px-10 lg:py-10">
+
+        {mobileOpen && (
+          <MobileNavigation
+            close={() => setMobileOpen(false)}
+            pathname={pathname}
+            user={user}
+          />
+        )}
+
+        <main className="mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-7 lg:px-10 lg:py-12 xl:px-12">
           {children}
         </main>
       </div>
