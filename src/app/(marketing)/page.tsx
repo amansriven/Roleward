@@ -1,4 +1,4 @@
-import { ArrowRight, Code2, FileCheck2, LockKeyhole, Mic2 } from "lucide-react";
+import { ArrowRight, Code2, FileCheck2, Mic2 } from "lucide-react";
 import Link from "next/link";
 
 import { ProductVisual } from "@/components/brand/product-visual";
@@ -38,11 +38,7 @@ export default function HomePage() {
       <section className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl items-center justify-center overflow-hidden px-5 py-20 sm:px-8 lg:px-12">
         <div className="pointer-events-none absolute inset-x-[12%] top-[18%] h-80 bg-[radial-gradient(ellipse_at_center,rgba(255,122,89,0.12),rgba(255,154,61,0.045)_36%,transparent_70%)] blur-3xl" />
         <div className="relative z-10 mx-auto max-w-5xl text-center">
-          <div className="border-iron bg-raised/60 text-canvas inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] tracking-[0.1em] uppercase">
-            <span className="bg-amber size-1.5 rounded-full shadow-[0_0_12px_var(--amber)]" />
-            AI career workspace
-          </div>
-          <h1 className="mt-7 text-5xl leading-[0.96] font-semibold tracking-[-0.06em] text-balance sm:text-7xl lg:text-[5.6rem]">
+          <h1 className="text-5xl leading-[0.96] font-semibold tracking-[-0.06em] text-balance sm:text-7xl lg:text-[5.6rem]">
             Your entire job search.
             <span className="roleward-gradient-text">
               {" "}
@@ -65,10 +61,6 @@ export default function HomePage() {
               <Link href="#demo">See the platform</Link>
             </Button>
           </div>
-          <p className="text-dust mt-9 flex items-center justify-center gap-2 font-mono text-[11px] tracking-[0.06em] uppercase">
-            <LockKeyhole className="text-sage size-3.5" />
-            Private by default
-          </p>
         </div>
       </section>
 
