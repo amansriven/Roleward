@@ -12,10 +12,16 @@ export function finalizeConfirmedEvidence(items: EvidenceItem[]) {
       Boolean(item.education) &&
       (item.verificationStatus === "confirmed" ||
         item.verificationStatus === "corrected");
-    if (claims.length === 0 && !structuredEducationConfirmed) return [];
+    const linksConfirmed =
+      item.links.length > 0 &&
+      (item.verificationStatus === "confirmed" ||
+        item.verificationStatus === "corrected");
+    if (claims.length === 0 && !structuredEducationConfirmed && !linksConfirmed)
+      return [];
     return [
       evidenceItemSchema.parse({
         ...item,
+        links: linksConfirmed ? item.links : [],
         verificationStatus: "confirmed",
         claims,
       }),

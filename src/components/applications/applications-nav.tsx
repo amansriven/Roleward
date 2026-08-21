@@ -62,12 +62,6 @@ export function ApplicationsNav() {
           </Link>
         );
       })}
-      <span className="text-dust flex min-h-12 shrink-0 items-center gap-2 text-sm">
-        Apply Pilot
-        <span className="bg-amber/10 text-amber rounded-full px-2 py-0.5 font-mono text-[9px] uppercase">
-          Soon
-        </span>
-      </span>
     </nav>
   );
 }

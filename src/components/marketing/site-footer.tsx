@@ -28,7 +28,7 @@ export function SiteFooter() {
         <div className="max-w-sm">
           <Logo />
           <p className="text-canvas mt-4 text-sm leading-6">
-            One focused workspace for the résumé, technical, and behavioral work
+            One focused workspace for the resume, technical, and behavioral work
             behind your next engineering role.
           </p>
         </div>

@@ -3,17 +3,21 @@
  *
  * The intake screen asks the candidate to confirm claims about themselves, and
  * a confirmed claim becomes "verified background" — it feeds interview
- * questions and tailored résumé bullets. So a model that embellishes here does
+ * questions and tailored resume bullets. So a model that embellishes here does
  * not produce a bad suggestion, it produces a fabricated credential the
  * candidate has personally signed off on.
  *
  * The defence is the same one Zed uses for expected outputs: do not trust the
- * model's word for anything checkable. Every claim must quote the résumé, the
+ * model's word for anything checkable. Every claim must quote the resume, the
  * quote is checked against the extracted text, and a claim whose quote is not
  * there is dropped rather than shown.
  *
  * Pure, so it is testable without a model or a PDF.
  */
+import type {
+  CandidateContact,
+  ResumeLink,
+} from "@/modules/candidates/contact";
 
 /**
  * Trailing punctuation is not part of a number. Without stripping it,
@@ -35,9 +39,9 @@ export function normalizeForMatch(text: string): string {
 /**
  * The same, with every space removed.
  *
- * PDF text extraction breaks words across lines — a real résumé came back with
+ * PDF text extraction breaks words across lines — a real resume came back with
  * "Machine Lea\nrning" — and wraps long bullets mid-sentence. Matching on
- * whitespace at all threw away half of a good résumé: on one test document,
+ * whitespace at all threw away half of a good resume: on one test document,
  * eight of seventeen claims were discarded and an entire job disappeared, every
  * one of them on the quote check and none on the number check.
  *
@@ -80,14 +84,14 @@ export function quoteAppearsIn(quote: string, document: string): boolean {
     matched += 1;
   }
   // Most of the quote has to be there. A handful of matching words scattered
-  // through a résumé is not evidence that the sentence was ever written.
+  // through a resume is not evidence that the sentence was ever written.
   return matched / words.length >= 0.8;
 }
 
 export interface DraftClaim {
   type: "action" | "outcome" | "metric" | "technology" | "responsibility";
   content: string;
-  /** Verbatim from the résumé. The whole guarantee rests on this. */
+  /** Verbatim from the resume. The whole guarantee rests on this. */
   sourceQuote: string;
 }
 
@@ -114,6 +118,7 @@ export interface DraftItem {
   period?: string;
   location?: string;
   education?: DraftEducationDetails;
+  links?: ResumeLink[];
   summary: string;
   claims: DraftClaim[];
 }
@@ -129,7 +134,7 @@ export interface DraftSkillGroup {
  * A skills section is a comma-separated list, so asking for a sentence to
  * quote makes no sense — but the individual word still has to be on the page,
  * which is the thing that matters. An extractor that adds Kubernetes because
- * the résumé mentions Docker is the failure mode here.
+ * the resume mentions Docker is the failure mode here.
  */
 export function groundSkills(
   groups: DraftSkillGroup[],
@@ -158,11 +163,11 @@ function dominantClaimType(content: string): DraftClaim["type"] {
 }
 
 /**
- * One source bullet is one résumé bullet.
+ * One source bullet is one resume bullet.
  *
  * Models sometimes return the technology, action, and metric from a single
  * source line as three records. That makes the UI look as though the candidate
- * wrote three bullets and changes résumé scoring. When multiple records cite
+ * wrote three bullets and changes resume scoring. When multiple records cite
  * the same source bullet (or one cites a fragment of the other), keep the full
  * source line once.
  */
@@ -202,6 +207,41 @@ export function coalesceClaims(claims: DraftClaim[]): DraftClaim[] {
 function groundedField(value: string | undefined, document: string) {
   if (!value?.trim()) return undefined;
   return compact(document).includes(compact(value)) ? value.trim() : undefined;
+}
+
+function groundedUrl(url: string, document: string) {
+  const normalized = url.replace(/\/$/, "").toLowerCase();
+  return document.toLowerCase().includes(normalized) ? url : undefined;
+}
+
+export function groundContact(
+  contact: CandidateContact,
+  document: string,
+): CandidateContact {
+  const email = contact.email
+    ? groundedField(contact.email, document)
+    : undefined;
+  const digits = (value: string) => value.replace(/\D/g, "");
+  const phone =
+    contact.phone && digits(contact.phone).length >= 7
+      ? digits(document).includes(digits(contact.phone))
+        ? contact.phone
+        : undefined
+      : undefined;
+  return {
+    email,
+    phone,
+    location: groundedField(contact.location, document),
+    linkedinUrl: contact.linkedinUrl
+      ? groundedUrl(contact.linkedinUrl, document)
+      : undefined,
+    githubUrl: contact.githubUrl
+      ? groundedUrl(contact.githubUrl, document)
+      : undefined,
+    websiteUrl: contact.websiteUrl
+      ? groundedUrl(contact.websiteUrl, document)
+      : undefined,
+  };
 }
 
 function groundedEducation(
@@ -270,14 +310,22 @@ export function groundItems(
     });
 
     const education = groundedEducation(item.education, document);
+    const links = (item.links ?? []).filter((link) =>
+      Boolean(groundedUrl(link.url, document)),
+    );
     // Education is structured evidence in its own right; it should not be
     // forced into generic metric/responsibility claim rows just to survive.
-    if (claims.length || (item.type === "education" && education))
+    if (
+      claims.length ||
+      (item.type === "education" && education) ||
+      (item.type === "project" && links.length)
+    )
       kept.push({
         ...item,
         period: groundedField(item.period, document),
         location: groundedField(item.location, document),
         education,
+        links,
         claims,
       });
   }
@@ -310,7 +358,7 @@ export interface SupportCheck {
  * A rewrite is allowed to change the wording — that is the entire point — so
  * this cannot demand a verbatim quote. What it can demand is that the bullet
  * introduces no quantity the confirmed evidence does not already contain. That
- * is where an embellished résumé bullet turns into a lie a candidate has to
+ * is where an embellished resume bullet turns into a lie a candidate has to
  * defend in an interview.
  */
 export function bulletIsSupported(
@@ -327,8 +375,8 @@ export function bulletIsSupported(
 /**
  * How many bullet-like lines the document contains.
  *
- * Used to tell whether an extraction actually read the résumé. The model is
- * usually thorough, but not always: on one run of a six-entry résumé it
+ * Used to tell whether an extraction actually read the resume. The model is
+ * usually thorough, but not always: on one run of a six-entry resume it
  * returned only the education, which is exactly what a candidate reports as
  * "it found my GPA and nothing else". Counting what should have been found is
  * cheaper than hoping.

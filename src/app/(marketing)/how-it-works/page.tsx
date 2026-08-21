@@ -10,7 +10,7 @@ const steps = [
   {
     icon: FileUp,
     title: "Bring the source material",
-    copy: "Add your résumé and confirm the experience Backstage is allowed to use.",
+    copy: "Add your resume and confirm the experience Backstage is allowed to use.",
   },
   {
     icon: Target,
@@ -20,7 +20,7 @@ const steps = [
   {
     icon: ListTodo,
     title: "Follow a focused route",
-    copy: "Complete high-impact actions across your résumé, coding, and stories.",
+    copy: "Complete high-impact actions across your resume, coding, and stories.",
   },
   {
     icon: Check,

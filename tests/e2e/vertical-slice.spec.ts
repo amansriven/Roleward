@@ -20,7 +20,7 @@ test("candidate reaches a live dashboard from signup, evidence, and a target job
   await page.getByRole("button", { name: /Build my workspace/ }).click();
   await expect(page).toHaveURL(/dashboard/);
   await expect(
-    page.getByText("Confirm the experience from your résumé"),
+    page.getByText("Confirm the experience from your resume"),
   ).toBeVisible();
 
   await page.getByRole("link", { name: /Continue/ }).click();

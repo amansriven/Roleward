@@ -1,6 +1,13 @@
 "use client";
 
-import { CopyPlus, FileText, Lock, Save, Trash2 } from "lucide-react";
+import {
+  CopyPlus,
+  ExternalLink,
+  FileText,
+  Lock,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -89,7 +96,7 @@ function VersionManagerContent({
         <div>
           <div className="flex items-center gap-2">
             <FileText className="text-copper size-4" />
-            <p className="font-semibold">Your résumé versions</p>
+            <p className="font-semibold">Your resume versions</p>
           </div>
           <p className="text-dust mt-1 text-xs leading-5">
             The original is locked. Every revision is a separately named copy
@@ -215,7 +222,7 @@ function VersionManagerContent({
                 />
               ) : (
                 <p className="text-canvas mt-1.5 text-xs leading-5">
-                  {headline || "No headline in this résumé"}
+                  {headline || "No headline in this resume"}
                 </p>
               )}
             </div>
@@ -256,7 +263,7 @@ function VersionManagerContent({
                   </div>
                 ))}
                 {!skills.length && (
-                  <p className="text-dust text-xs">No skills in this résumé</p>
+                  <p className="text-dust text-xs">No skills in this resume</p>
                 )}
               </div>
             </div>
@@ -311,6 +318,21 @@ function VersionManagerContent({
                       </div>
                     )}
                   </dl>
+                )}
+                {item.links.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.links.map((link) => (
+                      <a
+                        key={link.url}
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="border-iron text-canvas inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px]"
+                      >
+                        {link.label} <ExternalLink className="size-3" />
+                      </a>
+                    ))}
+                  </div>
                 )}
                 <div className="mt-3 space-y-2">
                   {item.bullets.map((bullet) => (

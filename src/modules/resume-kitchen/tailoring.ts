@@ -5,13 +5,13 @@ import { INTERVIEW_MODEL, openai } from "@/modules/interviews/openai";
 import { bulletIsSupported } from "./grounding";
 
 /**
- * Rewrites a résumé bullet to answer a specific requirement, using only what
+ * Rewrites a resume bullet to answer a specific requirement, using only what
  * the candidate has already confirmed.
  *
  * This is the feature the page has been depicting since it was a mockup, and
  * the one with the most obvious way to go wrong: the helpful thing for a model
  * to do is add a number. A bullet that says 40% when the evidence says 22% is
- * not a better résumé, it is a question the candidate cannot answer in the
+ * not a better resume, it is a question the candidate cannot answer in the
  * interview it wins them.
  *
  * So a suggestion must name the claims it drew on, and may not contain a
@@ -55,7 +55,7 @@ const jsonSchema = {
           bullet: {
             type: "string",
             description:
-              "One résumé bullet. Starts with a past-tense verb. No first person, no period at the end.",
+              "One resume bullet. Starts with a past-tense verb. No first person, no period at the end.",
           },
           usedClaimIds: {
             type: "array",
@@ -76,7 +76,7 @@ const jsonSchema = {
 
 function instructions(requirement: string, claims: SupportingClaim[]) {
   return [
-    "You rewrite a résumé bullet so it speaks to one specific requirement of a job the candidate is applying to.",
+    "You rewrite a resume bullet so it speaks to one specific requirement of a job the candidate is applying to.",
     "",
     `The requirement: ${requirement}`,
     "",
@@ -223,7 +223,7 @@ const improveJsonSchema = {
 } as const;
 
 const IMPROVE_INSTRUCTIONS = [
-  "You strengthen a single résumé bullet.",
+  "You strengthen a single resume bullet.",
   "",
   "Rules:",
   "- NEVER add a number, percentage, duration, team size, or scale that is not already in the original. This is absolute.",

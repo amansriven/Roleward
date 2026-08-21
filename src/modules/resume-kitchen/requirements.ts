@@ -15,7 +15,7 @@ import { quoteAppearsIn } from "./grounding";
  * matching underneath was then scored against things the employer never said.
  *
  * So requirements are quoted from the posting and the quote is checked, the
- * same way résumé claims are.
+ * same way resume claims are.
  */
 
 export class RequirementExtractionError extends Error {}

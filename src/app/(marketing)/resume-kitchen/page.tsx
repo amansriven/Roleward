@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Resume Kitchen",
   description:
-    "Evidence-backed résumé tailoring for your target engineering role.",
+    "Evidence-backed resume tailoring for your target engineering role.",
 };
 
 const workflow: Array<[LucideIcon, string, string]> = [
@@ -27,7 +27,7 @@ const workflow: Array<[LucideIcon, string, string]> = [
   [
     FileCheck2,
     "Review the diff",
-    "Accept, modify, or reject every role-specific résumé change.",
+    "Accept, modify, or reject every role-specific resume change.",
   ],
 ];
 
@@ -38,7 +38,7 @@ export default function ResumeKitchenPage() {
         <div>
           <p className="section-label">Resume Kitchen</p>
           <h1 className="mt-5 text-5xl leading-[1.02] font-semibold tracking-[-0.045em] text-balance sm:text-6xl">
-            Tailor the résumé.
+            Tailor the resume.
             <br />
             <span className="text-amber">Keep the truth.</span>
           </h1>

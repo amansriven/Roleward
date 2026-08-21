@@ -6,7 +6,7 @@ export type ReadinessLevel =
 
 export interface ReadinessInput {
   requirements: JobRequirement[];
-  /** The candidate has confirmed or corrected what was read from their résumé. */
+  /** The candidate has confirmed or corrected what was read from their resume. */
   evidenceConfirmed: boolean;
   technicalCoverage: number;
   technicalRecencyDays: number | null;
@@ -78,8 +78,8 @@ export function assessReadiness(input: ReadinessInput): ReadinessAssessment {
             ]
           : []),
         input.evidenceConfirmed
-          ? "Your résumé evidence has been reviewed and confirmed."
-          : "Confirm what was read from your résumé to make it usable here.",
+          ? "Your resume evidence has been reviewed and confirmed."
+          : "Confirm what was read from your resume to make it usable here.",
       ],
     },
     technical: {

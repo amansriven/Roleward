@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
   DocumentReadError,
-  extractDocumentText,
+  extractDocumentContent,
 } from "@/modules/resume-kitchen/document-text";
-import { ExtractionError, extractEvidence } from "@/modules/resume-kitchen/extraction";
+import {
+  ExtractionError,
+  extractEvidence,
+} from "@/modules/resume-kitchen/extraction";
 import { interviewsConfigured } from "@/modules/interviews/openai";
 
 export const runtime = "nodejs";
@@ -58,12 +61,16 @@ export async function POST(request: Request) {
     );
 
   try {
-    const text = await extractDocumentText(await file.arrayBuffer(), file.type);
-    const { fullName, headline, skills, items, dropped } =
-      await extractEvidence(text);
+    const { text, hyperlinks } = await extractDocumentContent(
+      await file.arrayBuffer(),
+      file.type,
+    );
+    const { fullName, headline, contact, skills, items, dropped } =
+      await extractEvidence(text, hyperlinks);
     return NextResponse.json({
       fullName,
       headline,
+      contact,
       skills,
       items,
       // Surfaced so the candidate is told something was withheld and why,

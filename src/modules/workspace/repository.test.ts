@@ -37,6 +37,7 @@ const evidence: EvidenceItem[] = [
     id: "item-1",
     type: "experience",
     title: "Engineer",
+    links: [],
     summary: "Built developer tools.",
     verificationStatus: "confirmed",
     claims: [
@@ -94,7 +95,7 @@ describe("workspace repository", () => {
     expect(workspace.resumeVersions).toHaveLength(1);
     expect(getActiveResumeVersion(workspace)).toMatchObject({
       id: "legacy-original",
-      name: "Original résumé",
+      name: "Original resume",
       kind: "original",
     });
   });

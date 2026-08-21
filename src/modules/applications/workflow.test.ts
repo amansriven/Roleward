@@ -19,6 +19,7 @@ describe("application workflow", () => {
         id: "project",
         type: "project",
         title: "Campus API",
+        links: [],
         summary: "Backend service",
         verificationStatus: "confirmed",
         claims: [

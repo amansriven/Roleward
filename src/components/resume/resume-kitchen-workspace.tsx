@@ -111,10 +111,10 @@ function Kitchen({
     return (
       <Empty
         icon={<FeatureIcon feature="resume-kitchen" size="lg" active />}
-        title="Start with your résumé"
-        copy="Everything here is built from experience you have confirmed. Import a résumé and check what we read from it."
+        title="Start with your resume"
+        copy="Everything here is built from experience you have confirmed. Import a resume and check what we read from it."
         href="/dashboard/resume-kitchen/intake"
-        action="Import résumé"
+        action="Import resume"
       />
     );
 
@@ -123,7 +123,7 @@ function Kitchen({
       <div className="space-y-6">
         <SectionHeading
           eyebrow="Versions"
-          title="Your résumé workspace"
+          title="Your resume workspace"
           copy="The original stays unchanged. Create and name revisions here, then edit each one independently."
         />
         <ResumeVersionManager workspace={workspace} />
@@ -171,7 +171,7 @@ function Kitchen({
           />
           <Stat
             label="Active version"
-            value={activeVersion?.name ?? "Original résumé"}
+            value={activeVersion?.name ?? "Original resume"}
             note={
               activeVersion?.kind === "revision"
                 ? "Named revision"
@@ -226,7 +226,7 @@ function Kitchen({
               <p className="mt-3 text-sm font-semibold">No invented claims</p>
               <p className="text-dust mt-2 text-xs leading-5">
                 Unsupported figures and claims are rejected before they reach
-                your résumé.
+                your resume.
               </p>
             </section>
           </aside>
@@ -247,13 +247,14 @@ function Kitchen({
           <PortfolioPublish
             name={workspace.candidateName}
             headline={workspace.candidateHeadline}
+            contact={workspace.candidateContact}
             skills={workspace.candidateSkills}
             evidence={workspace.evidence}
           />
           <section className="border-iron/75 rounded-[22px] border p-5">
             <p className="section-label">What gets shared</p>
             <ul className="mt-4 space-y-3 text-sm">
-              <PublishRule text="Your name, headline, and skills" />
+              <PublishRule text="Your name, contact details, headline, and skills" />
               <PublishRule text="Only claims you confirmed or corrected" />
               <PublishRule text="No drafts or rejected claims" />
             </ul>
@@ -274,7 +275,7 @@ function Kitchen({
       <SectionHeading
         eyebrow="Overview"
         title="Everything has its place"
-        copy="Choose the part of your résumé you want to work on. Your original and every named revision stay separate."
+        copy="Choose the part of your resume you want to work on. Your original and every named revision stay separate."
       />
 
       <section>
@@ -282,7 +283,7 @@ function Kitchen({
         <div className="border-iron/75 divide-iron/75 mt-4 grid divide-y border-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           <Summary
             label="Current version"
-            value={activeVersion?.name ?? "Original résumé"}
+            value={activeVersion?.name ?? "Original resume"}
             note={
               activeVersion?.kind === "revision"
                 ? "Named revision"
@@ -314,7 +315,7 @@ function Kitchen({
         <div className="border-iron/75 divide-iron/75 mt-4 divide-y border-y">
           <KitchenDestination
             icon={FileStack}
-            title="Manage résumé versions"
+            title="Manage resume versions"
             copy="Open the original, create a named revision, or continue editing one."
             href="/dashboard/resume-kitchen/versions"
           />

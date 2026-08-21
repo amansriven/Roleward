@@ -12,7 +12,7 @@ export default function SignupPage() {
           Create your workspace
         </h1>
         <p className="text-canvas mt-3 text-sm leading-6">
-          A private place for your résumé, target roles, and practice.
+          A private place for your resume, target roles, and practice.
         </p>
         <AuthForm mode="signup" />
       </section>

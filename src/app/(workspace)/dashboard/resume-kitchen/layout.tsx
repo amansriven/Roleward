@@ -25,7 +25,7 @@ export default function ResumeKitchenLayout({
           </span>
         }
         eyebrow="Resume Kitchen"
-        title="One résumé. Clear versions."
+        title="One resume. Clear versions."
         copy="Keep the original safe, name every revision, and tailor one role at a time."
         action={
           <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ export default function ResumeKitchenLayout({
               href="/dashboard/resume-kitchen/intake"
               className="bg-amber text-night inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold"
             >
-              Import résumé
+              Import resume
             </Link>
           </div>
         }

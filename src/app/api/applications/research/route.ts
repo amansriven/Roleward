@@ -67,7 +67,6 @@ export async function POST(request: Request) {
         `Job description:\n${role.jobDescription}`,
       ].join("\n\n"),
       text: {
-        verbosity: "low",
         format: {
           type: "json_schema",
           name: "company_research",

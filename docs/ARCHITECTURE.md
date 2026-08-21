@@ -197,7 +197,7 @@ Each stored AI artifact records:
 
 ### Prompt-injection boundary
 
-Résumés and job descriptions are untrusted content. They must be placed in clearly delimited data sections and never treated as system instructions. Extracted URLs or instructions must not cause tools, network requests, or data access automatically.
+Resumes and job descriptions are untrusted content. They must be placed in clearly delimited data sections and never treated as system instructions. Extracted URLs or instructions must not cause tools, network requests, or data access automatically.
 
 ## 7. Secure code execution
 

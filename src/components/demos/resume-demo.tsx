@@ -12,7 +12,7 @@ export function ResumeDemo() {
       <div className="border-iron flex items-center justify-between border-b px-5 py-4">
         <p className="flex items-center gap-2 text-sm font-semibold">
           <FileText className="text-amber size-4" aria-hidden="true" />
-          Résumé suggestion
+          Resume suggestion
         </p>
         <span className="text-dust font-mono text-[10px] tracking-[0.08em] uppercase">
           Requirement 04

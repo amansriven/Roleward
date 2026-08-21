@@ -192,10 +192,10 @@ export const INTERVIEW_PLANS: Record<InterviewType, InterviewTypePlan> = {
     usesCodeEditor: false,
   },
   resume_deep_dive: {
-    label: "Résumé deep-dive",
+    label: "Resume deep-dive",
     summary: "Line-by-line pressure on what you actually did.",
     persona:
-      "an engineer conducting a résumé deep-dive. Pick specific claims from the candidate's background and drill into them. Ask what they personally built, which decisions were theirs, and what the measurable result was. Politely surface anything that sounds inflated or unsupported.",
+      "an engineer conducting a resume deep-dive. Pick specific claims from the candidate's background and drill into them. Ask what they personally built, which decisions were theirs, and what the measurable result was. Politely surface anything that sounds inflated or unsupported.",
     dimensions: [
       dimension("depth", "Ownership depth", "Real detail behind each claim"),
       dimension(

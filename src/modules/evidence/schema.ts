@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { resumeLinkSchema } from "@/modules/candidates/contact";
 
 export const verificationStatusSchema = z.enum([
   "proposed",
@@ -41,6 +42,7 @@ export const evidenceItemSchema = z.object({
   organization: z.string().trim().optional(),
   period: z.string().trim().optional(),
   location: z.string().trim().optional(),
+  links: z.array(resumeLinkSchema).default([]),
   education: educationDetailsSchema.optional(),
   summary: z.string().trim().default(""),
   verificationStatus: verificationStatusSchema,

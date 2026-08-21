@@ -6,7 +6,7 @@
 **Get where you need to be.**
 
 Backstage is a job-specific preparation workspace for early-career software
-engineers. It connects verified résumé evidence, target-job requirements,
+engineers. It connects verified resume evidence, target-job requirements,
 technical practice, and behavioral rehearsal—then keeps the next useful action
 visible.
 
@@ -51,17 +51,17 @@ Verified experience + target job
 
 ### Product rules
 
-- **Evidence before generation.** Résumé suggestions can only use experience
+- **Evidence before generation.** Resume suggestions can only use experience
   the candidate has confirmed.
-- **Keep the original.** Resume Kitchen stores the imported résumé as a locked
+- **Keep the original.** Resume Kitchen stores the imported resume as a locked
   original and keeps every editable revision as a separately named version.
 - **Coach rather than answer.** Zed and Stage Fright strengthen reasoning and
   delivery instead of completing interviews for the candidate.
 - **Explain readiness.** Preparation labels expose the evidence and activity
   behind them; they are not predictions of interviews or offers.
-- **One target, shared context.** Applications connect the résumé, coding plan,
+- **One target, shared context.** Applications connect the resume, coding plan,
   and behavioral preparation for a specific role.
-- **Private by default.** Résumés, evidence, attempts, stories, and session data
+- **Private by default.** Resumes, evidence, attempts, stories, and session data
   are treated as sensitive workspace information.
 
 ### Workspace map
@@ -70,7 +70,7 @@ Verified experience + target job
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Applications**   | Save a role, preserve the posting, confirm requirements, track status and dates, and build a preparation map.                                         |
 | **Evidence**       | Review extracted claims and keep a verified record of projects, experience, metrics, and outcomes.                                                    |
-| **Resume Kitchen** | Import PDF or DOCX résumés, lock the original, create named revisions, edit each version independently, and ground suggestions in confirmed evidence. |
+| **Resume Kitchen** | Import PDF or DOCX resumes, lock the original, create named revisions, edit each version independently, and ground suggestions in confirmed evidence. |
 | **Zed**            | Classify a technical pattern, commit to an approach, solve in the editor, use progressive hints, run tests, and review coaching.                      |
 | **Stage Fright**   | Build a story bank, rehearse behavioral questions, track competency coverage, and review session feedback.                                            |
 | **Home**           | Show the active role, readiness signals, and the highest-value next preparation action.                                                               |
@@ -80,14 +80,14 @@ Verified experience + target job
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/images/backstage-resume-kitchen.png" alt="Resume Kitchen product page showing evidence-grounded résumé tailoring" width="100%" />
+      <img src="docs/images/backstage-resume-kitchen.png" alt="Resume Kitchen product page showing evidence-grounded resume tailoring" width="100%" />
     </td>
     <td width="50%">
       <img src="docs/images/backstage-zed.png" alt="Zed product page showing technical pattern practice and coaching" width="100%" />
     </td>
   </tr>
   <tr>
-    <td align="center"><sub><strong>Resume Kitchen</strong> — tailor the résumé while keeping every claim defensible.</sub></td>
+    <td align="center"><sub><strong>Resume Kitchen</strong> — tailor the resume while keeping every claim defensible.</sub></td>
     <td align="center"><sub><strong>Zed</strong> — practise recognition, reasoning, implementation, and testing separately.</sub></td>
   </tr>
 </table>
@@ -100,9 +100,9 @@ Verified experience + target job
 
 ## Resume Kitchen version contract
 
-Résumé versioning is deliberately non-destructive:
+Resume versioning is deliberately non-destructive:
 
-1. The first confirmed import becomes the **original résumé**.
+1. The first confirmed import becomes the **original resume**.
 2. Original content is locked, but the user can give the source a clearer name.
 3. Every revision is created as a separately named copy.
 4. Revisions can change headlines, skills, bullets, and section content without
@@ -214,7 +214,7 @@ npm run build         # Production build
 | --------------------------------------------- | ------------------------------------------------------------------------ |
 | [Product specification](docs/PRODUCT_SPEC.md) | Product principles, feature behavior, readiness, and MVP boundaries      |
 | [System architecture](docs/ARCHITECTURE.md)   | Services, modules, persistence, and execution boundaries                 |
-| [Data model](docs/DATA_MODEL.md)              | Candidate, application, résumé-version, evidence, and interview entities |
+| [Data model](docs/DATA_MODEL.md)              | Candidate, application, resume-version, evidence, and interview entities |
 | [Delivery roadmap](docs/ROADMAP.md)           | Delivery phases and remaining work                                       |
 | [Authentication setup](docs/AUTH_SETUP.md)    | Cognito, OAuth, callbacks, and Vercel configuration                      |
 

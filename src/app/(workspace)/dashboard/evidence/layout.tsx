@@ -23,13 +23,13 @@ export default function EvidenceLayout({ children }: { children: ReactNode }) {
         }
         eyebrow="Evidence Library"
         title="Your career record, organized."
-        copy="Review one section at a time. Every fact stays separate, editable, and traceable to your résumé."
+        copy="Review one section at a time. Every fact stays separate, editable, and traceable to your resume."
         action={
           <Link
             href="/dashboard/resume-kitchen/intake"
             className="bg-amber text-night flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
           >
-            <Plus className="size-4" /> Import résumé
+            <Plus className="size-4" /> Import resume
           </Link>
         }
       />

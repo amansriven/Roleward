@@ -64,7 +64,7 @@ export function ApplicationList() {
           <h2 className="mt-5 text-xl font-semibold">No applications yet</h2>
           <p className="text-canvas mx-auto mt-2 max-w-lg text-sm leading-6">
             Paste a job link or add the role manually. Backstage will connect it
-            to your résumé evidence and preparation plan.
+            to your resume evidence and preparation plan.
           </p>
           <Link
             href="/dashboard/applications/new"

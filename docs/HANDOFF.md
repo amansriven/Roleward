@@ -23,7 +23,7 @@ first and failed in testing.
 | Where             | What the model is not allowed to assert                                                                                                                                                                                                                                                                    |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Coding problems   | Expected outputs. It writes the problem, two independent solutions, and test inputs; outputs are derived by executing the canonical solution, and only after it agrees with the brute force across 60 randomized inputs. Live testing showed it mispredicting its own function's output on 3–4 of 8 cases. |
-| Résumé extraction | Any claim without a verbatim quote from the document, and any number not present in that quote. Failures are discarded, not flagged.                                                                                                                                                                       |
+| Resume extraction | Any claim without a verbatim quote from the document, and any number not present in that quote. Failures are discarded, not flagged.                                                                                                                                                                       |
 | Job requirements  | Any requirement without a quote from the posting.                                                                                                                                                                                                                                                          |
 | Tailored bullets  | Any figure the cited confirmed claims do not contain.                                                                                                                                                                                                                                                      |
 | The judge         | Its own pass/fail. `reconcileOutcomes` recomputes every verdict server-side from expectations the browser never received.                                                                                                                                                                                  |
@@ -42,7 +42,7 @@ If you add a feature where a model produces something checkable, check it.
    - Concurrency uses conditional `PutItem` with a `version` attribute.
    - "Delete" is a tombstone flag or an expired TTL, never a real delete.
    - The refill lock is released by writing an _expired_ lock.
-   - Résumés are parsed from the upload POST body, not fetched back from S3.
+   - Resumes are parsed from the upload POST body, not fetched back from S3.
 
 2. **Vercel Hobby crons must be daily.** An hourly `vercel.json` schedule fails
    the entire build and took production down once. `0 7 * * *` is what works.
@@ -79,7 +79,7 @@ unscored on purpose.
 
 **Resume Kitchen** — real end to end as of this session. Upload → grounded
 extraction → confirm → requirements read from a posting → matched → tailored
-bullets → deterministic résumé score → publishable portfolio.
+bullets → deterministic resume score → publishable portfolio.
 
 **Known not-real / unfinished:**
 
@@ -120,10 +120,10 @@ Every `src/modules/aws/*` file is `server-only`. Pure logic never imports them.
   pointers" request came back as a monotonic-deque problem.
 - **PDF extraction splits words mid-token.** A real document produced
   `"Machine Lea\nrning"`. Any text matching against a PDF must ignore whitespace
-  entirely. Matching on whitespace was silently discarding 8 of 17 résumé claims
+  entirely. Matching on whitespace was silently discarding 8 of 17 resume claims
   and losing whole jobs.
 - **Extraction occasionally returns only the education section.** Three runs of
-  the same résumé gave 6 entries each, so it is variance, not a broken prompt —
+  the same resume gave 6 entries each, so it is variance, not a broken prompt —
   but it is retried when the claim count is far below the document's bullet count.
 - **Newly created IAM roles are not immediately assumable by Lambda.** Retry.
 - **Warm Lambda environments cache VPC DNS.** Force cold starts before trusting
@@ -157,10 +157,10 @@ curl -H "authorization: Bearer $CRON_SECRET" \
 ## Suggested next work
 
 1. Render skills on the portfolio page (extracted and stored already).
-2. Make rewritten bullets write back to the evidence library so the résumé score
+2. Make rewritten bullets write back to the evidence library so the resume score
    moves live instead of via copy-paste.
-3. Keyword gap: the résumé's skills and the posting's requirements are both
-   structured already, so "this role asks for Kubernetes twice and your résumé
+3. Keyword gap: the resume's skills and the posting's requirements are both
+   structured already, so "this role asks for Kubernetes twice and your resume
    never mentions it" is nearly free.
 4. Warm the Zed pool, and set `CRON_SECRET` in Vercel.
 5. Larger, discussed but not started: a LeetCode companion mode (link out, never

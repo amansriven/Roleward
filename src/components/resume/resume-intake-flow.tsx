@@ -6,6 +6,8 @@ import {
   Check,
   CheckCircle2,
   FileText,
+  ExternalLink,
+  Link2,
   LoaderCircle,
   RotateCcw,
   ShieldCheck,
@@ -15,6 +17,11 @@ import {
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  contactHasValues,
+  type CandidateContact,
+  type ResumeLink,
+} from "@/modules/candidates/contact";
 import { finalizeConfirmedEvidence } from "@/modules/evidence/confirmation";
 import {
   saveCandidateIdentity,
@@ -50,6 +57,7 @@ function toEvidenceItems(items: DraftItem[]): EvidenceItem[] {
     organization: item.organization,
     period: item.period,
     location: item.location,
+    links: item.links ?? [],
     education: item.education,
     summary: item.summary,
     verificationStatus: "proposed" as const,
@@ -68,6 +76,13 @@ export function ResumeIntakeFlow() {
   const [error, setError] = useState("");
   const [resume, setResume] = useState<ResumeDocument | null>(null);
   const [items, setItems] = useState<EvidenceItem[]>([]);
+  const [identity, setIdentity] = useState<{
+    fullName: string;
+    headline: string;
+    skills: DraftSkillGroup[];
+  }>({ fullName: "", headline: "", skills: [] });
+  const [contact, setContact] = useState<CandidateContact | null>(null);
+  const [contactConfirmed, setContactConfirmed] = useState(false);
   const [droppedCount, setDroppedCount] = useState(0);
 
   async function receive(file?: File) {
@@ -113,6 +128,7 @@ export function ResumeIntakeFlow() {
       const body = (await response.json().catch(() => null)) as {
         fullName?: string;
         headline?: string;
+        contact?: CandidateContact | null;
         skills?: DraftSkillGroup[];
         items?: DraftItem[];
         droppedCount?: number;
@@ -131,6 +147,13 @@ export function ResumeIntakeFlow() {
           body.headline ?? "",
           body.skills ?? [],
         );
+      setIdentity({
+        fullName: body.fullName ?? "",
+        headline: body.headline ?? "",
+        skills: body.skills ?? [],
+      });
+      setContact(body.contact ?? null);
+      setContactConfirmed(false);
       setItems(toEvidenceItems(body.items));
       setDroppedCount(body.droppedCount ?? 0);
       localStorage.setItem("backstage:resume-hash", contentHash);
@@ -188,7 +211,14 @@ export function ResumeIntakeFlow() {
     const byId = new Map(
       [...existing, ...accepted].map((item) => [item.id, item]),
     );
-    const baseName = resume?.fileName.replace(/\.(pdf|docx)$/i, "") || "Résumé";
+    const baseName = resume?.fileName.replace(/\.(pdf|docx)$/i, "") || "Resume";
+    saveCandidateIdentity(
+      localStorage,
+      identity.fullName,
+      identity.headline,
+      identity.skills,
+      contactConfirmed ? contact : undefined,
+    );
     saveOriginalResumeVersion(localStorage, `${baseName} — Original`, accepted);
     saveEvidenceAndRefresh(localStorage, [...byId.values()]);
     setStep("complete");
@@ -213,7 +243,7 @@ export function ResumeIntakeFlow() {
               <UploadCloud className="size-5" />
             </span>
             <h2 className="mt-5 text-lg font-semibold">
-              Drop your base résumé here
+              Drop your base resume here
             </h2>
             <p className="text-canvas mt-2 text-sm">
               or choose a PDF or DOCX file
@@ -301,13 +331,17 @@ export function ResumeIntakeFlow() {
       .filter((claim) => claim.verificationStatus !== "proposed").length +
     items.filter(
       (item) =>
-        item.type === "education" &&
-        item.education &&
+        ((item.type === "education" && item.education) || item.links.length) &&
         item.verificationStatus !== "proposed",
-    ).length;
+    ).length +
+    (contact && contactConfirmed ? 1 : 0);
   const total =
     items.flatMap((item) => item.claims).length +
-    items.filter((item) => item.type === "education" && item.education).length;
+    items.filter(
+      (item) =>
+        (item.type === "education" && item.education) || item.links.length,
+    ).length +
+    (contact ? 1 : 0);
   return (
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -338,6 +372,17 @@ export function ResumeIntakeFlow() {
           {error}
         </div>
       )}
+      {contact && (
+        <ContactReview
+          contact={contact}
+          confirmed={contactConfirmed}
+          onChange={(next) => {
+            setContact(next);
+            setContactConfirmed(true);
+          }}
+          onConfirm={() => setContactConfirmed(true)}
+        />
+      )}
       {items.map((item) => (
         <section
           key={item.id}
@@ -354,6 +399,12 @@ export function ResumeIntakeFlow() {
           <div>
             {item.type === "education" && item.education && (
               <EducationReview
+                item={item}
+                onChange={(next) => updateItem(item.id, next)}
+              />
+            )}
+            {item.links.length > 0 && (
+              <ItemLinksReview
                 item={item}
                 onChange={(next) => updateItem(item.id, next)}
               />
@@ -376,6 +427,8 @@ export function ResumeIntakeFlow() {
           onClick={() => {
             setStep("upload");
             setItems([]);
+            setContact(null);
+            setContactConfirmed(false);
           }}
           className="text-dust flex items-center gap-2 text-xs"
         >
@@ -389,6 +442,257 @@ export function ResumeIntakeFlow() {
           Save confirmed evidence <ArrowRight className="size-3.5" />
         </button>
       </div>
+    </div>
+  );
+}
+
+function ContactReview({
+  contact,
+  confirmed,
+  onChange,
+  onConfirm,
+}: {
+  contact: CandidateContact;
+  confirmed: boolean;
+  onChange: (contact: CandidateContact | null) => void;
+  onConfirm: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState("");
+  const [draft, setDraft] = useState({
+    email: contact.email ?? "",
+    phone: contact.phone ?? "",
+    location: contact.location ?? "",
+    linkedinUrl: contact.linkedinUrl ?? "",
+    githubUrl: contact.githubUrl ?? "",
+    websiteUrl: contact.websiteUrl ?? "",
+  });
+
+  function save() {
+    setError("");
+    const links = [draft.linkedinUrl, draft.githubUrl, draft.websiteUrl].filter(
+      Boolean,
+    );
+    if (
+      links.some((value) => {
+        try {
+          return !["http:", "https:"].includes(new URL(value).protocol);
+        } catch {
+          return true;
+        }
+      })
+    ) {
+      setError("Use complete http or https links.");
+      return;
+    }
+    const next: CandidateContact = {
+      email: draft.email.trim() || undefined,
+      phone: draft.phone.trim() || undefined,
+      location: draft.location.trim() || undefined,
+      linkedinUrl: draft.linkedinUrl.trim() || undefined,
+      githubUrl: draft.githubUrl.trim() || undefined,
+      websiteUrl: draft.websiteUrl.trim() || undefined,
+    };
+    onChange(contactHasValues(next) ? next : null);
+    setEditing(false);
+  }
+
+  return (
+    <section className="border-amber/25 bg-amber/[.035] overflow-hidden rounded-2xl border">
+      <div className="border-iron/70 flex items-center gap-3 border-b p-5">
+        <Link2 className="text-amber size-4" />
+        <div>
+          <p className="font-semibold">Contact & links</p>
+          <p className="text-dust mt-1 text-xs">
+            Confirm what can travel with your resume and public portfolio.
+          </p>
+        </div>
+      </div>
+      {editing ? (
+        <div className="grid gap-4 p-5 sm:grid-cols-2">
+          {(
+            [
+              ["Email", "email"],
+              ["Phone", "phone"],
+              ["Location", "location"],
+              ["LinkedIn", "linkedinUrl"],
+              ["GitHub", "githubUrl"],
+              ["Personal website", "websiteUrl"],
+            ] as const
+          ).map(([label, key]) => (
+            <EducationInput
+              key={key}
+              label={label}
+              value={draft[key]}
+              onChange={(value) =>
+                setDraft((current) => ({ ...current, [key]: value }))
+              }
+            />
+          ))}
+          {error && <p className="text-kiln text-xs sm:col-span-2">{error}</p>}
+          <div className="flex gap-2 sm:col-span-2">
+            <button
+              type="button"
+              onClick={save}
+              className="bg-sage text-night rounded-md px-3 py-1.5 text-[10px] font-semibold"
+            >
+              Save and confirm
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="text-dust text-[10px]"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-5">
+          <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+            <EducationDetail label="Email" value={contact.email} />
+            <EducationDetail label="Phone" value={contact.phone} />
+            <EducationDetail label="Location" value={contact.location} />
+            <EducationDetail label="LinkedIn" value={contact.linkedinUrl} />
+            <EducationDetail label="GitHub" value={contact.githubUrl} />
+            <EducationDetail label="Website" value={contact.websiteUrl} />
+          </dl>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {!confirmed && (
+              <button
+                type="button"
+                onClick={onConfirm}
+                className="bg-sage text-night flex items-center gap-1 rounded-md px-3 py-1.5 text-[10px] font-semibold"
+              >
+                <Check className="size-3" /> Confirm contact details
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="border-iron text-canvas rounded-md border px-3 py-1.5 text-[10px]"
+            >
+              Correct details
+            </button>
+            {confirmed && (
+              <span className="text-sage px-2 py-1.5 text-[10px]">
+                Confirmed
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ItemLinksReview({
+  item,
+  onChange,
+}: {
+  item: EvidenceItem;
+  onChange: (item: EvidenceItem) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState("");
+  const [value, setValue] = useState(
+    item.links.map((link) => `${link.label} | ${link.url}`).join("\n"),
+  );
+  const confirmed = item.verificationStatus !== "proposed";
+
+  function save() {
+    setError("");
+    const links: ResumeLink[] = [];
+    for (const line of value.split(/\r?\n/).filter((entry) => entry.trim())) {
+      const [label, ...urlParts] = line.split("|");
+      const url = urlParts.join("|").trim();
+      try {
+        const parsed = new URL(url);
+        if (!label?.trim() || !["http:", "https:"].includes(parsed.protocol))
+          throw new Error("invalid");
+        links.push({ label: label.trim(), url: parsed.toString() });
+      } catch {
+        setError(
+          "Use one link per line in the format: Label | https://example.com",
+        );
+        return;
+      }
+    }
+    onChange({ ...item, links, verificationStatus: "corrected" });
+    setEditing(false);
+  }
+
+  return (
+    <div className="border-iron/60 border-b p-5">
+      <p className="section-label">Project links</p>
+      {editing ? (
+        <>
+          <textarea
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            rows={Math.max(3, item.links.length + 1)}
+            className="border-iron bg-night/45 mt-3 w-full rounded-lg border p-3 font-mono text-xs leading-6 outline-none"
+          />
+          {error && <p className="text-kiln mt-2 text-xs">{error}</p>}
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={save}
+              className="bg-sage text-night rounded-md px-3 py-1.5 text-[10px] font-semibold"
+            >
+              Save and confirm
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="text-dust text-[10px]"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {item.links.map((link) => (
+              <a
+                key={link.url}
+                href={link.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="border-iron text-canvas inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
+              >
+                {link.label} <ExternalLink className="size-3" />
+              </a>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {!confirmed && (
+              <button
+                type="button"
+                onClick={() =>
+                  onChange({ ...item, verificationStatus: "confirmed" })
+                }
+                className="bg-sage text-night flex items-center gap-1 rounded-md px-3 py-1.5 text-[10px] font-semibold"
+              >
+                <Check className="size-3" /> Confirm project links
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="border-iron text-canvas rounded-md border px-3 py-1.5 text-[10px]"
+            >
+              Correct links
+            </button>
+            {confirmed && (
+              <span className="text-sage px-2 py-1.5 text-[10px]">
+                Confirmed
+              </span>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

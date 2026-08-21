@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Backstage",
   },
   description:
-    "Your private workspace for applications, résumés, coding practice, and interview preparation.",
+    "Your private workspace for applications, resumes, coding practice, and interview preparation.",
 };
 
 export default function RootLayout({

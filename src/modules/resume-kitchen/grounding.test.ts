@@ -4,6 +4,7 @@ import {
   coalesceClaims,
   countBulletLines,
   extractionLooksComplete,
+  groundContact,
   groundItems,
   quoteAppearsIn,
   type DraftItem,
@@ -89,6 +90,29 @@ describe("quoteAppearsIn", () => {
 });
 
 describe("groundItems", () => {
+  it("keeps only project links that came from the resume", () => {
+    const projectResume = `${resume}\nCampus Cart repository: https://github.com/jane/campus-cart`;
+    const { kept } = groundItems(
+      [
+        {
+          ...item([]),
+          links: [
+            {
+              label: "GitHub",
+              url: "https://github.com/jane/campus-cart",
+            },
+            { label: "Live demo", url: "https://invented.example.com" },
+          ],
+        },
+      ],
+      projectResume,
+    );
+
+    expect(kept[0]?.links).toEqual([
+      { label: "GitHub", url: "https://github.com/jane/campus-cart" },
+    ]);
+  });
+
   it("keeps one record when a model splits one source bullet into several claims", () => {
     const source =
       "Architected an AI gateway routing 450K+ requests/day across Azure Kubernetes via Envoy, Helm, and ArgoCD";
@@ -171,7 +195,7 @@ Expected May 2027
     });
   });
 
-  it("keeps a claim the résumé actually supports", () => {
+  it("keeps a claim the resume actually supports", () => {
     const { kept, dropped } = groundItems(
       [
         item([
@@ -209,7 +233,7 @@ Expected May 2027
   it("drops a number the source quote never contained", () => {
     // The dangerous case: a real line, inflated. The candidate confirms it
     // because the sentence looks like theirs, and it is now a fabricated metric
-    // on a real résumé.
+    // on a real resume.
     const { kept, dropped } = groundItems(
       [
         item([
@@ -278,6 +302,31 @@ Expected May 2027
   });
 });
 
+describe("groundContact", () => {
+  it("keeps contact details present in the extracted document and drops invented ones", () => {
+    const document = `${resume}\njane@example.com · Austin, TX\nLinkedIn: https://linkedin.com/in/jane`;
+
+    expect(
+      groundContact(
+        {
+          email: "jane@example.com",
+          location: "Austin, TX",
+          linkedinUrl: "https://linkedin.com/in/jane",
+          githubUrl: "https://github.com/invented",
+        },
+        document,
+      ),
+    ).toEqual({
+      email: "jane@example.com",
+      phone: undefined,
+      location: "Austin, TX",
+      linkedinUrl: "https://linkedin.com/in/jane",
+      githubUrl: undefined,
+      websiteUrl: undefined,
+    });
+  });
+});
+
 describe("bulletIsSupported", () => {
   const claims = [
     "Migrated 12 REST endpoints from Express to Fastify",
@@ -333,17 +382,17 @@ describe("extractionLooksComplete", () => {
     expect(countBulletLines(sixBullets)).toBe(6);
   });
 
-  it("accepts an extraction that found most of the résumé", () => {
+  it("accepts an extraction that found most of the resume", () => {
     expect(extractionLooksComplete(6, sixBullets)).toBe(true);
     expect(extractionLooksComplete(3, sixBullets)).toBe(true);
   });
 
   it("rejects one that found the education and little else", () => {
-    // Exactly the reported failure: a full résumé reduced to two claims.
+    // Exactly the reported failure: a full resume reduced to two claims.
     expect(extractionLooksComplete(2, sixBullets)).toBe(false);
   });
 
-  it("does not demand bullets from a résumé that has none", () => {
+  it("does not demand bullets from a resume that has none", () => {
     expect(extractionLooksComplete(0, "A short prose CV.")).toBe(true);
   });
 });

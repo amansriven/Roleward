@@ -32,7 +32,7 @@ Backstage connects preparation to a target job and maintains a verified record o
 3. **Coach rather than answer.** Zed and Stage Fright should help candidates improve, not do the interview for them.
 4. **Job-specific preparation.** Recommendations should respond to the user's target role.
 5. **One next action.** The home experience should always make the next useful step clear.
-6. **Private by default.** Résumés, stories, attempts, and recordings are sensitive.
+6. **Private by default.** Resumes, stories, attempts, and recordings are sensitive.
 7. **No outcome guarantees.** Backstage measures preparation activity and demonstrated capability, not employability.
 
 ## 3. Product structure

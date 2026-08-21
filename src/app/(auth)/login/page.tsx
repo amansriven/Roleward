@@ -23,7 +23,7 @@ export default async function LoginPage({
           Keep building toward the role you want.
         </h1>
         <p className="text-canvas mt-6 max-w-lg text-lg leading-8">
-          Return to your résumé evidence, interview practice, and next best
+          Return to your resume evidence, interview practice, and next best
           action—without rebuilding your context.
         </p>
         <div className="border-iron/70 mt-10 border-l pl-5">

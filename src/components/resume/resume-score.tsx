@@ -20,7 +20,7 @@ interface Rewrite {
 }
 
 /**
- * The résumé's score, and the specific lines responsible for it.
+ * The resume's score, and the specific lines responsible for it.
  *
  * Every deduction names the bullets it came from, so the score is a to-do list
  * rather than a verdict. That is also why it is computed here rather than asked
@@ -70,7 +70,7 @@ export function ResumeScore({
   return (
     <section className="backstage-card rounded-[22px] p-5">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="font-semibold">Résumé score</p>
+        <p className="font-semibold">Resume score</p>
         <div className="text-right">
           <p className="font-mono text-2xl font-semibold">{score.total}</p>
           <p

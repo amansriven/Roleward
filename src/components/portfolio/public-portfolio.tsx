@@ -1,4 +1,14 @@
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  Code2,
+  ExternalLink,
+  Globe2,
+  Mail,
+  MapPin,
+  Network,
+  Phone,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import type { Portfolio } from "@/modules/portfolio/schema";
 
 const TYPE_LABELS = {
@@ -11,11 +21,11 @@ const TYPE_LABELS = {
 } as const;
 
 const ORDER: (keyof typeof TYPE_LABELS)[] = [
+  "education",
   "experience",
   "project",
   "activity",
   "leadership",
-  "education",
   "other",
 ];
 
@@ -62,6 +72,46 @@ export function PublicPortfolio({ portfolio }: { portfolio: Portfolio }) {
                 {portfolio.headline}
               </p>
             )}
+            {portfolio.contact && (
+              <div className="text-canvas mt-8 flex max-w-3xl flex-wrap gap-x-5 gap-y-3 text-xs">
+                {portfolio.contact.email && (
+                  <a
+                    href={`mailto:${portfolio.contact.email}`}
+                    className="hover:text-amber inline-flex items-center gap-2 transition"
+                  >
+                    <Mail className="size-3.5" /> {portfolio.contact.email}
+                  </a>
+                )}
+                {portfolio.contact.phone && (
+                  <a
+                    href={`tel:${portfolio.contact.phone.replace(/[^+\d]/g, "")}`}
+                    className="hover:text-amber inline-flex items-center gap-2 transition"
+                  >
+                    <Phone className="size-3.5" /> {portfolio.contact.phone}
+                  </a>
+                )}
+                {portfolio.contact.location && (
+                  <span className="inline-flex items-center gap-2">
+                    <MapPin className="size-3.5" /> {portfolio.contact.location}
+                  </span>
+                )}
+                <ContactLink
+                  href={portfolio.contact.linkedinUrl}
+                  label="LinkedIn"
+                  icon={<Network className="size-3.5" />}
+                />
+                <ContactLink
+                  href={portfolio.contact.githubUrl}
+                  label="GitHub"
+                  icon={<Code2 className="size-3.5" />}
+                />
+                <ContactLink
+                  href={portfolio.contact.websiteUrl}
+                  label="Website"
+                  icon={<Globe2 className="size-3.5" />}
+                />
+              </div>
+            )}
           </div>
 
           <div className="border-iron/70 flex items-center justify-between border-t pt-5">
@@ -69,32 +119,6 @@ export function PublicPortfolio({ portfolio }: { portfolio: Portfolio }) {
             <ArrowUpRight className="text-amber size-4" />
           </div>
         </header>
-
-        {portfolio.skills.length > 0 && (
-          <section className="border-iron/80 grid border-x border-t lg:grid-cols-[13rem_1fr]">
-            <div className="border-iron/80 border-b px-5 py-8 lg:border-r lg:border-b-0 lg:px-8">
-              <p className="section-label">Toolkit</p>
-              <p className="text-dust mt-3 text-xs leading-5">
-                Technologies and methods used across the work below.
-              </p>
-            </div>
-            <dl className="divide-y divide-[var(--iron)] px-5 sm:px-10">
-              {portfolio.skills.map((group, index) => (
-                <div
-                  key={`${group.category}-${index}`}
-                  className="grid gap-2 py-6 sm:grid-cols-[9rem_1fr] sm:gap-6"
-                >
-                  <dt className="text-dust font-mono text-[10px] tracking-[.08em] uppercase">
-                    {group.category || `Set ${index + 1}`}
-                  </dt>
-                  <dd className="text-canvas text-sm leading-6">
-                    {group.skills.join(" · ")}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        )}
 
         {grouped.map((group, groupIndex) => (
           <section
@@ -175,6 +199,22 @@ export function PublicPortfolio({ portfolio }: { portfolio: Portfolio }) {
                     </dl>
                   )}
 
+                  {item.links.length > 0 && (
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {item.links.map((link) => (
+                        <a
+                          key={link.url}
+                          href={link.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="border-iron text-canvas hover:border-amber/50 hover:text-linen inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs transition"
+                        >
+                          {link.label} <ExternalLink className="size-3" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
                   {item.claims.length > 0 && (
                     <ul className="mt-6 space-y-3">
                       {item.claims.map((claim, claimIndex) => (
@@ -194,10 +234,36 @@ export function PublicPortfolio({ portfolio }: { portfolio: Portfolio }) {
           </section>
         ))}
 
+        {portfolio.skills.length > 0 && (
+          <section className="border-iron/80 grid border-x border-t lg:grid-cols-[13rem_1fr]">
+            <div className="border-iron/80 border-b px-5 py-8 lg:border-r lg:border-b-0 lg:px-8">
+              <p className="section-label">Toolkit</p>
+              <p className="text-dust mt-3 text-xs leading-5">
+                Technologies and methods used across the work above.
+              </p>
+            </div>
+            <dl className="divide-y divide-[var(--iron)] px-5 sm:px-10">
+              {portfolio.skills.map((group, index) => (
+                <div
+                  key={`${group.category}-${index}`}
+                  className="grid gap-2 py-6 sm:grid-cols-[9rem_1fr] sm:gap-6"
+                >
+                  <dt className="text-dust font-mono text-[10px] tracking-[.08em] uppercase">
+                    {group.category || `Set ${index + 1}`}
+                  </dt>
+                  <dd className="text-canvas text-sm leading-6">
+                    {group.skills.join(" · ")}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
         <footer className="border-iron/80 mb-10 flex flex-col gap-4 border-x border-y px-5 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-10">
           <p className="max-w-xl text-xs leading-5">
             Every statement was reviewed by {portfolio.name.split(" ")[0]} and
-            published from their confirmed résumé evidence.
+            published from their confirmed resume evidence.
           </p>
           <p className="text-dust shrink-0 font-mono text-[9px] tracking-[.12em] uppercase">
             Built with Backstage
@@ -224,5 +290,27 @@ function PortfolioFact({
       </dt>
       <dd className="text-canvas mt-1 leading-5">{value}</dd>
     </div>
+  );
+}
+
+function ContactLink({
+  href,
+  label,
+  icon,
+}: {
+  href?: string;
+  label: string;
+  icon: ReactNode;
+}) {
+  if (!href) return null;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="hover:text-amber inline-flex items-center gap-2 transition"
+    >
+      {icon} {label}
+    </a>
   );
 }

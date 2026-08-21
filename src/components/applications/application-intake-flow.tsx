@@ -512,7 +512,7 @@ export function ApplicationIntakeFlow() {
           </p>
           <p className="text-canvas mt-1 text-xs">
             Strengthen the first required evidence gap before tailoring your
-            résumé.
+            resume.
           </p>
         </div>
         <Link

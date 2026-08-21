@@ -1,7 +1,7 @@
 /**
- * Scores a résumé against the things recruiters actually screen on.
+ * Scores a resume against the things recruiters actually screen on.
  *
- * Deliberately not a model call. "Rate this résumé out of ten" produces a
+ * Deliberately not a model call. "Rate this resume out of ten" produces a
  * number nobody can act on and that changes between runs; every point here is
  * tied to a specific line, so the score doubles as the to-do list. A model is
  * useful for rewriting a weak bullet, not for deciding which one is weak.
@@ -51,7 +51,7 @@ export interface ResumeScore {
 /**
  * Openers that describe proximity to work rather than work.
  *
- * These are the single most common thing separating a student résumé from one
+ * These are the single most common thing separating a student resume from one
  * that gets a callback: "helped with the migration" and "ran the migration"
  * describe the same afternoon and read as different people.
  */
@@ -148,7 +148,7 @@ export function scoreResume(resume: ScoredResume): ResumeScore {
     ([, group]) => group.length >= 3,
   );
 
-  // Ratios are computed against a floor, so a résumé with two bullets cannot
+  // Ratios are computed against a floor, so a resume with two bullets cannot
   // score perfectly on quantification by having one number in it.
   const denominator = Math.max(total, 4);
 
@@ -230,7 +230,7 @@ export function scoreResume(resume: ScoredResume): ResumeScore {
       severity: "low",
       title: `${group.length} bullets start with "${opener}"`,
       detail:
-        "Repetition makes a résumé read as one job done repeatedly. Vary the verb to match what each bullet actually describes.",
+        "Repetition makes a resume read as one job done repeatedly. Vary the verb to match what each bullet actually describes.",
       claimIds: group.map((claim) => claim.id),
     });
 
@@ -250,7 +250,7 @@ export function scoreResume(resume: ScoredResume): ResumeScore {
       severity: "low",
       title: "No projects are listed",
       detail:
-        "Projects are where a student résumé shows what it chose to build rather than what it was assigned.",
+        "Projects are where a student resume shows what it chose to build rather than what it was assigned.",
       claimIds: [],
     });
 

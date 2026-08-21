@@ -12,7 +12,7 @@ const modules = [
   {
     icon: FileCheck2,
     name: "Resume Kitchen",
-    copy: "A stronger résumé. Still yours.",
+    copy: "A stronger resume. Still yours.",
     href: "/resume-kitchen",
     product: "resume",
   },
@@ -74,7 +74,7 @@ export default function HomePage() {
                 One plan. Three ways forward.
               </h2>
             </div>
-            <p className="text-dust text-sm">Résumé · technical · behavioral</p>
+            <p className="text-dust text-sm">Resume · technical · behavioral</p>
           </div>
 
           <div className="border-iron md:divide-iron mt-12 grid border-y md:grid-cols-3 md:divide-x">

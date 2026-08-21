@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  candidateContactSchema,
+  resumeLinkSchema,
+} from "@/modules/candidates/contact";
 import { educationDetailsSchema } from "@/modules/evidence/schema";
 
 /**
@@ -26,6 +30,7 @@ export const portfolioItemSchema = z.object({
   organization: z.string().trim().optional(),
   period: z.string().trim().optional(),
   location: z.string().trim().optional(),
+  links: z.array(resumeLinkSchema).default([]),
   education: educationDetailsSchema.optional(),
   summary: z.string().trim().default(""),
   claims: z.array(portfolioClaimSchema),
@@ -41,6 +46,7 @@ export const portfolioSchema = z.object({
   userId: z.string().min(1),
   name: z.string().trim().min(1),
   headline: z.string().trim(),
+  contact: candidateContactSchema.nullable().default(null),
   // Default keeps portfolio snapshots published before skills were included readable.
   skills: z.array(portfolioSkillGroupSchema).max(20).default([]),
   items: z.array(portfolioItemSchema),

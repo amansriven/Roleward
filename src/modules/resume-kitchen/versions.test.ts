@@ -11,6 +11,7 @@ const evidence: EvidenceItem[] = [
     id: "experience-1",
     type: "experience",
     title: "Engineer",
+    links: [],
     summary: "Built developer tools.",
     verificationStatus: "confirmed",
     claims: [
@@ -32,11 +33,11 @@ const evidence: EvidenceItem[] = [
 
 const now = "2026-08-21T00:00:00.000Z";
 
-describe("résumé versions", () => {
+describe("resume versions", () => {
   it("captures only confirmed evidence in the immutable original", () => {
     const original = createOriginalResumeVersion({
       id: "original-1",
-      name: "Campus résumé — Original",
+      name: "Campus resume — Original",
       evidence,
       now,
     });

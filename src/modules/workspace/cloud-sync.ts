@@ -36,6 +36,7 @@ let syncing: Promise<void> | null = null;
 function hasData(workspace: WorkspaceSnapshot) {
   return Boolean(
     workspace.profile ||
+    workspace.candidateContact ||
     workspace.evidence.length ||
     workspace.resumeVersions.length ||
     workspace.applications.length ||
@@ -68,6 +69,7 @@ export function mergeForMigration(
   return workspaceSnapshotSchema.parse({
     candidateName: remote.candidateName ?? local.candidateName,
     candidateHeadline: remote.candidateHeadline ?? local.candidateHeadline,
+    candidateContact: remote.candidateContact ?? local.candidateContact,
     candidateSkills: remote.candidateSkills.length
       ? remote.candidateSkills
       : local.candidateSkills,

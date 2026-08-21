@@ -13,7 +13,7 @@ const plans = [
     note: "Learn the workflow before committing.",
     features: [
       "One active target job",
-      "One tailored résumé version",
+      "One tailored resume version",
       "Selected Zed problems",
       "Stage Fright story bank",
     ],
@@ -26,7 +26,7 @@ const plans = [
     note: "For an active internship or new-grad search.",
     features: [
       "Unlimited target-job workspaces",
-      "Full résumé version history",
+      "Full resume version history",
       "Complete Zed practice modes",
       "Adaptive Stage Fright rehearsals",
       "Weekly preparation route",

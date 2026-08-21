@@ -1,6 +1,6 @@
 # AWS persistence setup
 
-Backstage stores each authenticated user's structured workspace in DynamoDB and uploads private résumé/recording files directly to S3 with five-minute presigned URLs. Every API derives ownership from the server-side Auth.js/Cognito session; clients never submit a user ID.
+Backstage stores each authenticated user's structured workspace in DynamoDB and uploads private resume/recording files directly to S3 with five-minute presigned URLs. Every API derives ownership from the server-side Auth.js/Cognito session; clients never submit a user ID.
 
 ## DynamoDB
 
@@ -85,5 +85,5 @@ After saving the variables, deploy again. The dashboard badge changes from **Thi
 2. Complete onboarding or add an application.
 3. Confirm one DynamoDB item exists for the Cognito user subject.
 4. Open the app in a private browser, sign in with the same account, and confirm the workspace appears.
-5. Upload a test résumé and verify that its S3 object key starts with `private/<Cognito sub>/resume/`.
+5. Upload a test resume and verify that its S3 object key starts with `private/<Cognito sub>/resume/`.
 6. Confirm the S3 object is not publicly accessible.

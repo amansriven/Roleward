@@ -1,5 +1,9 @@
 import { z } from "zod";
 import {
+  candidateContactSchema,
+  type CandidateContact,
+} from "@/modules/candidates/contact";
+import {
   candidateProfileSchema,
   type CandidateProfile,
 } from "@/modules/candidates/schema";
@@ -43,9 +47,10 @@ export interface CandidateSkillGroup {
   skills: string[];
 }
 export interface WorkspaceSnapshot {
-  /** Read from the résumé, and the basis for the portfolio handle. */
+  /** Read from the resume, and the basis for the portfolio handle. */
   candidateName: string | null;
   candidateHeadline: string | null;
+  candidateContact: CandidateContact | null;
   candidateSkills: CandidateSkillGroup[];
   resumeVersions: ResumeVersion[];
   activeResumeVersionId: string | null;
@@ -60,9 +65,10 @@ export const storedApplicationSchema = targetApplicationSchema.extend({
   requirements: z.array(jobRequirementSchema),
 });
 export const workspaceSnapshotSchema = z.object({
-  // Defaulted so workspace items written before the résumé was read still parse.
+  // Defaulted so workspace items written before the resume was read still parse.
   candidateName: z.string().nullable().default(null),
   candidateHeadline: z.string().nullable().default(null),
+  candidateContact: candidateContactSchema.nullable().default(null),
   candidateSkills: z
     .array(
       z.object({
@@ -84,6 +90,7 @@ export const workspaceSnapshotSchema = z.object({
 export const emptyWorkspace: WorkspaceSnapshot = {
   candidateName: null,
   candidateHeadline: null,
+  candidateContact: null,
   candidateSkills: [],
   resumeVersions: [],
   activeResumeVersionId: null,
@@ -153,9 +160,16 @@ export function loadWorkspace(
   const identity = read<{
     name: string | null;
     headline: string | null;
+    contact?: unknown;
     skills?: CandidateSkillGroup[];
   }>(storage, keys.candidate, { name: null, headline: null });
-  const evidence = read<EvidenceItem[]>(storage, keys.evidence, []);
+  const contact = candidateContactSchema.safeParse(identity.contact);
+  const evidence = read<unknown[]>(storage, keys.evidence, []).flatMap(
+    (value) => {
+      const parsed = evidenceItemSchema.safeParse(value);
+      return parsed.success ? [parsed.data] : [];
+    },
+  );
   let resumeVersions = read<unknown[]>(
     storage,
     keys.resumeVersions,
@@ -170,9 +184,10 @@ export function loadWorkspace(
     resumeVersions = [
       createOriginalResumeVersion({
         id: "legacy-original",
-        name: "Original résumé",
+        name: "Original resume",
         evidence,
         headline: identity.headline ?? "",
+        contact: contact.success ? contact.data : null,
         skills: identity.skills ?? [],
         now: "2000-01-01T00:00:00.000Z",
       }),
@@ -181,6 +196,7 @@ export function loadWorkspace(
   return {
     candidateName: identity.name,
     candidateHeadline: identity.headline,
+    candidateContact: contact.success ? contact.data : null,
     candidateSkills: identity.skills ?? [],
     resumeVersions,
     activeResumeVersionId:
@@ -212,6 +228,7 @@ export function saveWorkspaceSnapshot(
     JSON.stringify({
       name: parsed.candidateName,
       headline: parsed.candidateHeadline,
+      contact: parsed.candidateContact,
       skills: parsed.candidateSkills,
     }),
   );
@@ -267,12 +284,13 @@ export function updateApplication(
   return applications.find((item) => item.id === id) ?? null;
 }
 
-/** Recorded when a résumé is read, since nothing else in the product asks. */
+/** Recorded when a resume is read, since nothing else in the product asks. */
 export function saveCandidateIdentity(
   storage: Pick<Storage, "getItem" | "setItem">,
   name: string,
   headline: string,
   skills?: CandidateSkillGroup[],
+  contact?: CandidateContact | null,
 ) {
   const current = loadWorkspace(storage);
   storage.setItem(
@@ -280,6 +298,7 @@ export function saveCandidateIdentity(
     JSON.stringify({
       name: name || current.candidateName,
       headline: headline || current.candidateHeadline,
+      contact: contact === undefined ? current.candidateContact : contact,
       skills: skills ?? current.candidateSkills,
     }),
   );
@@ -311,6 +330,7 @@ export function saveOriginalResumeVersion(
     name,
     evidence,
     headline: workspace.candidateHeadline ?? "",
+    contact: workspace.candidateContact,
     skills: workspace.candidateSkills,
     now: new Date().toISOString(),
   });
@@ -333,7 +353,7 @@ export function createResumeRevision(
   const source = workspace.resumeVersions.find(
     (version) => version.id === sourceVersionId,
   );
-  if (!source) throw new Error("Source résumé version was not found");
+  if (!source) throw new Error("Source resume version was not found");
   const revision = forkResumeVersion({
     source,
     id: crypto.randomUUID(),
@@ -364,7 +384,7 @@ export function updateResumeVersion(
   const current = workspace.resumeVersions.find(
     (version) => version.id === versionId,
   );
-  if (!current) throw new Error("Résumé version was not found");
+  if (!current) throw new Error("Resume version was not found");
   const updated = updateVersionSnapshot(
     current,
     patch,
@@ -429,7 +449,7 @@ export function applicationReadiness(
   return assessReadiness({
     requirements: application.requirements,
     // Real, rather than the hardcoded false this used to pass. Confirming what
-    // was read from the résumé is what makes a claim usable anywhere else in
+    // was read from the resume is what makes a claim usable anywhere else in
     // the product, so it is the signal worth scoring.
     evidenceConfirmed: workspace.evidence.some((item) =>
       item.claims.some(
@@ -452,7 +472,7 @@ export function recommendActions(
     return [
       {
         id: "confirm-evidence",
-        title: "Confirm the experience from your résumé",
+        title: "Confirm the experience from your resume",
         detail: "Build the trusted evidence used across Backstage",
         minutes: 5,
         href: "/dashboard/resume-kitchen/intake",

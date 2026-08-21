@@ -58,7 +58,7 @@ const base = {
 describe("the application dimension", () => {
   it("can reach 100 on evidence alone", () => {
     // It could not before: ten of the points were awarded for exporting a
-    // résumé, which nothing in the product does, so everyone was capped at 90.
+    // resume, which nothing in the product does, so everyone was capped at 90.
     const result = assessReadiness({
       ...base,
       requirements: [requirement("api", "strong", ["claim-1"])],
@@ -94,7 +94,7 @@ describe("the application dimension", () => {
     expect(result.application.score).toBe(100);
   });
 
-  it("says what to do when the résumé has not been confirmed", () => {
+  it("says what to do when the resume has not been confirmed", () => {
     const result = assessReadiness({
       ...base,
       requirements: [requirement("api", "strong", ["claim-1"])],
@@ -102,7 +102,7 @@ describe("the application dimension", () => {
     });
     expect(result.application.score).toBe(85);
     expect(result.application.explanation.join(" ")).toContain(
-      "Confirm what was read from your résumé",
+      "Confirm what was read from your resume",
     );
   });
 });

@@ -49,7 +49,7 @@ describe("the individual checks", () => {
   });
 
   it("spots proximity language", () => {
-    // The single most common thing between a student résumé and a callback.
+    // The single most common thing between a student resume and a callback.
     expect(startsWeakly("Helped build the migration")).toBe(true);
     expect(startsWeakly("Assisted with testing")).toBe(true);
     expect(startsWeakly("Built the migration")).toBe(false);
@@ -62,7 +62,7 @@ describe("the individual checks", () => {
 });
 
 describe("scoreResume", () => {
-  it("rewards a résumé that quantifies and owns its work", () => {
+  it("rewards a resume that quantifies and owns its work", () => {
     const score = scoreResume(resume(strong));
     expect(score.band).toBe("strong");
     expect(score.findings.filter((f) => f.severity === "high")).toEqual([]);
@@ -92,7 +92,7 @@ describe("scoreResume", () => {
   });
 
   it("cannot be gamed by having very few bullets", () => {
-    // One quantified bullet out of one is not a perfect résumé.
+    // One quantified bullet out of one is not a perfect resume.
     const score = scoreResume(resume([claim("1", "Shipped 3 services in Go")]));
     const quantified = score.dimensions.find((d) => d.key === "quantified");
     expect(quantified!.score).toBeLessThan(quantified!.max);
@@ -130,7 +130,7 @@ describe("scoreResume", () => {
     expect(score.findings[0]?.severity).toBe("high");
   });
 
-  it("survives an empty résumé without dividing by zero", () => {
+  it("survives an empty resume without dividing by zero", () => {
     const score = scoreResume(
       resume([], { hasExperience: false, hasProjects: false, skillCount: 0 }),
     );

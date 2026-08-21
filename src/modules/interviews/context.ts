@@ -69,7 +69,7 @@ const TYPE_LABELS: Record<EvidenceItem["type"], string> = {
 };
 
 /**
- * The candidate's résumé, as the interviewer is allowed to know it.
+ * The candidate's resume, as the interviewer is allowed to know it.
  *
  * Only claims the candidate confirmed or corrected appear. A corrected claim is
  * marked, because it is the one they rewrote in their own words — the closest
@@ -109,9 +109,9 @@ function describeEvidence(evidence: EvidenceItem[]) {
 }
 
 /**
- * Whether a résumé exists but has not been confirmed.
+ * Whether a resume exists but has not been confirmed.
  *
- * Telling the interviewer the candidate has no résumé when they have uploaded
+ * Telling the interviewer the candidate has no resume when they have uploaded
  * one produces the wrong interview: it opens with "tell me about your
  * background" as though nothing is known, when in fact everything is known and
  * merely unconfirmed.
@@ -180,11 +180,11 @@ export function buildInterviewerInstructions({
     );
   else if (hasUnconfirmedEvidence(evidence))
     sections.push(
-      "The candidate has uploaded a résumé but has not confirmed what was read from it, so none of it is verified. Ask them to describe their background in their own words, and do not state any specific experience back to them as fact.",
+      "The candidate has uploaded a resume but has not confirmed what was read from it, so none of it is verified. Ask them to describe their background in their own words, and do not state any specific experience back to them as fact.",
     );
   else
     sections.push(
-      "The candidate has not added a résumé yet. Ask open questions about their background rather than assuming any specific experience.",
+      "The candidate has not added a resume yet. Ask open questions about their background rather than assuming any specific experience.",
     );
 
   if (plan.tracksCompetencies)

@@ -35,7 +35,7 @@ const item = (status: EvidenceItem["claims"][number]["verificationStatus"]) =>
     ],
   }) as EvidenceItem;
 
-describe("résumé context", () => {
+describe("resume context", () => {
   it("gives the interviewer confirmed experience to ground questions in", () => {
     const text = buildInterviewerInstructions({
       ...base,
@@ -61,15 +61,15 @@ describe("résumé context", () => {
     expect(text).not.toContain("Campus Cart");
   });
 
-  it("distinguishes an unconfirmed résumé from no résumé at all", () => {
-    // Saying "no résumé" when one was uploaded opens the wrong interview.
+  it("distinguishes an unconfirmed resume from no resume at all", () => {
+    // Saying "no resume" when one was uploaded opens the wrong interview.
     const uploaded = buildInterviewerInstructions({
       ...base,
       evidence: [item("proposed")],
     });
-    expect(uploaded).toContain("uploaded a résumé but has not confirmed");
+    expect(uploaded).toContain("uploaded a resume but has not confirmed");
 
     const none = buildInterviewerInstructions({ ...base, evidence: [] });
-    expect(none).toContain("has not added a résumé yet");
+    expect(none).toContain("has not added a resume yet");
   });
 });

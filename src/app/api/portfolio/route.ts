@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import {
+  candidateContactSchema,
+  resumeLinkSchema,
+} from "@/modules/candidates/contact";
 import { auth } from "@/auth";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
 import {
@@ -20,6 +24,7 @@ const publishSchema = z.object({
   action: z.literal("publish"),
   name: z.string().trim().min(1).max(120),
   headline: z.string().trim().max(200).default(""),
+  contact: candidateContactSchema.nullable().default(null),
   skills: z
     .array(
       z.object({
@@ -44,6 +49,7 @@ const publishSchema = z.object({
         organization: z.string().trim().max(200).optional(),
         period: z.string().trim().max(120).optional(),
         location: z.string().trim().max(160).optional(),
+        links: z.array(resumeLinkSchema).max(8).default([]),
         education: z
           .object({
             degree: z.string().trim().optional(),
@@ -142,6 +148,7 @@ export async function POST(request: Request) {
     userId: session.user.id,
     name: parsed.data.name,
     headline: parsed.data.headline,
+    contact: parsed.data.contact,
     skills: parsed.data.skills,
     items: parsed.data.items,
     published: true,

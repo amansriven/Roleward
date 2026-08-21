@@ -3,6 +3,7 @@
 import { Check, ExternalLink, Globe, LoaderCircle, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { EvidenceItem } from "@/modules/evidence/schema";
+import type { CandidateContact } from "@/modules/candidates/contact";
 import { deriveHandle } from "@/modules/portfolio/handle";
 import type { Portfolio } from "@/modules/portfolio/schema";
 import type { CandidateSkillGroup } from "@/modules/workspace/repository";
@@ -18,11 +19,13 @@ export function PortfolioPublish({
   name,
   headline,
   skills,
+  contact,
   evidence,
 }: {
   name: string | null;
   headline: string | null;
   skills: CandidateSkillGroup[];
+  contact: CandidateContact | null;
   evidence: EvidenceItem[];
 }) {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
@@ -54,6 +57,7 @@ export function PortfolioPublish({
       organization: item.organization,
       period: item.period,
       location: item.location,
+      links: item.links,
       education: item.education,
       summary: item.summary,
       claims: item.claims
@@ -64,7 +68,12 @@ export function PortfolioPublish({
         )
         .map((claim) => ({ content: claim.content })),
     }))
-    .filter((item) => item.claims.length > 0 || Boolean(item.education));
+    .filter(
+      (item) =>
+        item.claims.length > 0 ||
+        Boolean(item.education) ||
+        item.links.length > 0,
+    );
 
   const ready = Boolean(name) && items.length > 0;
   const url = portfolio
@@ -82,7 +91,14 @@ export function PortfolioPublish({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(
           action === "publish"
-            ? { action, name, headline: headline ?? "", skills, items }
+            ? {
+                action,
+                name,
+                headline: headline ?? "",
+                contact,
+                skills,
+                items,
+              }
             : { action },
         ),
       });
@@ -120,8 +136,8 @@ export function PortfolioPublish({
       {!ready ? (
         <p className="text-dust mt-2 text-xs leading-5">
           {name
-            ? "Confirm some claims from your résumé and this can go live."
-            : "Import a résumé so we know your name, and this can go live."}
+            ? "Confirm some claims from your resume and this can go live."
+            : "Import a resume so we know your name, and this can go live."}
         </p>
       ) : (
         <>

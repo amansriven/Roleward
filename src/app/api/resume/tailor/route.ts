@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { interviewsConfigured } from "@/modules/interviews/openai";
-import { tailorBullet, TailoringError } from "@/modules/resume-kitchen/tailoring";
+import {
+  tailorBullet,
+  TailoringError,
+} from "@/modules/resume-kitchen/tailoring";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;

@@ -38,3 +38,5 @@ cdk.out
 # Python bytecode (Lambda sources)
 __pycache__/
 *.pyc
+
+Makefile

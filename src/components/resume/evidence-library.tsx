@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Check,
   Database,
+  ExternalLink,
   FolderKanban,
   GraduationCap,
   MapPin,
@@ -72,7 +73,7 @@ const sectionMeta: Record<
   skills: {
     eyebrow: "Skills",
     title: "Your technical toolkit",
-    copy: "Skills stay grouped the same way they appeared on your résumé.",
+    copy: "Skills stay grouped the same way they appeared on your resume.",
   },
 };
 
@@ -178,13 +179,13 @@ export function EvidenceLibrary({
         <Database className="text-dust mx-auto size-6" />
         <h2 className="mt-5 text-xl font-semibold">No evidence yet.</h2>
         <p className="text-canvas mx-auto mt-2 max-w-md text-sm leading-6">
-          Import a résumé, review what was read, and confirm only what is true.
+          Import a resume, review what was read, and confirm only what is true.
         </p>
         <Link
           href="/dashboard/resume-kitchen/intake"
           className="bg-copper text-night mt-6 inline-flex rounded-lg px-4 py-2.5 text-sm font-semibold"
         >
-          Import résumé
+          Import resume
         </Link>
       </div>
     );
@@ -328,7 +329,7 @@ function EvidenceOverview({
     {
       icon: Wrench,
       title: "Skills",
-      copy: "Technical skills grouped as they appeared on your résumé",
+      copy: "Technical skills grouped as they appeared on your resume",
       count: skillCount,
       href: "/dashboard/evidence/skills",
     },
@@ -339,7 +340,7 @@ function EvidenceOverview({
       <SectionHeading
         eyebrow="Overview"
         title="Your verified career record"
-        copy="Evidence is organized like a résumé, so you can find and correct one kind of information at a time."
+        copy="Evidence is organized like a resume, so you can find and correct one kind of information at a time."
       />
 
       <section>
@@ -348,7 +349,7 @@ function EvidenceOverview({
           <Summary
             label="Entries"
             value={String(items.length)}
-            note="Across your full résumé"
+            note="Across your full resume"
           />
           <Summary
             label="Confirmed bullets"
@@ -530,6 +531,22 @@ function EvidenceRecord({
         )
       )}
 
+      {item.links.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {item.links.map((link) => (
+            <a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="border-iron text-canvas hover:text-linen inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
+            >
+              {link.label} <ExternalLink className="size-3" />
+            </a>
+          ))}
+        </div>
+      )}
+
       {item.claims.length > 0 && (
         <ul className="border-iron/60 divide-iron/60 mt-5 divide-y border-t">
           {item.claims.map((claim) => (
@@ -674,7 +691,7 @@ function ClaimRow({
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               rows={3}
-              aria-label="Edit résumé bullet"
+              aria-label="Edit resume bullet"
               className="border-iron bg-night/40 text-canvas w-full rounded-lg border p-3 text-sm leading-6 outline-none"
             />
             <div className="mt-2 flex gap-3">
@@ -790,7 +807,7 @@ function SectionEmpty({
       <p className="text-dust mx-auto mt-2 max-w-md text-xs leading-5">
         {query
           ? "Try a different search or clear the status filter."
-          : "Import or re-import your résumé and review what the parser found."}
+          : "Import or re-import your resume and review what the parser found."}
       </p>
     </div>
   );
