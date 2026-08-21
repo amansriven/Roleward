@@ -14,7 +14,10 @@ export async function beginManagedLogin(formData: FormData) {
   const authorizationParams: Record<string, string> = {};
 
   if (mode === "signup") authorizationParams.screen_hint = "signup";
-  if (provider === "google") authorizationParams.identity_provider = "Google";
+  if (provider === "google") {
+    authorizationParams.identity_provider = "Google";
+    authorizationParams.prompt = "select_account";
+  }
   if (provider === "apple")
     authorizationParams.identity_provider = "SignInWithApple";
 

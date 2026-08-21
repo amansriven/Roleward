@@ -87,3 +87,32 @@ AUTH_COGNITO_ISSUER=https://cognito-idp.us-east-2.amazonaws.com/us-east-2_EXAMPL
 7. Open `/dashboard` in a private window and confirm it redirects to `/login`.
 
 Dashboard rendering now requires a valid server session. Future APIs must also verify the session user ID and resource ownership on every request.
+
+## Troubleshooting social sign-in
+
+If Google reaches its account chooser but Sweet+ returns to `/login` with an
+OAuth error, the initial redirect is working. Check the return path in this
+order:
+
+1. In Vercel logs, find the Auth.js `[auth][cause]` entry for the failed
+   callback. The login page shows a safe reference, while the original provider
+   error remains server-side.
+2. In Google Cloud, confirm the Web OAuth client still has the exact redirect
+   URI `https://YOUR_COGNITO_DOMAIN/oauth2/idpresponse`.
+3. In Cognito **Social and external providers → Google**, re-enter the client
+   secret from that same Google Web OAuth client and confirm the scopes are
+   `openid profile email`.
+4. Confirm every required user-pool attribute has a Google mapping—at minimum,
+   map Google `email` to Cognito `email` for this pool. Cognito derives the
+   federated username from Google `sub` automatically. Every mapped destination
+   attribute must be mutable, and the app client must be allowed to write it.
+5. In the Cognito app client, confirm Google is an enabled identity provider and
+   the Sweet+ callback URL is exact.
+6. Try a Google account whose email has never been registered with password
+   sign-in. Cognito creates federated profiles separately; merging an existing
+   local user requires a deliberate `AdminLinkProviderForUser` flow and must not
+   be done by trusting an unverified email alone.
+
+An `OAUTH_CALLBACK` reference for every Google account usually points to the
+Google client secret or attribute mapping in Cognito. A failure for only one
+previously registered email usually points to account linking.
