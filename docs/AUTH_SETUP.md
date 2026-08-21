@@ -76,6 +76,12 @@ AUTH_COGNITO_ISSUER=https://cognito-idp.us-east-2.amazonaws.com/us-east-2_EXAMPL
 
 `AUTH_COGNITO_SECRET` and `AUTH_SECRET` are secrets. Never prefix them with `NEXT_PUBLIC_`, commit them, or expose them in browser code.
 
+`AUTH_COGNITO_ID` and `AUTH_COGNITO_SECRET` must come from **Cognito →
+Applications → App clients**. They are not the Google OAuth client ID and
+secret shown under **Social and external providers → Google**. Google’s
+credentials connect Google to Cognito; the Cognito app-client credentials
+connect Sweet+ and Auth.js to Cognito’s token endpoint.
+
 ## Verification
 
 1. Open `/login` and continue to Cognito managed login.

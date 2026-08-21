@@ -10,10 +10,12 @@ import {
   ResendConfirmationCodeCommand,
   SignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { readAuthEnvironment } from "@/modules/identity/auth-environment";
 
-const clientId = process.env.AUTH_COGNITO_ID || "";
-const clientSecret = process.env.AUTH_COGNITO_SECRET || "";
-const issuer = process.env.AUTH_COGNITO_ISSUER || "";
+const authEnvironment = readAuthEnvironment(process.env);
+const clientId = authEnvironment.cognitoClientId;
+const clientSecret = authEnvironment.cognitoClientSecret;
+const issuer = authEnvironment.cognitoIssuer;
 const issuerUrl = issuer ? new URL(issuer) : null;
 const region = issuerUrl?.hostname.split(".")[1] || "us-east-2";
 

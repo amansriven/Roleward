@@ -6,13 +6,10 @@ import {
   authenticateWithPassword,
   emailAuthConfigured,
 } from "@/modules/identity/cognito-server";
+import { readAuthEnvironment } from "@/modules/identity/auth-environment";
 
-const authConfigured = Boolean(
-  process.env.AUTH_COGNITO_ID &&
-  process.env.AUTH_COGNITO_SECRET &&
-  process.env.AUTH_COGNITO_ISSUER &&
-  process.env.AUTH_SECRET,
-);
+const authEnvironment = readAuthEnvironment(process.env);
+const authConfigured = authEnvironment.configured;
 
 export { authConfigured };
 export const appleAuthEnabled = process.env.AUTH_APPLE_ENABLED === "true";
@@ -20,7 +17,7 @@ export const appleAuthEnabled = process.env.AUTH_APPLE_ENABLED === "true";
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
   secret:
-    process.env.AUTH_SECRET || "build-only-placeholder-not-for-production",
+    authEnvironment.authSecret || "build-only-placeholder-not-for-production",
   pages: { signIn: "/login", error: "/login" },
   session: { strategy: "jwt", maxAge: 60 * 60 * 8 },
   providers: authConfigured
@@ -50,9 +47,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           },
         }),
         Cognito({
-          clientId: process.env.AUTH_COGNITO_ID!,
-          clientSecret: process.env.AUTH_COGNITO_SECRET!,
-          issuer: process.env.AUTH_COGNITO_ISSUER!,
+          clientId: authEnvironment.cognitoClientId,
+          clientSecret: authEnvironment.cognitoClientSecret,
+          issuer: authEnvironment.cognitoIssuer,
           authorization: {
             params: {
               response_type: "code",
