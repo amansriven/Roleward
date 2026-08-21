@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   bulletIsSupported,
+  coalesceClaims,
   countBulletLines,
   extractionLooksComplete,
   groundItems,
@@ -88,6 +89,88 @@ describe("quoteAppearsIn", () => {
 });
 
 describe("groundItems", () => {
+  it("keeps one record when a model splits one source bullet into several claims", () => {
+    const source =
+      "Architected an AI gateway routing 450K+ requests/day across Azure Kubernetes via Envoy, Helm, and ArgoCD";
+    const claims = coalesceClaims([
+      {
+        type: "action",
+        content: "Architected an AI gateway",
+        sourceQuote: source,
+      },
+      {
+        type: "metric",
+        content: "Routed 450K+ requests/day",
+        sourceQuote: source,
+      },
+      {
+        type: "technology",
+        content: "Used Envoy, Helm, and ArgoCD",
+        sourceQuote: source,
+      },
+    ]);
+
+    expect(claims).toEqual([
+      {
+        type: "metric",
+        content: source,
+        sourceQuote: source,
+      },
+    ]);
+  });
+
+  it("keeps structured education without inventing generic claim rows", () => {
+    const educationResume = `
+EDUCATION
+Texas A&M University
+Bachelor of Science in Computer Science
+Minor in Math
+GPA: 3.84/4.00
+Coursework: Computer Architecture, Software Engineering, Data Structures & Algorithms
+Expected May 2027
+`;
+    const { kept } = groundItems(
+      [
+        {
+          type: "education",
+          title: "Bachelor of Science in Computer Science",
+          organization: "Texas A&M University",
+          period: "Expected May 2027",
+          summary: "",
+          education: {
+            degree: "Bachelor of Science",
+            fieldOfStudy: "Computer Science",
+            minor: "Math",
+            gpa: "3.84/4.00",
+            coursework: [
+              "Computer Architecture",
+              "Software Engineering",
+              "Data Structures & Algorithms",
+            ],
+            honors: ["Invented honors"],
+          },
+          claims: [],
+        },
+      ],
+      educationResume,
+    );
+
+    expect(kept).toHaveLength(1);
+    expect(kept[0]?.claims).toEqual([]);
+    expect(kept[0]?.education).toMatchObject({
+      degree: "Bachelor of Science",
+      fieldOfStudy: "Computer Science",
+      minor: "Math",
+      gpa: "3.84/4.00",
+      coursework: [
+        "Computer Architecture",
+        "Software Engineering",
+        "Data Structures & Algorithms",
+      ],
+      honors: [],
+    });
+  });
+
   it("keeps a claim the résumé actually supports", () => {
     const { kept, dropped } = groundItems(
       [

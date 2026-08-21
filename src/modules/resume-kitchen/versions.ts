@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { EvidenceItem } from "@/modules/evidence/schema";
+import {
+  educationDetailsSchema,
+  evidenceItemTypeSchema,
+  type EvidenceItem,
+} from "@/modules/evidence/schema";
 
 export const resumeVersionBulletSchema = z.object({
   id: z.string().min(1),
@@ -11,10 +15,13 @@ export const resumeVersionBulletSchema = z.object({
 export const resumeVersionItemSchema = z.object({
   id: z.string().min(1),
   evidenceItemId: z.string().min(1),
-  type: z.enum(["experience", "project", "education", "leadership", "other"]),
+  type: evidenceItemTypeSchema,
   title: z.string().trim().min(1).max(200),
   organization: z.string().trim().max(200).optional(),
-  summary: z.string().trim().min(1).max(1000),
+  period: z.string().trim().max(120).optional(),
+  location: z.string().trim().max(160).optional(),
+  education: educationDetailsSchema.optional(),
+  summary: z.string().trim().max(1000).default(""),
   bullets: z.array(resumeVersionBulletSchema),
 });
 
@@ -69,7 +76,7 @@ export function createOriginalResumeVersion({
     skills,
     items: evidence.flatMap((item) => {
       const claims = confirmedClaims(item);
-      if (!claims.length) return [];
+      if (!claims.length && item.type !== "education") return [];
       return [
         {
           id: item.id,
@@ -77,6 +84,9 @@ export function createOriginalResumeVersion({
           type: item.type,
           title: item.title,
           organization: item.organization,
+          period: item.period,
+          location: item.location,
+          education: item.education,
           summary: item.summary,
           bullets: claims.map((claim) => ({
             id: claim.id,
@@ -144,6 +154,9 @@ export function versionEvidence(version: ResumeVersion): EvidenceItem[] {
     type: item.type,
     title: item.title,
     organization: item.organization,
+    period: item.period,
+    location: item.location,
+    education: item.education,
     summary: item.summary,
     verificationStatus: "confirmed",
     claims: item.bullets.map((bullet) => ({

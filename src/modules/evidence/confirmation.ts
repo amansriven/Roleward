@@ -7,7 +7,12 @@ export function finalizeConfirmedEvidence(items: EvidenceItem[]) {
         claim.verificationStatus === "confirmed" ||
         claim.verificationStatus === "corrected",
     );
-    if (claims.length === 0) return [];
+    const structuredEducationConfirmed =
+      item.type === "education" &&
+      Boolean(item.education) &&
+      (item.verificationStatus === "confirmed" ||
+        item.verificationStatus === "corrected");
+    if (claims.length === 0 && !structuredEducationConfirmed) return [];
     return [
       evidenceItemSchema.parse({
         ...item,

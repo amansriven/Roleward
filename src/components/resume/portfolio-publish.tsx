@@ -52,6 +52,9 @@ export function PortfolioPublish({
       type: item.type,
       title: item.title,
       organization: item.organization,
+      period: item.period,
+      location: item.location,
+      education: item.education,
       summary: item.summary,
       claims: item.claims
         .filter(
@@ -61,7 +64,7 @@ export function PortfolioPublish({
         )
         .map((claim) => ({ content: claim.content })),
     }))
-    .filter((item) => item.claims.length > 0);
+    .filter((item) => item.claims.length > 0 || Boolean(item.education));
 
   const ready = Boolean(name) && items.length > 0;
   const url = portfolio

@@ -32,18 +32,20 @@ const draftSchema = z.object({
   ),
   items: z.array(
     z.object({
-      type: z.enum([
-        "experience",
-        "project",
-        "education",
-        "leadership",
-        "other",
-      ]),
+      type: z.enum(["experience", "project", "education", "activity", "other"]),
       title: z.string().trim().min(1),
       organization: z.string().trim().optional(),
       period: z.string().trim().optional(),
       location: z.string().trim().optional(),
-      summary: z.string().trim().min(1),
+      education: z.object({
+        degree: z.string().trim(),
+        fieldOfStudy: z.string().trim(),
+        minor: z.string().trim(),
+        gpa: z.string().trim(),
+        coursework: z.array(z.string().trim()),
+        honors: z.array(z.string().trim()),
+      }),
+      summary: z.string().trim(),
       claims: z.array(
         z.object({
           type: z.enum([
@@ -105,18 +107,24 @@ const jsonSchema = {
           "organization",
           "period",
           "location",
+          "education",
           "summary",
           "claims",
         ],
         properties: {
           type: {
             type: "string",
-            enum: ["experience", "project", "education", "leadership", "other"],
+            enum: ["experience", "project", "education", "activity", "other"],
           },
-          title: { type: "string", description: "Role or project name." },
+          title: {
+            type: "string",
+            description:
+              "Role title for experience/activities, project name for projects, or degree name for education. Copy it as written.",
+          },
           organization: {
             type: "string",
-            description: "Employer or school. Empty string if none is given.",
+            description:
+              "Employer, school, or club/organization. Empty string if none is given.",
           },
           period: {
             type: "string",
@@ -127,9 +135,32 @@ const jsonSchema = {
             type: "string",
             description: "As written. Empty string if absent.",
           },
+          education: {
+            type: "object",
+            additionalProperties: false,
+            required: [
+              "degree",
+              "fieldOfStudy",
+              "minor",
+              "gpa",
+              "coursework",
+              "honors",
+            ],
+            description:
+              "Structured education fields. Use empty strings and arrays for non-education entries or when absent.",
+            properties: {
+              degree: { type: "string" },
+              fieldOfStudy: { type: "string" },
+              minor: { type: "string" },
+              gpa: { type: "string" },
+              coursework: { type: "array", items: { type: "string" } },
+              honors: { type: "array", items: { type: "string" } },
+            },
+          },
           summary: {
             type: "string",
-            description: "One neutral sentence describing what this was.",
+            description:
+              "Copy an unbulleted description from the resume if one exists. Otherwise return an empty string. Do not write a new summary.",
           },
           claims: {
             type: "array",
@@ -151,12 +182,12 @@ const jsonSchema = {
                 content: {
                   type: "string",
                   description:
-                    "The claim, restated plainly. Never stronger than the source.",
+                    "The complete original bullet with only its bullet glyph removed. Do not split or rewrite it.",
                 },
                 sourceQuote: {
                   type: "string",
                   description:
-                    "The exact sentence from the resume this came from, copied character for character.",
+                    "The entire original bullet from the resume, copied character for character. Never cite only one clause of a longer bullet.",
                 },
               },
             },
@@ -178,8 +209,11 @@ const INSTRUCTIONS = [
   "- NEVER introduce a number that is not in the source quote. Do not estimate, round, scale, or convert. If the resume says 'several users', the claim says 'several users'.",
   "- content must not be stronger than its source. 'Helped build' does not become 'Built'. 'Contributed to' does not become 'Led'.",
   "- If a line is vague, extract it vaguely. The candidate will sharpen it themselves; that is what the confirmation step is for.",
-  "- Split each role into its distinct claims rather than one summary claim. One bullet is usually one claim.",
-  "- Extract EVERY entry on the resume: every job, internship, research position, project, leadership role, and the education. Do not summarise or select the best ones.",
+  "- Preserve bullet boundaries exactly: ONE source bullet becomes ONE claim. Never split a bullet into separate action, technology, outcome, or metric records, even when it contains several clauses.",
+  "- content is the complete source bullet with only the leading bullet glyph removed. Do not paraphrase or shorten it.",
+  "- Extract EVERY entry and keep its resume section: experience, projects, education, and activities (leadership, clubs, volunteering, and extracurriculars). Do not summarise or select the best ones.",
+  "- For experience and activities, title is the role and organization is the employer, club, or institution. For projects, title is the project name. For education, organization is the school and title is the degree as written.",
+  "- Education is structured separately: identify degree, field of study, minor, GPA, coursework, honors, dates, school, and location. Do not turn GPA or coursework into generic claims. Education can have an empty claims array.",
   "- Copy dates and locations as written. Leave them empty rather than guessing.",
   "- List the skills section as it is grouped. Do not add a skill the resume does not name.",
   "- Skip contact details, links, and lists of interests entirely.",
@@ -268,6 +302,17 @@ async function attemptExtraction(
     organization: item.organization?.trim() ? item.organization : undefined,
     period: item.period?.trim() ? item.period : undefined,
     location: item.location?.trim() ? item.location : undefined,
+    education:
+      item.type === "education"
+        ? {
+            degree: item.education.degree || undefined,
+            fieldOfStudy: item.education.fieldOfStudy || undefined,
+            minor: item.education.minor || undefined,
+            gpa: item.education.gpa || undefined,
+            coursework: item.education.coursework,
+            honors: item.education.honors,
+          }
+        : undefined,
   }));
 
   const { kept, dropped } = groundItems(items, document);

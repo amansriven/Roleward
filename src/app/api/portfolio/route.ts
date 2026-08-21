@@ -36,12 +36,25 @@ const publishSchema = z.object({
           "experience",
           "project",
           "education",
+          "activity",
           "leadership",
           "other",
         ]),
         title: z.string().trim().min(1).max(200),
         organization: z.string().trim().max(200).optional(),
-        summary: z.string().trim().min(1).max(1000),
+        period: z.string().trim().max(120).optional(),
+        location: z.string().trim().max(160).optional(),
+        education: z
+          .object({
+            degree: z.string().trim().optional(),
+            fieldOfStudy: z.string().trim().optional(),
+            minor: z.string().trim().optional(),
+            gpa: z.string().trim().optional(),
+            coursework: z.array(z.string().trim().min(1)).default([]),
+            honors: z.array(z.string().trim().min(1)).default([]),
+          })
+          .optional(),
+        summary: z.string().trim().max(1000).default(""),
         claims: z.array(
           z.object({ content: z.string().trim().min(1).max(600) }),
         ),

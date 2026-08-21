@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { FeatureIcon } from "@/components/brand/feature-icon";
 import { ResumeKitchenNav } from "@/components/resume/resume-kitchen-nav";
 import { PageIntro } from "@/components/workspace/dashboard-ui";
 
@@ -12,7 +12,18 @@ export default function ResumeKitchenLayout({
   return (
     <div className="space-y-8">
       <PageIntro
-        icon={<FeatureIcon feature="resume-kitchen" size="xl" active />}
+        icon={
+          <span className="border-amber/25 bg-amber/[.05] flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
+            <Image
+              src="/brand/resume-kitchen-avatar.png"
+              alt="The Resume Kitchen bear chef"
+              width={64}
+              height={64}
+              className="shrink-0 object-cover object-top"
+              priority
+            />
+          </span>
+        }
         eyebrow="Resume Kitchen"
         title="One résumé. Clear versions."
         copy="Keep the original safe, name every revision, and tailor one role at a time."

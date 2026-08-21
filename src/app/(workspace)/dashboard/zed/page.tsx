@@ -88,7 +88,7 @@ export default async function ZedPage() {
             alt="Zed, your technical practice coach"
             width={56}
             height={56}
-            className="border-amber/30 size-14 rounded-2xl border object-cover"
+            className="border-amber/30 shrink-0 rounded-2xl border object-cover"
             priority
           />
         }
@@ -122,7 +122,7 @@ export default async function ZedPage() {
               alt="Zed, your technical practice coach"
               width={56}
               height={56}
-              className="border-iron size-14 rounded-2xl border object-cover"
+              className="border-iron shrink-0 rounded-2xl border object-cover"
               priority
             />
             <div>

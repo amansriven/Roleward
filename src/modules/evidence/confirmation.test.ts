@@ -1,60 +1,35 @@
 import { describe, expect, it } from "vitest";
 import { finalizeConfirmedEvidence } from "./confirmation";
+import type { EvidenceItem } from "./schema";
 
-describe("evidence confirmation", () => {
-  it("persists only explicitly confirmed or corrected claims", () => {
-    const result = finalizeConfirmedEvidence([
-      {
-        id: "project-1",
-        type: "project",
-        title: "Campus Cart",
-        summary: "A marketplace",
-        verificationStatus: "proposed",
-        claims: [
-          {
-            id: "a",
-            type: "action",
-            content: "Built an API",
-            verificationStatus: "confirmed",
-          },
-          {
-            id: "b",
-            type: "metric",
-            content: "Used by millions",
-            verificationStatus: "proposed",
-          },
-          {
-            id: "c",
-            type: "outcome",
-            content: "Guaranteed revenue",
-            verificationStatus: "rejected",
-          },
-        ],
-      },
+function education(status: EvidenceItem["verificationStatus"]): EvidenceItem {
+  return {
+    id: "education",
+    type: "education",
+    title: "Bachelor of Science",
+    organization: "Texas A&M University",
+    period: "Expected May 2027",
+    summary: "",
+    verificationStatus: status,
+    education: {
+      degree: "Bachelor of Science",
+      fieldOfStudy: "Computer Science",
+      gpa: "3.84/4.00",
+      coursework: ["Software Engineering"],
+      honors: [],
+    },
+    claims: [],
+  };
+}
+
+describe("finalizeConfirmedEvidence", () => {
+  it("keeps confirmed structured education even when it has no bullet claims", () => {
+    expect(finalizeConfirmedEvidence([education("confirmed")])).toEqual([
+      education("confirmed"),
     ]);
-    expect(result).toHaveLength(1);
-    expect(result[0]?.claims.map((claim) => claim.id)).toEqual(["a"]);
-    expect(result[0]?.verificationStatus).toBe("confirmed");
   });
 
-  it("drops an evidence item with no verified claims", () => {
-    const result = finalizeConfirmedEvidence([
-      {
-        id: "project-1",
-        type: "project",
-        title: "Unknown",
-        summary: "Unverified",
-        verificationStatus: "proposed",
-        claims: [
-          {
-            id: "a",
-            type: "metric",
-            content: "Unverified metric",
-            verificationStatus: "proposed",
-          },
-        ],
-      },
-    ]);
-    expect(result).toEqual([]);
+  it("does not save structured education before the candidate confirms it", () => {
+    expect(finalizeConfirmedEvidence([education("proposed")])).toEqual([]);
   });
 });

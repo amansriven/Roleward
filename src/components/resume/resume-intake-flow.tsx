@@ -29,7 +29,10 @@ import {
   validateResumeFile,
   type ResumeDocument,
 } from "@/modules/resume-kitchen/intake";
-import type { DraftItem, DraftSkillGroup } from "@/modules/resume-kitchen/grounding";
+import type {
+  DraftItem,
+  DraftSkillGroup,
+} from "@/modules/resume-kitchen/grounding";
 import { uploadPrivateFile } from "@/modules/uploads/client";
 
 type Step = "upload" | "processing" | "review" | "complete";
@@ -45,6 +48,9 @@ function toEvidenceItems(items: DraftItem[]): EvidenceItem[] {
     type: item.type,
     title: item.title,
     organization: item.organization,
+    period: item.period,
+    location: item.location,
+    education: item.education,
     summary: item.summary,
     verificationStatus: "proposed" as const,
     claims: item.claims.map((claim) => ({
@@ -168,6 +174,12 @@ export function ResumeIntakeFlow() {
     );
   }
 
+  function updateItem(itemId: string, next: EvidenceItem) {
+    setItems((current) =>
+      current.map((item) => (item.id === itemId ? next : item)),
+    );
+  }
+
   function saveEvidence() {
     const accepted = finalizeConfirmedEvidence(items);
     const existing = JSON.parse(
@@ -283,10 +295,19 @@ export function ResumeIntakeFlow() {
       </div>
     );
 
-  const reviewed = items
-    .flatMap((item) => item.claims)
-    .filter((claim) => claim.verificationStatus !== "proposed").length;
-  const total = items.flatMap((item) => item.claims).length;
+  const reviewed =
+    items
+      .flatMap((item) => item.claims)
+      .filter((claim) => claim.verificationStatus !== "proposed").length +
+    items.filter(
+      (item) =>
+        item.type === "education" &&
+        item.education &&
+        item.verificationStatus !== "proposed",
+    ).length;
+  const total =
+    items.flatMap((item) => item.claims).length +
+    items.filter((item) => item.type === "education" && item.education).length;
   return (
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -325,10 +346,18 @@ export function ResumeIntakeFlow() {
           <div className="border-iron/70 border-b p-5">
             <p className="font-semibold">{item.title}</p>
             <p className="text-dust mt-1 text-xs">
-              {item.organization} · {item.type}
+              {[item.organization, item.period, item.location]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           </div>
           <div>
+            {item.type === "education" && item.education && (
+              <EducationReview
+                item={item}
+                onChange={(next) => updateItem(item.id, next)}
+              />
+            )}
             {item.claims.map((claim) => (
               <ClaimReview
                 key={claim.id}
@@ -361,6 +390,193 @@ export function ResumeIntakeFlow() {
         </button>
       </div>
     </div>
+  );
+}
+
+function EducationReview({
+  item,
+  onChange,
+}: {
+  item: EvidenceItem;
+  onChange: (item: EvidenceItem) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [school, setSchool] = useState(item.organization ?? "");
+  const [degree, setDegree] = useState(item.education?.degree ?? item.title);
+  const [field, setField] = useState(item.education?.fieldOfStudy ?? "");
+  const [minor, setMinor] = useState(item.education?.minor ?? "");
+  const [gpa, setGpa] = useState(item.education?.gpa ?? "");
+  const [period, setPeriod] = useState(item.period ?? "");
+  const [location, setLocation] = useState(item.location ?? "");
+  const [coursework, setCoursework] = useState(
+    item.education?.coursework.join(", ") ?? "",
+  );
+  const [honors, setHonors] = useState(item.education?.honors.join(", ") ?? "");
+  const decided = item.verificationStatus !== "proposed";
+
+  function fields(value: string) {
+    return value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+
+  function save(status: "confirmed" | "corrected") {
+    onChange({
+      ...item,
+      title: degree.trim() || item.title,
+      organization: school.trim() || undefined,
+      period: period.trim() || undefined,
+      location: location.trim() || undefined,
+      education: {
+        degree: degree.trim() || undefined,
+        fieldOfStudy: field.trim() || undefined,
+        minor: minor.trim() || undefined,
+        gpa: gpa.trim() || undefined,
+        coursework: fields(coursework),
+        honors: fields(honors),
+      },
+      verificationStatus: status,
+    });
+    setEditing(false);
+  }
+
+  if (editing)
+    return (
+      <div className="border-iron/60 grid gap-4 border-b p-5 sm:grid-cols-2">
+        <EducationInput label="School" value={school} onChange={setSchool} />
+        <EducationInput label="Degree" value={degree} onChange={setDegree} />
+        <EducationInput
+          label="Field of study"
+          value={field}
+          onChange={setField}
+        />
+        <EducationInput label="Minor" value={minor} onChange={setMinor} />
+        <EducationInput label="GPA" value={gpa} onChange={setGpa} />
+        <EducationInput label="Dates" value={period} onChange={setPeriod} />
+        <EducationInput
+          label="Location"
+          value={location}
+          onChange={setLocation}
+        />
+        <EducationInput
+          label="Coursework"
+          value={coursework}
+          onChange={setCoursework}
+          wide
+        />
+        <EducationInput
+          label="Honors"
+          value={honors}
+          onChange={setHonors}
+          wide
+        />
+        <div className="flex gap-2 sm:col-span-2">
+          <button
+            type="button"
+            onClick={() => save("corrected")}
+            className="bg-sage text-night rounded-md px-3 py-1.5 text-[10px] font-semibold"
+          >
+            Save and confirm
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="text-dust text-[10px]"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+
+  return (
+    <div className="border-iron/60 border-b p-5">
+      <p className="section-label">Education details</p>
+      <dl className="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+        <EducationDetail label="School" value={item.organization} />
+        <EducationDetail
+          label="Degree"
+          value={item.education?.degree ?? item.title}
+        />
+        <EducationDetail label="Field" value={item.education?.fieldOfStudy} />
+        <EducationDetail label="Minor" value={item.education?.minor} />
+        <EducationDetail label="GPA" value={item.education?.gpa} />
+        <EducationDetail label="Dates" value={item.period} />
+        <EducationDetail
+          label="Coursework"
+          value={item.education?.coursework.join(" · ")}
+          wide
+        />
+        <EducationDetail
+          label="Honors"
+          value={item.education?.honors.join(" · ")}
+          wide
+        />
+      </dl>
+      <div className="mt-5 flex flex-wrap gap-2">
+        {!decided && (
+          <button
+            type="button"
+            onClick={() => save("confirmed")}
+            className="bg-sage text-night flex items-center gap-1 rounded-md px-3 py-1.5 text-[10px] font-semibold"
+          >
+            <Check className="size-3" /> Confirm education
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="border-iron text-canvas rounded-md border px-3 py-1.5 text-[10px]"
+        >
+          Correct details
+        </button>
+        {decided && (
+          <span className="text-sage px-2 py-1.5 text-[10px]">Confirmed</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EducationDetail({
+  label,
+  value,
+  wide = false,
+}: {
+  label: string;
+  value?: string;
+  wide?: boolean;
+}) {
+  if (!value) return null;
+  return (
+    <div className={wide ? "sm:col-span-2 lg:col-span-3" : ""}>
+      <dt className="text-dust text-[10px] uppercase">{label}</dt>
+      <dd className="text-canvas mt-1 text-sm leading-5">{value}</dd>
+    </div>
+  );
+}
+
+function EducationInput({
+  label,
+  value,
+  onChange,
+  wide = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  wide?: boolean;
+}) {
+  return (
+    <label className={wide ? "sm:col-span-2" : ""}>
+      <span className="text-dust text-[10px] uppercase">{label}</span>
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="border-iron bg-night/40 text-canvas mt-1.5 w-full rounded-lg border px-3 py-2 text-xs outline-none"
+      />
+    </label>
   );
 }
 

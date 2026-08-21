@@ -14,12 +14,35 @@ export const evidenceClaimSchema = z.object({
   verificationStatus: verificationStatusSchema,
 });
 
+export const evidenceItemTypeSchema = z.enum([
+  "experience",
+  "project",
+  "education",
+  "activity",
+  // Kept readable for workspaces imported before extracurriculars received
+  // their own section name.
+  "leadership",
+  "other",
+]);
+
+export const educationDetailsSchema = z.object({
+  degree: z.string().trim().optional(),
+  fieldOfStudy: z.string().trim().optional(),
+  minor: z.string().trim().optional(),
+  gpa: z.string().trim().optional(),
+  coursework: z.array(z.string().trim().min(1)).default([]),
+  honors: z.array(z.string().trim().min(1)).default([]),
+});
+
 export const evidenceItemSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(["experience", "project", "education", "leadership", "other"]),
+  type: evidenceItemTypeSchema,
   title: z.string().trim().min(1),
   organization: z.string().trim().optional(),
-  summary: z.string().trim().min(1),
+  period: z.string().trim().optional(),
+  location: z.string().trim().optional(),
+  education: educationDetailsSchema.optional(),
+  summary: z.string().trim().default(""),
   verificationStatus: verificationStatusSchema,
   claims: z.array(evidenceClaimSchema),
 });

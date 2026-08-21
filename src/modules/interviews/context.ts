@@ -63,6 +63,7 @@ const TYPE_LABELS: Record<EvidenceItem["type"], string> = {
   experience: "Experience",
   project: "Project",
   education: "Education",
+  activity: "Activity",
   leadership: "Leadership",
   other: "Other",
 };

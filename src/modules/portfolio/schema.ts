@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { educationDetailsSchema } from "@/modules/evidence/schema";
 
 /**
  * A published portfolio.
@@ -13,10 +14,20 @@ export const portfolioClaimSchema = z.object({
 });
 
 export const portfolioItemSchema = z.object({
-  type: z.enum(["experience", "project", "education", "leadership", "other"]),
+  type: z.enum([
+    "experience",
+    "project",
+    "education",
+    "activity",
+    "leadership",
+    "other",
+  ]),
   title: z.string().trim().min(1),
   organization: z.string().trim().optional(),
-  summary: z.string().trim().min(1),
+  period: z.string().trim().optional(),
+  location: z.string().trim().optional(),
+  education: educationDetailsSchema.optional(),
+  summary: z.string().trim().default(""),
   claims: z.array(portfolioClaimSchema),
 });
 

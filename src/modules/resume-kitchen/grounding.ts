@@ -91,13 +91,29 @@ export interface DraftClaim {
   sourceQuote: string;
 }
 
+export interface DraftEducationDetails {
+  degree?: string;
+  fieldOfStudy?: string;
+  minor?: string;
+  gpa?: string;
+  coursework: string[];
+  honors: string[];
+}
+
 export interface DraftItem {
-  type: "experience" | "project" | "education" | "leadership" | "other";
+  type:
+    | "experience"
+    | "project"
+    | "education"
+    | "activity"
+    | "leadership"
+    | "other";
   title: string;
   organization?: string;
   /** As written — "June 2025 - August 2025", "Expected 2026". */
   period?: string;
   location?: string;
+  education?: DraftEducationDetails;
   summary: string;
   claims: DraftClaim[];
 }
@@ -136,6 +152,82 @@ export interface GroundingReport<T> {
   dropped: { content: string; sourceQuote: string; reason: string }[];
 }
 
+function dominantClaimType(content: string): DraftClaim["type"] {
+  if (/\d/.test(content)) return "metric";
+  return "action";
+}
+
+/**
+ * One source bullet is one résumé bullet.
+ *
+ * Models sometimes return the technology, action, and metric from a single
+ * source line as three records. That makes the UI look as though the candidate
+ * wrote three bullets and changes résumé scoring. When multiple records cite
+ * the same source bullet (or one cites a fragment of the other), keep the full
+ * source line once.
+ */
+export function coalesceClaims(claims: DraftClaim[]): DraftClaim[] {
+  const groups: DraftClaim[][] = [];
+
+  for (const claim of claims) {
+    const source = compact(claim.sourceQuote);
+    const group = groups.find((entries) => {
+      const existing = compact(entries[0]!.sourceQuote);
+      return (
+        existing === source ||
+        (Math.min(existing.length, source.length) >= 24 &&
+          (existing.includes(source) || source.includes(existing)))
+      );
+    });
+    if (group) group.push(claim);
+    else groups.push([claim]);
+  }
+
+  return groups.map((entries) => {
+    const longest = [...entries].sort(
+      (left, right) => right.sourceQuote.length - left.sourceQuote.length,
+    )[0]!;
+    if (entries.length === 1) return longest;
+    const content = longest.sourceQuote
+      .replace(/^[\s\u2022\u25aa\u25cf\u00b7*\-\u2013]+/, "")
+      .trim();
+    return {
+      type: dominantClaimType(content),
+      content,
+      sourceQuote: longest.sourceQuote,
+    };
+  });
+}
+
+function groundedField(value: string | undefined, document: string) {
+  if (!value?.trim()) return undefined;
+  return compact(document).includes(compact(value)) ? value.trim() : undefined;
+}
+
+function groundedEducation(
+  details: DraftEducationDetails | undefined,
+  document: string,
+): DraftEducationDetails | undefined {
+  if (!details) return undefined;
+  const education = {
+    degree: groundedField(details.degree, document),
+    fieldOfStudy: groundedField(details.fieldOfStudy, document),
+    minor: groundedField(details.minor, document),
+    gpa: groundedField(details.gpa, document),
+    coursework: details.coursework.filter((course) =>
+      compact(document).includes(compact(course)),
+    ),
+    honors: details.honors.filter((honor) =>
+      compact(document).includes(compact(honor)),
+    ),
+  };
+  return Object.values(education).some((value) =>
+    Array.isArray(value) ? value.length > 0 : Boolean(value),
+  )
+    ? education
+    : undefined;
+}
+
 /**
  * Drops anything the document does not actually support.
  *
@@ -152,7 +244,7 @@ export function groundItems(
   const kept: DraftItem[] = [];
 
   for (const item of items) {
-    const claims = item.claims.filter((claim) => {
+    const claims = coalesceClaims(item.claims).filter((claim) => {
       if (!quoteAppearsIn(claim.sourceQuote, document)) {
         dropped.push({
           content: claim.content,
@@ -177,8 +269,17 @@ export function groundItems(
       return true;
     });
 
-    // An item with nothing left to confirm is not worth showing.
-    if (claims.length) kept.push({ ...item, claims });
+    const education = groundedEducation(item.education, document);
+    // Education is structured evidence in its own right; it should not be
+    // forced into generic metric/responsibility claim rows just to survive.
+    if (claims.length || (item.type === "education" && education))
+      kept.push({
+        ...item,
+        period: groundedField(item.period, document),
+        location: groundedField(item.location, document),
+        education,
+        claims,
+      });
   }
 
   return { kept, dropped };

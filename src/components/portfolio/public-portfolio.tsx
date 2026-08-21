@@ -4,6 +4,7 @@ const TYPE_LABELS = {
   experience: "Experience",
   project: "Projects",
   education: "Education",
+  activity: "Activities",
   leadership: "Leadership",
   other: "Other",
 } as const;
@@ -11,6 +12,7 @@ const TYPE_LABELS = {
 const ORDER: (keyof typeof TYPE_LABELS)[] = [
   "experience",
   "project",
+  "activity",
   "leadership",
   "education",
   "other",
@@ -78,9 +80,38 @@ export function PublicPortfolio({ portfolio }: { portfolio: Portfolio }) {
                     </span>
                   )}
                 </div>
-                <p className="text-canvas mt-1.5 text-sm leading-6">
-                  {item.summary}
-                </p>
+                {(item.period || item.location) && (
+                  <p className="text-dust mt-1 text-xs">
+                    {[item.period, item.location].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+                {item.summary && (
+                  <p className="text-canvas mt-1.5 text-sm leading-6">
+                    {item.summary}
+                  </p>
+                )}
+                {item.education && (
+                  <dl className="text-canvas mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                    {item.education.gpa && (
+                      <div>
+                        <dt className="text-dust">GPA</dt>
+                        <dd>{item.education.gpa}</dd>
+                      </div>
+                    )}
+                    {item.education.minor && (
+                      <div>
+                        <dt className="text-dust">Minor</dt>
+                        <dd>{item.education.minor}</dd>
+                      </div>
+                    )}
+                    {item.education.coursework.length > 0 && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-dust">Coursework</dt>
+                        <dd>{item.education.coursework.join(" · ")}</dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
                 {item.claims.length > 0 && (
                   <ul className="mt-3 space-y-1.5">
                     {item.claims.map((claim, claimIndex) => (

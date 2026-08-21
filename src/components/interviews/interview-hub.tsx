@@ -1,9 +1,9 @@
 "use client";
 
 import { ArrowRight, Mic, Plus, Type } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FeatureIcon } from "@/components/brand/feature-icon";
 import { Metric, PageIntro, Panel } from "@/components/workspace/dashboard-ui";
 import { INTERVIEW_PLANS } from "@/modules/interviews/plan";
 import {
@@ -51,14 +51,14 @@ export function InterviewHub() {
     return (
       <div className="space-y-7">
         <PageIntro
-          icon={<FeatureIcon feature="stage-fright" size="xl" active />}
+          icon={<StageFrightAvatar />}
           eyebrow="Stage Fright"
           title="Practice the interview before it counts."
           copy="Pick the kind of interview, the role, and how hard it should feel. Answer by typing or out loud, then get scored feedback on what to fix."
         />
         <Panel className="py-20 text-center">
           <div className="flex justify-center">
-            <FeatureIcon feature="stage-fright" size="xl" active />
+            <StageFrightAvatar />
           </div>
           <h2 className="mt-5 text-xl font-semibold">
             You haven’t run an interview yet.
@@ -80,7 +80,7 @@ export function InterviewHub() {
   return (
     <div className="space-y-7">
       <PageIntro
-        icon={<FeatureIcon feature="stage-fright" size="xl" active />}
+        icon={<StageFrightAvatar />}
         eyebrow="Stage Fright"
         title="Practice the interview before it counts."
         copy="Every interview is scored and stored, so you can watch specific weaknesses close over time."
@@ -195,5 +195,19 @@ export function InterviewHub() {
         </Panel>
       </div>
     </div>
+  );
+}
+
+function StageFrightAvatar() {
+  return (
+    <span className="border-plum/30 bg-plum/[.06] flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
+      <Image
+        src="/brand/stage-fright-avatar.png"
+        alt="The Stage Fright raven interviewer"
+        width={64}
+        height={64}
+        className="shrink-0 object-cover object-top"
+      />
+    </span>
   );
 }

@@ -269,10 +269,48 @@ function VersionManagerContent({
                 className="border-iron/60 rounded-xl border p-4"
               >
                 <p className="text-sm font-semibold">{item.title}</p>
-                {item.organization && (
+                {(item.organization || item.period || item.location) && (
                   <p className="text-dust mt-0.5 text-[10px]">
-                    {item.organization}
+                    {[item.organization, item.period, item.location]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
+                )}
+                {item.type === "education" && item.education && (
+                  <dl className="mt-3 grid gap-2 text-[10px] sm:grid-cols-2">
+                    {item.education.fieldOfStudy && (
+                      <div>
+                        <dt className="text-dust">Field</dt>
+                        <dd className="text-canvas mt-0.5">
+                          {item.education.fieldOfStudy}
+                        </dd>
+                      </div>
+                    )}
+                    {item.education.minor && (
+                      <div>
+                        <dt className="text-dust">Minor</dt>
+                        <dd className="text-canvas mt-0.5">
+                          {item.education.minor}
+                        </dd>
+                      </div>
+                    )}
+                    {item.education.gpa && (
+                      <div>
+                        <dt className="text-dust">GPA</dt>
+                        <dd className="text-canvas mt-0.5">
+                          {item.education.gpa}
+                        </dd>
+                      </div>
+                    )}
+                    {item.education.coursework.length > 0 && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-dust">Coursework</dt>
+                        <dd className="text-canvas mt-0.5 leading-4">
+                          {item.education.coursework.join(" · ")}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
                 )}
                 <div className="mt-3 space-y-2">
                   {item.bullets.map((bullet) => (
