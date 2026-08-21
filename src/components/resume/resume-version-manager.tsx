@@ -91,7 +91,7 @@ function VersionManagerContent({
   );
 
   return (
-    <section className="backstage-card overflow-hidden rounded-[26px]">
+    <section className="roleward-card overflow-hidden rounded-[26px]">
       <div className="border-iron/70 flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2">

@@ -10,13 +10,13 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "border border-amber bg-amber text-night shadow-[0_0_0_rgba(223,124,104,0)] hover:-translate-y-px hover:bg-[#eb8a76] hover:shadow-[0_0_28px_rgba(223,124,104,0.16)]",
+          "border border-[#ff8a4b] bg-[linear-gradient(110deg,#ff7a59,#ff9a3d)] text-night shadow-[0_0_0_rgba(255,122,89,0)] hover:-translate-y-px hover:brightness-110 hover:shadow-[0_0_30px_rgba(255,122,89,0.2)]",
         secondary:
           "border border-iron bg-raised text-linen hover:-translate-y-px hover:border-canvas hover:bg-[#202228]",
         quiet:
           "border border-transparent text-canvas hover:border-iron hover:bg-linen/[0.04] hover:text-linen",
         destructive:
-          "border border-kiln bg-kiln text-night hover:-translate-y-px hover:shadow-[0_0_24px_rgba(213,107,92,0.14)]",
+          "border border-kiln bg-kiln text-night hover:-translate-y-px hover:shadow-[0_0_24px_rgba(255,122,89,0.16)]",
       },
       size: {
         default: "min-h-11 px-5",

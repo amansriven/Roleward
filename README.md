@@ -1,22 +1,20 @@
 <div align="center">
-  <img src="public/brand/backstage-mark.svg" alt="Backstage logo" width="88" height="88" />
+  <img src="public/brand/roleward-mark.svg" alt="Roleward logo" width="88" height="88" />
 
-# Backstage
+# Roleward
 
-**Get where you need to be.**
+**Your entire job search. One contextualized AI workspace.**
 
-Backstage is a job-specific preparation workspace for early-career software
-engineers. It connects verified resume evidence, target-job requirements,
-technical practice, and behavioral rehearsal—then keeps the next useful action
-visible.
+Roleward is a contextualized AI career workspace that connects applications,
+coding practice, resume revisions, and interview preparation for internships
+and jobs—then keeps the next useful action visible.
 
-[![Live product](https://img.shields.io/badge/live-sweetplus.vercel.app-DF7C68?style=flat-square)](https://sweetplus.vercel.app)
 ![Next.js](https://img.shields.io/badge/Next.js-16-17191E?style=flat-square&logo=next.js)
 ![React](https://img.shields.io/badge/React-19-68A5B8?style=flat-square&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Tests](https://img.shields.io/badge/unit_tests-210_passing-73A897?style=flat-square)
+![Tests](https://img.shields.io/badge/unit_tests-219_passing-73A897?style=flat-square)
 
-[Open Backstage](https://sweetplus.vercel.app) · [Full product specification](docs/PRODUCT_SPEC.md) · [Roadmap](docs/ROADMAP.md)
+[Full product specification](docs/PRODUCT_SPEC.md) · [Roadmap](docs/ROADMAP.md)
 </div>
 
 ---
@@ -24,30 +22,29 @@ visible.
 ## The product
 
 <p align="center">
-  <a href="https://sweetplus.vercel.app">
-    <img src="docs/images/backstage-home.png" alt="Backstage homepage showing a job-specific readiness plan" width="100%" />
-  </a>
+  <img src="docs/images/roleward-dashboard.png" alt="Roleward dashboard connecting applications, coding practice, resume revisions, and interview preparation" width="100%" />
 </p>
 
-Backstage starts with two sources of truth: what the candidate can verify and
-what the target role actually asks for. Every plan, suggestion, and practice
-recommendation is grounded in that context.
+Roleward helps people land internships and jobs by bringing applications,
+LeetCode-style coding practice, resume revisions, and interview preparation
+into one agentic platform. One shared context lets every recommendation reflect
+the candidate's verified experience and the role they actually want.
 
 ```text
-Verified experience + target job
-                 ↓
-        requirement coverage
-                 ↓
- Resume Kitchen · Zed · Stage Fright
-                 ↓
-        one useful action next
+Applications + verified experience + target role
+                      ↓
+             shared career context
+                      ↓
+    coding · resume · interview preparation
+                      ↓
+              one useful action next
 ```
 
 ## Product specification snapshot
 
 ### Core promise
 
-> Know what to work on next for the software engineering role you want.
+> Know what to work on next—and why—for the internship or job you want.
 
 ### Product rules
 
@@ -75,28 +72,15 @@ Verified experience + target job
 | **Stage Fright**   | Build a story bank, rehearse behavioral questions, track competency coverage, and review session feedback.                                            |
 | **Home**           | Show the active role, readiness signals, and the highest-value next preparation action.                                                               |
 
-## Feature previews
-
-<table>
-  <tr>
-    <td width="50%">
-      <img src="docs/images/backstage-resume-kitchen.png" alt="Resume Kitchen product page showing evidence-grounded resume tailoring" width="100%" />
-    </td>
-    <td width="50%">
-      <img src="docs/images/backstage-zed.png" alt="Zed product page showing technical pattern practice and coaching" width="100%" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><sub><strong>Resume Kitchen</strong> — tailor the resume while keeping every claim defensible.</sub></td>
-    <td align="center"><sub><strong>Zed</strong> — practise recognition, reasoning, implementation, and testing separately.</sub></td>
-  </tr>
-</table>
+## One role, one plan
 
 <p align="center">
-  <img src="docs/images/backstage-stage-fright.png" alt="Stage Fright product page showing behavioral story rehearsal" width="100%" />
+  <img src="docs/images/roleward-agent-plan.png" alt="Roleward agent plan connecting resume, coding, and interview preparation to one target role" width="100%" />
 </p>
 
-<p align="center"><sub><strong>Stage Fright</strong> — turn real experiences into flexible stories that still sound natural.</sub></p>
+The agent plan keeps the target job at the center. Resume edits close evidence
+gaps, coding sessions focus on role-relevant patterns, and interview practice
+rehearses the decisions and stories the candidate will actually need.
 
 ## Resume Kitchen version contract
 
@@ -114,7 +98,7 @@ Resume versioning is deliberately non-destructive:
 
 ## Technical architecture
 
-Backstage is a modular Next.js application. Route handlers and server
+Roleward is a modular Next.js application. Route handlers and server
 components stay close to the product surfaces they support, while domain rules
 live in testable modules.
 
@@ -145,7 +129,7 @@ src/
 
 ## Authentication
 
-Backstage supports email/password and Google sign-in through Amazon Cognito.
+Roleward supports email/password and Google sign-in through Amazon Cognito.
 Auth.js exchanges the Cognito authorization result for a server-side application
 session; protected dashboard routes never rely on a browser-only identity flag.
 

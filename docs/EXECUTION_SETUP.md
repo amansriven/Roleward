@@ -3,9 +3,9 @@
 Zed generates coding problems with a model and then proves them correct by
 running code. That means an execution service. This document covers creating it.
 
-Infrastructure names stay in the existing `backstage-*` family. Renaming AWS
-resources buys nothing user-visible and risks the two things that cannot be
-recovered: accounts and uploaded files.
+Infrastructure names stay in the existing `sweetplus-*` family until a planned
+cloud migration is completed. These are deployment identifiers only; the
+customer-facing product remains Roleward.
 
 **Region: `us-east-2`** — the same region as the DynamoDB table and S3 bucket.
 Check the region selector in the AWS console header before starting.

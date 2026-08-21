@@ -86,7 +86,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("company research failed", error);
     return NextResponse.json(
-      { error: "Backstage could not complete that research right now." },
+      { error: "Roleward could not complete that research right now." },
       { status: 502 },
     );
   }

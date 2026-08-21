@@ -914,7 +914,7 @@ function CoachingStage({
   return (
     <div className="space-y-4">
       {reveal?.archetype && (
-        <div className="backstage-card rounded-[22px] p-5">
+        <div className="roleward-card rounded-[22px] p-5">
           <p className="section-label">The pattern</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <p className="text-lg font-semibold">{reveal.archetype.name}</p>
@@ -967,7 +967,7 @@ function CoachingStage({
       )}
 
       {skills.length > 0 && (
-        <div className="backstage-card rounded-[22px] p-5">
+        <div className="roleward-card rounded-[22px] p-5">
           <p className="section-label">What this session measured</p>
           <p className="text-dust mt-1 text-xs">
             Only the skills this problem actually tested. Zed cannot hear you
@@ -1026,7 +1026,7 @@ function CoachingStage({
       </div>
 
       {reveal && reveal.followUps.length > 0 && (
-        <div className="backstage-card rounded-[22px] p-5">
+        <div className="roleward-card rounded-[22px] p-5">
           <p className="section-label">What an interviewer would ask next</p>
           <ul className="mt-3 space-y-3">
             {reveal.followUps.map((item) => (

@@ -12,7 +12,7 @@ const groups = [
     ],
   },
   {
-    title: "Backstage",
+    title: "Roleward",
     links: [
       ["How it works", "/how-it-works"],
       ["Pricing", "/pricing"],
@@ -52,7 +52,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="border-iron/70 text-dust border-t px-5 py-5 text-center font-mono text-[11px] tracking-[0.06em] uppercase">
-        Private by default · Evidence before generation · Coach, don’t answer
+        Move forward · Go further · Evidence before generation
       </div>
     </footer>
   );

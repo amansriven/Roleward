@@ -123,7 +123,7 @@ export function PortfolioPublish({
   const live = portfolio?.published === true;
 
   return (
-    <section className="backstage-card rounded-[22px] p-5">
+    <section className="roleward-card rounded-[22px] p-5">
       <div className="flex items-center gap-2">
         {live ? (
           <Globe className="text-sage size-4" />

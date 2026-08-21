@@ -10,7 +10,7 @@ const steps = [
   {
     icon: FileUp,
     title: "Bring the source material",
-    copy: "Add your resume and confirm the experience Backstage is allowed to use.",
+    copy: "Add your resume and confirm the experience Roleward is allowed to use.",
   },
   {
     icon: Target,
@@ -33,15 +33,15 @@ export default function HowItWorksPage() {
   return (
     <main>
       <section className="mx-auto max-w-4xl px-5 py-20 text-center sm:px-8 lg:py-28">
-        <p className="section-label">How Backstage works</p>
+        <p className="section-label">How Roleward works</p>
         <h1 className="mt-5 text-5xl leading-[1.02] font-semibold tracking-[-0.045em] text-balance sm:text-6xl">
           One target job becomes
           <br />
           <span className="text-amber">a preparation route.</span>
         </h1>
         <p className="text-canvas mx-auto mt-6 max-w-2xl text-lg leading-8">
-          No opaque score and no generic checklist. Backstage shows what
-          changed, why it matters, and where to work next.
+          No opaque score and no generic checklist. Roleward shows what changed,
+          why it matters, and where to work next.
         </p>
       </section>
       <section className="border-iron bg-workshop/60 border-y">

@@ -9,7 +9,7 @@ describe("describeAuthError", () => {
   it("gives OAuth callback failures an actionable reference", () => {
     expect(describeAuthError("OAuthCallbackError")).toEqual({
       message:
-        "Your provider returned to Backstage, but the sign-in exchange could not be completed. Try another account once; if it also fails, the provider connection needs attention.",
+        "Your provider returned to Roleward, but the sign-in exchange could not be completed. Try another account once; if it also fails, the provider connection needs attention.",
       reference: "OAUTH_CALLBACK",
     });
   });

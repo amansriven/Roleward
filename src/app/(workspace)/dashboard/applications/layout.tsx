@@ -1,5 +1,4 @@
-import { Plus } from "lucide-react";
-import Image from "next/image";
+import { BriefcaseBusiness, Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ApplicationsNav } from "@/components/applications/applications-nav";
@@ -14,15 +13,8 @@ export default function ApplicationsLayout({
     <div className="space-y-8">
       <PageIntro
         icon={
-          <span className="border-amber/25 bg-amber/[.05] flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
-            <Image
-              src="/brand/applications-avatar.png"
-              alt="The Applications fox scout"
-              width={64}
-              height={64}
-              className="shrink-0 object-cover object-top"
-              priority
-            />
+          <span className="border-amber/25 bg-amber/[.06] text-amber flex size-16 shrink-0 items-center justify-center rounded-2xl border">
+            <BriefcaseBusiness className="size-7" aria-hidden="true" />
           </span>
         }
         eyebrow="Job search"

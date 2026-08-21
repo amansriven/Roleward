@@ -57,10 +57,7 @@ export function OnboardingFlow() {
       weeklyMinutes,
       interviewTimeline: timeline,
     });
-    localStorage.setItem(
-      "backstage:candidate-profile",
-      JSON.stringify(profile),
-    );
+    localStorage.setItem("roleward:candidate-profile", JSON.stringify(profile));
     router.push("/dashboard");
   }
 
@@ -194,7 +191,7 @@ export function OnboardingFlow() {
             Build a plan you can keep.
           </h1>
           <p className="text-canvas mt-2 text-sm">
-            Backstage will keep daily recommendations within this preparation
+            Roleward will keep daily recommendations within this preparation
             budget.
           </p>
           <label className="mt-8 block text-xs font-semibold">
@@ -203,7 +200,7 @@ export function OnboardingFlow() {
               {weeklyMinutes / 60} hours
             </span>
             <input
-              className="mt-4 block w-full accent-[#df7c68]"
+              className="mt-4 block w-full accent-[#ff7a59]"
               type="range"
               min="60"
               max="900"

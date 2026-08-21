@@ -50,7 +50,7 @@ export function ApplicationDetail({ id }: { id: string }) {
   const application = workspace.applications.find((item) => item.id === id);
   if (!application)
     return (
-      <div className="backstage-card rounded-[22px] py-20 text-center">
+      <div className="roleward-card rounded-[22px] py-20 text-center">
         <p className="text-sm font-semibold">That application is not here.</p>
         <Link
           href="/dashboard/applications"
@@ -123,7 +123,7 @@ function Detail({
         )}
       </header>
 
-      <section className="backstage-card rounded-[22px] p-5">
+      <section className="roleward-card rounded-[22px] p-5">
         <p className="section-label">Status</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {STATUS_ORDER.map((status) => (
@@ -302,7 +302,7 @@ function Dimension({
   dimension: ReadinessDimension;
 }) {
   return (
-    <section className="backstage-card rounded-[22px] p-5">
+    <section className="roleward-card rounded-[22px] p-5">
       <div className="flex items-baseline justify-between">
         <p className="section-label">{label}</p>
         <p className="font-mono text-lg font-semibold">{dimension.score}%</p>

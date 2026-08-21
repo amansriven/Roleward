@@ -22,7 +22,7 @@ const workflow: Array<[LucideIcon, string, string]> = [
   [
     ShieldCheck,
     "Confirm the evidence",
-    "Approve the projects, metrics, and responsibilities Backstage may use.",
+    "Approve the projects, metrics, and responsibilities Roleward may use.",
   ],
   [
     FileCheck2,
@@ -88,7 +88,7 @@ export default function ResumeKitchenPage() {
           Stronger is useful. Defensible is essential.
         </h2>
         <p className="text-canvas mx-auto mt-5 max-w-2xl">
-          Backstage shows the job requirement, source evidence, rationale, and
+          Roleward shows the job requirement, source evidence, rationale, and
           revision together.
         </p>
       </section>

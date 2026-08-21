@@ -266,7 +266,7 @@ export function PublicPortfolio({ portfolio }: { portfolio: Portfolio }) {
             published from their confirmed resume evidence.
           </p>
           <p className="text-dust shrink-0 font-mono text-[9px] tracking-[.12em] uppercase">
-            Built with Backstage
+            Built with Roleward
           </p>
         </footer>
       </div>

@@ -79,7 +79,7 @@ export function ApplicationIntakeFlow() {
       if (!response.ok || !body?.description) {
         setError(
           body?.error ??
-            "Backstage could not read that link. Paste the description below instead.",
+            "Roleward could not read that link. Paste the description below instead.",
         );
         return null;
       }
@@ -92,7 +92,7 @@ export function ApplicationIntakeFlow() {
       return body;
     } catch {
       setError(
-        "Backstage could not read that link. Paste the description below instead.",
+        "Roleward could not read that link. Paste the description below instead.",
       );
       return null;
     } finally {
@@ -118,7 +118,7 @@ export function ApplicationIntakeFlow() {
       }
 
       const contentHash = await hashDescription(jobDescription);
-      const existing = localStorage.getItem("backstage:job-hash");
+      const existing = localStorage.getItem("roleward:job-hash");
       if (existing === contentHash) {
         setError(
           "You already added this exact job description. We’ll reuse its requirement snapshot.",
@@ -137,7 +137,7 @@ export function ApplicationIntakeFlow() {
         createdAt: new Date().toISOString(),
       });
       setApplication(next);
-      localStorage.setItem("backstage:job-hash", contentHash);
+      localStorage.setItem("roleward:job-hash", contentHash);
       setStep("requirements");
 
       // Read from the posting itself. The keyword table this replaced returned
@@ -186,7 +186,7 @@ export function ApplicationIntakeFlow() {
       return;
     }
     const evidence = JSON.parse(
-      localStorage.getItem("backstage:evidence-library") ?? "[]",
+      localStorage.getItem("roleward:evidence-library") ?? "[]",
     ) as EvidenceItem[];
     setEvidenceConfirmed(
       evidence.some((item) =>

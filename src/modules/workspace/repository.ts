@@ -110,17 +110,16 @@ export interface RecommendedAction {
 }
 
 const keys = {
-  profile: "backstage:candidate-profile",
-  evidence: "backstage:evidence-library",
-  applications: "backstage:applications",
-  active: "backstage:active-application-id",
-  interviews: "backstage:interview-summaries",
-  candidate: "backstage:candidate-identity",
-  resumeVersions: "backstage:resume-versions",
-  activeResumeVersion: "backstage:active-resume-version-id",
+  profile: "roleward:candidate-profile",
+  evidence: "roleward:evidence-library",
+  applications: "roleward:applications",
+  active: "roleward:active-application-id",
+  interviews: "roleward:interview-summaries",
+  candidate: "roleward:candidate-identity",
+  resumeVersions: "roleward:resume-versions",
+  activeResumeVersion: "roleward:active-resume-version-id",
 } as const;
-export const workspaceUpdatedEvent = "backstage:workspace-updated";
-const priorStoragePrefix = ["sweet", "plus"].join("-");
+export const workspaceUpdatedEvent = "roleward:workspace-updated";
 
 function announceWorkspaceUpdate() {
   if (typeof window !== "undefined")
@@ -128,12 +127,7 @@ function announceWorkspaceUpdate() {
 }
 
 function storedValue(storage: Pick<Storage, "getItem">, key: string) {
-  const current = storage.getItem(key);
-  if (current !== null) return current;
-
-  const separator = key.indexOf(":");
-  const suffix = separator === -1 ? key : key.slice(separator + 1);
-  return storage.getItem(`${priorStoragePrefix}:${suffix}`);
+  return storage.getItem(key);
 }
 
 function read<T>(
@@ -473,7 +467,7 @@ export function recommendActions(
       {
         id: "confirm-evidence",
         title: "Confirm the experience from your resume",
-        detail: "Build the trusted evidence used across Backstage",
+        detail: "Build the trusted evidence used across Roleward",
         minutes: 5,
         href: "/dashboard/resume-kitchen/intake",
         area: "resume",

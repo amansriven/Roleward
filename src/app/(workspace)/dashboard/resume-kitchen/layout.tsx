@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { ResumeKitchenNav } from "@/components/resume/resume-kitchen-nav";
 import { PageIntro } from "@/components/workspace/dashboard-ui";
@@ -13,15 +13,8 @@ export default function ResumeKitchenLayout({
     <div className="space-y-8">
       <PageIntro
         icon={
-          <span className="border-amber/25 bg-amber/[.05] flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
-            <Image
-              src="/brand/resume-kitchen-avatar.png"
-              alt="The Resume Kitchen bear chef"
-              width={64}
-              height={64}
-              className="shrink-0 object-cover object-top"
-              priority
-            />
+          <span className="border-amber/25 bg-amber/[.06] text-amber flex size-16 shrink-0 items-center justify-center rounded-2xl border">
+            <FileText className="size-7" aria-hidden="true" />
           </span>
         }
         eyebrow="Resume Kitchen"

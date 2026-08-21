@@ -7,11 +7,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Backstage",
-    template: "%s | Backstage",
+    default: "Roleward",
+    template: "%s | Roleward",
   },
   description:
-    "Your private workspace for applications, resumes, coding practice, and interview preparation.",
+    "A contextualized AI career workspace connecting applications, coding practice, resume revisions, and interview preparation for your next internship or job.",
 };
 
 export default function RootLayout({

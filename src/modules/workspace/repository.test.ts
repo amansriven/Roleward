@@ -51,11 +51,10 @@ const evidence: EvidenceItem[] = [
   },
 ];
 describe("workspace repository", () => {
-  it("keeps pre-rebrand browser workspaces available", () => {
+  it("loads candidate identity from the Roleward namespace", () => {
     const storage = memoryStorage();
-    const priorPrefix = ["sweet", "plus"].join("-");
     storage.setItem(
-      `${priorPrefix}:candidate-identity`,
+      "roleward:candidate-identity",
       JSON.stringify({ name: "Aman", headline: "Engineer", skills: [] }),
     );
 
@@ -89,7 +88,7 @@ describe("workspace repository", () => {
   });
   it("migrates existing evidence into one locked original", () => {
     const storage = memoryStorage();
-    storage.setItem("backstage:evidence-library", JSON.stringify(evidence));
+    storage.setItem("roleward:evidence-library", JSON.stringify(evidence));
 
     const workspace = loadWorkspace(storage);
     expect(workspace.resumeVersions).toHaveLength(1);
@@ -101,7 +100,7 @@ describe("workspace repository", () => {
   });
   it("keeps edits in a named revision and leaves the original unchanged", () => {
     const storage = memoryStorage();
-    storage.setItem("backstage:evidence-library", JSON.stringify(evidence));
+    storage.setItem("roleward:evidence-library", JSON.stringify(evidence));
     const original = getActiveResumeVersion(loadWorkspace(storage))!;
     const revision = createResumeRevision(
       storage,

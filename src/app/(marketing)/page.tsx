@@ -35,37 +35,47 @@ const modules = [
 export default function HomePage() {
   return (
     <main>
-      <section className="mx-auto grid max-w-7xl gap-14 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:px-12 lg:py-28">
-        <div>
-          <p className="section-label">Your route to ready</p>
-          <h1 className="mt-6 text-5xl leading-[1.01] font-semibold tracking-[-0.05em] text-balance sm:text-7xl">
-            Get where you <br />
-            <span className="text-amber">need to be.</span>
+      <section className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl items-center justify-center overflow-hidden px-5 py-20 sm:px-8 lg:px-12">
+        <div className="pointer-events-none absolute inset-x-[12%] top-[18%] h-80 bg-[radial-gradient(ellipse_at_center,rgba(255,122,89,0.12),rgba(255,154,61,0.045)_36%,transparent_70%)] blur-3xl" />
+        <div className="relative z-10 mx-auto max-w-5xl text-center">
+          <div className="border-iron bg-raised/60 text-canvas inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] tracking-[0.1em] uppercase">
+            <span className="bg-amber size-1.5 rounded-full shadow-[0_0_12px_var(--amber)]" />
+            AI career workspace
+          </div>
+          <h1 className="mt-7 text-5xl leading-[0.96] font-semibold tracking-[-0.06em] text-balance sm:text-7xl lg:text-[5.6rem]">
+            Your entire job search.
+            <span className="roleward-gradient-text">
+              {" "}
+              One contextualized AI workspace.
+            </span>
           </h1>
-          <p className="text-canvas mt-7 max-w-lg text-lg leading-8">
-            Choose the role. Backstage builds the preparation path.
+          <p className="text-canvas mx-auto mt-7 max-w-3xl text-lg leading-8 sm:text-xl">
+            Roleward helps you prepare for internships and jobs by connecting
+            your applications, LeetCode-style coding practice, resume revisions,
+            and interview prep—so one agent understands the role you want and
+            what to work on next.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild>
               <Link href="/signup">
-                Build my plan <ArrowRight className="size-4" />
+                Start preparing <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link href="#demo">Try the demo</Link>
+              <Link href="#demo">See the platform</Link>
             </Button>
           </div>
-          <p className="text-dust mt-10 flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] uppercase">
+          <p className="text-dust mt-9 flex items-center justify-center gap-2 font-mono text-[11px] tracking-[0.06em] uppercase">
             <LockKeyhole className="text-sage size-3.5" />
             Private by default
           </p>
         </div>
-        <div id="demo" className="scroll-mt-28">
-          <ReadinessDemo />
-        </div>
       </section>
 
-      <section className="border-iron bg-workshop/60 border-y">
+      <section
+        id="demo"
+        className="border-iron bg-workshop/60 scroll-mt-24 border-y"
+      >
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-12 lg:py-20">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
@@ -75,6 +85,10 @@ export default function HomePage() {
               </h2>
             </div>
             <p className="text-dust text-sm">Resume · technical · behavioral</p>
+          </div>
+
+          <div className="mt-12">
+            <ReadinessDemo />
           </div>
 
           <div className="border-iron md:divide-iron mt-12 grid border-y md:grid-cols-3 md:divide-x">
@@ -131,12 +145,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-iron bg-raised/60 border-y">
+      <section className="border-iron relative overflow-hidden border-y bg-[radial-gradient(circle_at_50%_120%,rgba(255,122,89,0.14),transparent_42%),linear-gradient(145deg,rgba(23,26,33,0.9),rgba(15,17,22,0.96))]">
+        <div className="pointer-events-none absolute inset-x-[20%] bottom-0 h-px bg-[linear-gradient(90deg,transparent,#ff7a59,#ff9a3d,transparent)]" />
         <div className="mx-auto max-w-5xl px-5 py-20 text-center sm:px-8 lg:py-24">
           <p className="section-label">Your next move</p>
           <h2 className="mt-5 text-4xl font-semibold tracking-[-0.045em] text-balance sm:text-6xl">
-            Pick the role. Start the route.
+            Move forward.{" "}
+            <span className="roleward-gradient-text">Go further.</span>
           </h2>
+          <p className="text-canvas mx-auto mt-5 max-w-xl text-base leading-7">
+            Choose the role. Roleward maps the preparation route.
+          </p>
           <Button asChild className="mt-8">
             <Link href="/signup">
               Get started <ArrowRight className="size-4" />

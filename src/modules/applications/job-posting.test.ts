@@ -34,7 +34,7 @@ describe("job posting document parsing", () => {
   it("finds JobPosting data inside an @graph and recognizes remote work", () => {
     const html = `<script type="application/ld+json">{
       "@graph": [
-        {"@type":"Organization","name":"Backstage"},
+        {"@type":"Organization","name":"Roleward"},
         {
           "@type":["Thing","JobPosting"],
           "title":"Platform Engineer",

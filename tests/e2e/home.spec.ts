@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test("shows the Backstage product foundation", async ({ page }) => {
+test("shows the Roleward product foundation", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Get where you need to be",
+    "Your entire job search. One contextualized AI workspace.",
   );
   await expect(
     page.getByRole("heading", { name: "Resume Kitchen" }),

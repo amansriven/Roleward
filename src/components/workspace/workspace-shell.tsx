@@ -27,7 +27,7 @@ import {
   workspaceUpdatedEvent,
 } from "@/modules/workspace/repository";
 
-const sidebarPreferenceKey = "backstage:workspace-sidebar-collapsed";
+const sidebarPreferenceKey = "roleward:workspace-sidebar-collapsed";
 
 const navigation = [
   { label: "Home", href: "/dashboard", feature: "home" },
@@ -93,7 +93,7 @@ function ActiveTarget({ compact = false }: { compact?: boolean }) {
 }
 
 function initials(user: WorkspaceUser) {
-  const source = user.name || user.email || "Backstage";
+  const source = user.name || user.email || "Roleward";
   return source
     .split(/[\s@._-]+/)
     .filter(Boolean)

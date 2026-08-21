@@ -1,4 +1,4 @@
-# Backstage System Architecture
+# Roleward System Architecture
 
 ## 1. Architecture goals
 
@@ -12,7 +12,7 @@
 
 ## 2. Architecture style
 
-Backstage begins as a **modular monolith** with asynchronous workers.
+Roleward begins as a **modular monolith** with asynchronous workers.
 
 The Next.js application owns the user interface, authenticated API, domain logic, and orchestration. Domain modules communicate through application services rather than reaching into each other's internals. Long-running or retryable work is published to queues and processed by workers.
 
@@ -208,7 +208,7 @@ Execution flow:
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant A as Backstage API
+    participant A as Roleward API
     participant X as E2B sandbox
     participant D as PostgreSQL
 

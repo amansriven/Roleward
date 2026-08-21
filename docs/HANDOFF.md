@@ -1,15 +1,15 @@
-# Backstage — handoff notes
+# Roleward — handoff notes
 
 Interview-prep platform. Next.js 16 on Vercel (`sweetplus.vercel.app`), AWS in
 `us-east-2`, auth via Cognito + Auth.js, persistence in one DynamoDB table.
 
-The product, routes, feature modules, and UI now use the Backstage naming system:
+The product, routes, feature modules, and UI now use the Roleward naming system:
 Applications, Resume Kitchen, Zed, and Stage Fright.
 
-Existing AWS resource IDs and the current Vercel hostname retain their original
-physical names. They are deployment identifiers, not product copy. Do not
-recreate Cognito, DynamoDB, S3, Lambda, or IAM resources solely to rename them;
-move them only through an explicit data and identity migration.
+Roleward is the canonical product and repository name. The current Vercel URL
+and AWS resources intentionally retain their existing SweetPlus deployment
+identifiers until a planned infrastructure migration is completed. Do not
+change those identifiers in application configuration ahead of the migration.
 
 ---
 
@@ -55,13 +55,14 @@ If you add a feature where a model produces something checkable, check it.
 
 4. **`server-only` imports break vitest (jsdom).** This is why nearly every
    feature is split into a pure module (tested) and a thin server module
-   (untested). Keep doing that; it is the reason there are 194 tests.
+   (untested). Keep doing that; it is the reason the core domain has broad test
+   coverage.
 
 5. **One DynamoDB table, `pk`/`sk`, no GSI.** Anything you need to look up must
    be reachable by a direct key or a `begins_with` query on `sk`.
 
-6. **Never rename AWS resources.** Renaming the Cognito pool deletes every
-   account.
+6. **Migrate AWS resources; do not replace them in place.** Recreating a Cognito
+   pool without a migration deletes access to every existing account.
 
 ---
 
@@ -141,9 +142,9 @@ Every `src/modules/aws/*` file is `server-only`. Pure logic never imports them.
 npm run typecheck && npm run lint && npm test -- --run && npm run build
 ```
 
-All four must pass. 194 tests currently. For anything visual, render it and look
-at it — two layout bugs this session passed typecheck and lint and were only
-caught in a browser.
+All four must pass. There are currently 219 unit and component tests. For
+anything visual, render it and look at it—layout bugs can pass typecheck and lint
+and still be obvious in a browser.
 
 For pool/judge work, warm one cell directly:
 

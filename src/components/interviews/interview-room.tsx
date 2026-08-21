@@ -129,10 +129,10 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
         error?: string;
       } | null;
       if (!response.ok)
-        return { error: body?.error ?? "Backstage could not run that code." };
+        return { error: body?.error ?? "Roleward could not run that code." };
       return { result: body?.result };
     } catch {
-      return { error: "Backstage could not reach the judge." };
+      return { error: "Roleward could not reach the judge." };
     }
   }
 
@@ -208,14 +208,14 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
         error?: string;
       } | null;
       if (!response.ok || !body?.session) {
-        setError(body?.error ?? "Backstage could not score this interview.");
+        setError(body?.error ?? "Roleward could not score this interview.");
         return;
       }
       const summary = summarizeSession(body.session);
       if (summary) saveInterviewSummary(localStorage, summary);
       router.push(`/dashboard/stage-fright/report/${session.id}`);
     } catch {
-      setError("Backstage could not score this interview.");
+      setError("Roleward could not score this interview.");
     } finally {
       setFinishing(false);
     }

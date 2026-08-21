@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             className="text-canvas hover:text-linen flex items-center gap-2 text-sm transition-colors"
             href="/"
           >
-            <ArrowLeft className="size-4" /> Back to Backstage
+            <ArrowLeft className="size-4" /> Back to Roleward
           </Link>
         </header>
         <div className="flex flex-1 items-center py-10">{children}</div>

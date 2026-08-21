@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Backstage could not read that link. Paste the description instead.",
+          "Roleward could not read that link. Paste the description instead.",
       },
       { status: 502 },
     );

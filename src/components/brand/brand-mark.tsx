@@ -1,6 +1,10 @@
 import { cn } from "@/lib/utils";
+import { useId } from "react";
 
 export function BrandMark({ className }: { className?: string }) {
+  const gradientId = useId();
+  const edgeGradientId = useId();
+
   return (
     <svg
       className={cn("size-8 shrink-0", className)}
@@ -13,30 +17,44 @@ export function BrandMark({ className }: { className?: string }) {
         y="1"
         width="46"
         height="46"
-        rx="14"
-        fill="#17191E"
-        stroke="#343740"
+        rx="15"
+        fill="#101218"
+        stroke={`url(#${edgeGradientId})`}
         strokeWidth="2"
       />
+      <defs>
+        <linearGradient
+          id={edgeGradientId}
+          x1="7"
+          y1="4"
+          x2="43"
+          y2="46"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#FF9A3D" stopOpacity=".8" />
+          <stop offset=".38" stopColor="#444955" stopOpacity=".55" />
+          <stop offset="1" stopColor="#FF7A59" stopOpacity=".75" />
+        </linearGradient>
+        <linearGradient
+          id={gradientId}
+          x1="19"
+          y1="29"
+          x2="40"
+          y2="8"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#FF7A59" />
+          <stop offset="1" stopColor="#FF9A3D" />
+        </linearGradient>
+      </defs>
       <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12 8.5h12.4c7.2 0 11.6 3.65 11.6 9.15 0 3.35-1.72 5.86-5.05 7.36C34.88 26.3 37 29.08 37 32.82c0 6.07-4.7 9.68-12.86 9.68H12v-34Zm8 7.18v6.42h4.02c2.74 0 4.28-1.12 4.28-3.24 0-2.08-1.54-3.18-4.28-3.18H20Zm0 13v6.64h4.72c2.93 0 4.58-1.17 4.58-3.36 0-2.13-1.65-3.28-4.58-3.28H20Z"
-        fill="#DF7C68"
+        d="M10.5 9.5h15.2l6.8 6.8-6.3 6.3h-7.5v15.9h-8.2v-29Z"
+        fill="#F5F2ED"
       />
+      <path d="m26.2 22.6 13.3 15.9H29.1L18.7 28.1l7.5-5.5Z" fill="#F5F2ED" />
       <path
-        d="M15.9 11.6v27.2"
-        stroke="#F5F2ED"
-        strokeWidth="2.25"
-        strokeLinecap="round"
-      />
-      <path
-        d="m30.8 12.2-4.15 12.65 4.78 13.02"
-        stroke="#F5F2ED"
-        strokeOpacity=".34"
-        strokeWidth="1.35"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M25.3 9.5h14.2v14.2l-4.4-4.4-9.8 9.8-5.8-5.8 9.8-9.8-4-4Z"
+        fill={`url(#${gradientId})`}
       />
     </svg>
   );

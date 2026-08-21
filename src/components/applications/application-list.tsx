@@ -63,7 +63,7 @@ export function ApplicationList() {
           <BriefcaseBusiness className="text-amber mx-auto size-6" />
           <h2 className="mt-5 text-xl font-semibold">No applications yet</h2>
           <p className="text-canvas mx-auto mt-2 max-w-lg text-sm leading-6">
-            Paste a job link or add the role manually. Backstage will connect it
+            Paste a job link or add the role manually. Roleward will connect it
             to your resume evidence and preparation plan.
           </p>
           <Link
@@ -141,7 +141,7 @@ export function ApplicationList() {
           <h2 className="text-lg font-semibold">Focus application</h2>
           <p className="text-dust text-xs">Your current preparation target</p>
         </div>
-        <div className="backstage-card backstage-card-accent rounded-[28px] p-6 sm:p-8">
+        <div className="roleward-card roleward-card-accent rounded-[28px] p-6 sm:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <span className="bg-amber/12 text-amber ring-amber/15 flex size-14 shrink-0 items-center justify-center rounded-2xl ring-1">
               <BriefcaseBusiness className="size-6" />
@@ -192,7 +192,7 @@ export function ApplicationList() {
           </p>
         </div>
         {remaining.length === 0 ? (
-          <div className="backstage-empty rounded-[24px] px-6 py-12 text-center">
+          <div className="roleward-empty rounded-[24px] px-6 py-12 text-center">
             <p className="text-canvas text-sm">No other applications yet.</p>
             <Link
               href="/dashboard/applications/new"
@@ -213,7 +213,7 @@ export function ApplicationList() {
                 <div
                   key={app.id}
                   className={cn(
-                    "backstage-card rounded-[22px] p-5",
+                    "roleward-card rounded-[22px] p-5",
                     isActive && "border-amber/45",
                     settled && "opacity-60",
                   )}

@@ -1,4 +1,4 @@
-# Backstage job importer
+# Roleward job importer
 
 Internal extraction worker for job links. It tries ATS-native APIs first,
 schema.org JobPosting data second, then an isolated Chromium page/network
@@ -28,9 +28,9 @@ falls back to its built-in HTML/JSON-LD extraction when it is unavailable.
 ## Container
 
 ```bash
-docker build -t backstage-job-importer .
+docker build -t roleward-job-importer .
 docker run --rm -p 8080:8080 \
-  -e JOB_IMPORTER_SECRET=change-me backstage-job-importer
+  -e JOB_IMPORTER_SECRET=change-me roleward-job-importer
 ```
 
 The browser layer rejects requests to loopback, private, link-local, reserved,

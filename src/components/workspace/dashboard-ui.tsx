@@ -44,7 +44,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={cn("backstage-card rounded-[22px]", className)}>
+    <section className={cn("roleward-card rounded-[22px]", className)}>
       {children}
     </section>
   );
@@ -70,7 +70,7 @@ export function ReadinessCard({
   return (
     <Link
       href={href}
-      className="backstage-card group hover:border-canvas/40 rounded-[22px] p-5 transition hover:-translate-y-0.5"
+      className="roleward-card group hover:border-canvas/40 rounded-[22px] p-5 transition hover:-translate-y-0.5"
     >
       <div className="flex items-center justify-between">
         <div className="bg-linen/[.05] flex size-9 items-center justify-center rounded-lg">

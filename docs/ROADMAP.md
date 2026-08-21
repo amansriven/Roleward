@@ -1,4 +1,4 @@
-# Backstage Delivery Roadmap
+# Roleward Delivery Roadmap
 
 ## 1. Delivery strategy
 
@@ -32,7 +32,7 @@ Avoid building Resume Kitchen, Zed, and Stage Fright as three disconnected appli
 - Integrate Better Auth with PostgreSQL-backed users, accounts, sessions, and verification records
 - Support Google, GitHub, Apple, and email/password signup and login
 - Require email verification for email/password accounts before sensitive preparation data is stored
-- Link multiple providers to one internal Backstage user without creating duplicate preparation histories
+- Link multiple providers to one internal Roleward user without creating duplicate preparation histories
 - Require an authenticated session and recent verification before linking or unlinking a provider
 - Add session rotation, revocation, device/session history, and global sign-out
 - Add a **Forgot password?** flow that accepts an email without revealing whether an account exists
@@ -49,7 +49,7 @@ Avoid building Resume Kitchen, Zed, and Stage Fright as three disconnected appli
 - A developer can reproduce the local environment from documentation.
 - Staging deploys automatically.
 - A user can sign in and access only their own empty workspace.
-- A user can use Google, GitHub, Apple, or verified email/password without creating duplicate Backstage histories.
+- A user can use Google, GitHub, Apple, or verified email/password without creating duplicate Roleward histories.
 - A user who forgets an email-account password can request a reset, use one valid expiring link, choose a new password, and sign in again.
 - Password-reset requests return the same public response for existing and unknown email addresses.
 - Budget and error alerts are active.
@@ -238,7 +238,7 @@ Potential additions should be validated individually:
 
 **Decision:** Use relational storage rather than a document database.
 
-**Reason:** Backstage has strong relationships among candidates, evidence, applications, versions, attempts, stories, and assessments.
+**Reason:** Roleward has strong relationships among candidates, evidence, applications, versions, attempts, stories, and assessments.
 
 ### ADR-003: AI suggestions require traceability
 

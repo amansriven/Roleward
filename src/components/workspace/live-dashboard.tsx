@@ -4,10 +4,12 @@ import {
   BriefcaseBusiness,
   ChefHat,
   Code2,
+  FileText,
+  Library,
   MessageSquareText,
+  Mic2,
   Sparkles,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PageIntro, Panel, ReadinessCard, TaskRow } from "./dashboard-ui";
@@ -47,12 +49,12 @@ export function LiveDashboard() {
     <div className="space-y-10">
       <PageIntro
         eyebrow="Your workspace"
-        title="Today in Backstage"
+        title="Today in Roleward"
         copy="One clear next step, selected from your active application, evidence gaps, and recent practice. The deeper detail is here when you need it—not before."
-        action={<BackstageCrew />}
+        action={<RolewardCrew />}
       />
       {primary && (
-        <section className="backstage-card backstage-card-accent relative overflow-hidden rounded-[28px] p-6 sm:p-8">
+        <section className="roleward-card roleward-card-accent relative overflow-hidden rounded-[28px] p-6 sm:p-8">
           <div className="relative max-w-2xl">
             <div className="text-amber flex items-center gap-2">
               <Sparkles className="size-4" />
@@ -180,33 +182,27 @@ export function LiveDashboard() {
 }
 
 const crew = [
-  ["Applications", "/brand/applications-avatar.png"],
-  ["Resume Kitchen", "/brand/resume-kitchen-avatar.png"],
-  ["Evidence Library", "/brand/evidence-avatar.png"],
-  ["Zed", "/brand/zed-avatar.png"],
-  ["Stage Fright", "/brand/stage-fright-avatar.png"],
+  ["Applications", BriefcaseBusiness],
+  ["Resume Kitchen", FileText],
+  ["Evidence Library", Library],
+  ["Zed", Code2],
+  ["Stage Fright", Mic2],
 ] as const;
 
-function BackstageCrew() {
+function RolewardCrew() {
   return (
     <div className="shrink-0 text-right">
       <p className="text-dust mb-2 font-mono text-[9px] tracking-[.1em] uppercase">
-        Your Backstage crew
+        Your Roleward crew
       </p>
       <div className="flex justify-end -space-x-2">
-        {crew.map(([name, src]) => (
+        {crew.map(([name, Icon]) => (
           <span
             key={name}
             title={name}
-            className="border-night bg-raised flex size-11 overflow-hidden rounded-xl border-2"
+            className="border-night bg-raised text-amber flex size-11 items-center justify-center rounded-xl border-2"
           >
-            <Image
-              src={src}
-              alt={`${name} avatar`}
-              width={44}
-              height={44}
-              className="shrink-0 object-cover object-top"
-            />
+            <Icon className="size-4" aria-hidden="true" />
           </span>
         ))}
       </div>

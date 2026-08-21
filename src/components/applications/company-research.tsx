@@ -28,7 +28,7 @@ interface SavedResearch {
 }
 
 function storageKey(applicationId: string) {
-  return `backstage:company-research:${applicationId}`;
+  return `roleward:company-research:${applicationId}`;
 }
 
 function loadSavedResearch(applicationId: string): SavedResearch | null {
@@ -97,14 +97,14 @@ export function CompanyResearchWorkspace() {
       } | null;
       const parsed = companyResearchSchema.safeParse(body?.research);
       if (!response.ok || !parsed.success || !body?.generatedAt) {
-        setError(body?.error ?? "Backstage could not complete that research.");
+        setError(body?.error ?? "Roleward could not complete that research.");
         return;
       }
       const next = { research: parsed.data, generatedAt: body.generatedAt };
       localStorage.setItem(storageKey(application.id), JSON.stringify(next));
       setResult(next);
     } catch {
-      setError("Backstage could not reach the research service.");
+      setError("Roleward could not reach the research service.");
     } finally {
       setBusy(false);
     }
@@ -141,8 +141,8 @@ export function CompanyResearchWorkspace() {
             Know the company before the conversation.
           </h2>
           <p className="text-canvas mt-2 max-w-2xl text-sm leading-6">
-            Backstage connects current company events to this specific role,
-            then turns the research into useful interview angles.
+            Roleward connects current company events to this specific role, then
+            turns the research into useful interview angles.
           </p>
         </div>
         <div className="flex shrink-0 flex-col gap-2 sm:min-w-72">

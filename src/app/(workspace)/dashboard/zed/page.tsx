@@ -1,5 +1,4 @@
-import { Check, ChevronDown, Clock3 } from "lucide-react";
-import Image from "next/image";
+import { Check, ChevronDown, Clock3, Code2 } from "lucide-react";
 import { auth } from "@/auth";
 import { PageIntro } from "@/components/workspace/dashboard-ui";
 import { PracticeFlow } from "@/components/zed/practice-flow";
@@ -83,14 +82,9 @@ export default async function ZedPage() {
     <div className="space-y-10">
       <PageIntro
         icon={
-          <Image
-            src="/brand/zed-avatar.png"
-            alt="Zed, your technical practice coach"
-            width={56}
-            height={56}
-            className="border-amber/30 shrink-0 rounded-2xl border object-cover"
-            priority
-          />
+          <span className="border-amber/25 bg-amber/[.06] text-amber flex size-14 shrink-0 items-center justify-center rounded-2xl border">
+            <Code2 className="size-7" aria-hidden="true" />
+          </span>
         }
         eyebrow="Zed"
         title="Technical practice"
@@ -117,14 +111,9 @@ export default async function ZedPage() {
 
         <aside className="border-iron/80 space-y-10 xl:border-l xl:pl-8">
           <section className="border-iron/80 flex items-center gap-4 border-y py-4">
-            <Image
-              src="/brand/zed-avatar.png"
-              alt="Zed, your technical practice coach"
-              width={56}
-              height={56}
-              className="border-iron shrink-0 rounded-2xl border object-cover"
-              priority
-            />
+            <span className="border-iron bg-amber/[.06] text-amber flex size-14 shrink-0 items-center justify-center rounded-2xl border">
+              <Code2 className="size-6" aria-hidden="true" />
+            </span>
             <div>
               <p className="text-sm font-semibold">Zed</p>
               <p className="text-dust mt-1 text-xs leading-5">

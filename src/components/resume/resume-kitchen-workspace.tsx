@@ -205,7 +205,7 @@ function Kitchen({
           </div>
 
           <aside className="space-y-4">
-            <section className="backstage-card rounded-[22px] p-5">
+            <section className="roleward-card rounded-[22px] p-5">
               <FileText className="text-copper size-4" />
               <p className="mt-3 text-sm font-semibold">Evidence ready</p>
               <p className="text-dust mt-2 text-xs leading-5">
@@ -471,7 +471,7 @@ function RequirementCard({
   const strength = requirement.matchStrength;
 
   return (
-    <article className="backstage-card rounded-[22px] p-5">
+    <article className="roleward-card rounded-[22px] p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-semibold">{requirement.content}</p>
@@ -593,7 +593,7 @@ function Stat({
   note: string;
 }) {
   return (
-    <section className="backstage-card rounded-[22px] p-5">
+    <section className="roleward-card rounded-[22px] p-5">
       <p className="section-label">{label}</p>
       <p className="mt-2 truncate text-2xl font-semibold">{value}</p>
       <p className="text-dust mt-1 text-xs">{note}</p>
@@ -615,7 +615,7 @@ function Empty({
   action: string;
 }) {
   return (
-    <section className="backstage-card rounded-[22px] p-8 text-center">
+    <section className="roleward-card rounded-[22px] p-8 text-center">
       {icon && <div className="mb-5 flex justify-center">{icon}</div>}
       <p className="text-lg font-semibold">{title}</p>
       <p className="text-canvas mx-auto mt-2 max-w-md text-sm leading-6">

@@ -15,17 +15,17 @@ export function Logo({
   return (
     <Link
       className={cn(
-        "inline-flex items-center gap-2.5 text-xl font-semibold tracking-[-0.035em]",
+        "inline-flex items-center gap-2.5 text-[1.28rem] font-semibold tracking-[-0.045em]",
         compact && "gap-0",
         className,
       )}
       href={href}
       aria-label={
-        href === "/dashboard" ? "Backstage dashboard" : "Backstage home"
+        href === "/dashboard" ? "Roleward dashboard" : "Roleward home"
       }
     >
-      <BrandMark className="size-8" />
-      <span className={cn("text-linen", compact && "sr-only")}>Backstage</span>
+      <BrandMark className="size-8.5" />
+      <span className={cn("text-linen", compact && "sr-only")}>Roleward</span>
     </Link>
   );
 }

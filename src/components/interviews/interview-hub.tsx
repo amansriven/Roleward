@@ -1,7 +1,6 @@
 "use client";
 
-import { ArrowRight, Mic, Plus, Type } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, Mic, Mic2, Plus, Type } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Metric, PageIntro, Panel } from "@/components/workspace/dashboard-ui";
@@ -200,14 +199,8 @@ export function InterviewHub() {
 
 function StageFrightAvatar() {
   return (
-    <span className="border-plum/30 bg-plum/[.06] flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
-      <Image
-        src="/brand/stage-fright-avatar.png"
-        alt="The Stage Fright raven interviewer"
-        width={64}
-        height={64}
-        className="shrink-0 object-cover object-top"
-      />
+    <span className="border-plum/30 bg-plum/[.06] text-plum flex size-16 shrink-0 items-center justify-center rounded-2xl border">
+      <Mic2 className="size-7" aria-hidden="true" />
     </span>
   );
 }

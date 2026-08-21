@@ -1,6 +1,6 @@
 # Cognito authentication setup
 
-Backstage uses Amazon Cognito managed login as an OpenID Connect provider and Auth.js inside the Next.js server. Cognito handles email/password, Google, Apple, verification, recovery, and MFA. Auth.js exchanges the authorization code on the server and stores the Backstage session in an encrypted HTTP-only cookie.
+Roleward uses Amazon Cognito managed login as an OpenID Connect provider and Auth.js inside the Next.js server. Cognito handles email/password, Google, Apple, verification, recovery, and MFA. Auth.js exchanges the authorization code on the server and stores the Roleward session in an encrypted HTTP-only cookie.
 
 ## User Pool
 
@@ -45,13 +45,13 @@ https://sweetplus.vercel.app
 
 ## Google
 
-Create a Web OAuth client in Google Cloud. Its authorized redirect URI points to Cognito—not Backstage:
+Create a Web OAuth client in Google Cloud. Its authorized redirect URI points to Cognito—not Roleward:
 
 ```text
 https://YOUR_COGNITO_DOMAIN/oauth2/idpresponse
 ```
 
-Add the Google client ID and secret under Cognito **Social and external providers**, request `openid profile email`, map email and name, and enable Google on the Backstage app client.
+Add the Google client ID and secret under Cognito **Social and external providers**, request `openid profile email`, map email and name, and enable Google on the Roleward app client.
 
 ## Apple
 
@@ -61,7 +61,7 @@ Sign in with Apple requires an Apple Developer account. Create a Services ID and
 https://YOUR_COGNITO_DOMAIN/oauth2/idpresponse
 ```
 
-Add the Services ID, Team ID, Key ID, and private key under Cognito **Social and external providers**, request `name email`, map email and name, and enable Apple on the Backstage app client.
+Add the Services ID, Team ID, Key ID, and private key under Cognito **Social and external providers**, request `name email`, map email and name, and enable Apple on the Roleward app client.
 
 ## Server environment
 
@@ -80,11 +80,11 @@ AUTH_COGNITO_ISSUER=https://cognito-idp.us-east-2.amazonaws.com/us-east-2_EXAMPL
 Applications → App clients**. They are not the Google OAuth client ID and
 secret shown under **Social and external providers → Google**. Google’s
 credentials connect Google to Cognito; the Cognito app-client credentials
-connect Backstage and Auth.js to Cognito’s token endpoint.
+connect Roleward and Auth.js to Cognito’s token endpoint.
 
 The Auth.js Cognito provider explicitly enables PKCE, state, and nonce checks.
 This is required for federated sign-in because Cognito automatically adds a
-nonce to third-party ID tokens when the authorization request omits one. Backstage
+nonce to third-party ID tokens when the authorization request omits one. Roleward
 sends its own nonce so Auth.js can validate the returned value.
 
 ## Verification
@@ -101,7 +101,7 @@ Dashboard rendering now requires a valid server session. Future APIs must also v
 
 ## Troubleshooting social sign-in
 
-If Google reaches its account chooser but Backstage returns to `/login` with an
+If Google reaches its account chooser but Roleward returns to `/login` with an
 OAuth error, the initial redirect is working. Check the return path in this
 order:
 
@@ -118,7 +118,7 @@ order:
    federated username from Google `sub` automatically. Every mapped destination
    attribute must be mutable, and the app client must be allowed to write it.
 5. In the Cognito app client, confirm Google is an enabled identity provider and
-   the Backstage callback URL is exact.
+   the Roleward callback URL is exact.
 6. Try a Google account whose email has never been registered with password
    sign-in. Cognito creates federated profiles separately; merging an existing
    local user requires a deliberate `AdminLinkProviderForUser` flow and must not

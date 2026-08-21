@@ -1,5 +1,5 @@
 """
-Python judge for Backstage coding practice.
+Python judge for Roleward coding practice.
 
 Untrusted candidate code never runs in this process. Every batch is handed to a
 short-lived subprocess so that a crash, an infinite loop, or an allocation storm

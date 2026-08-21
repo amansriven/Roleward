@@ -4,7 +4,7 @@ export function AmbientWorkshopBackground() {
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
       aria-hidden="true"
     >
-      <div className="ambient-light-amber bg-amber/[0.075] absolute -top-[24rem] -right-[24rem] size-[64rem] rounded-full blur-[160px] will-change-transform" />
+      <div className="ambient-light-amber absolute -top-[24rem] -right-[24rem] size-[64rem] rounded-full bg-[radial-gradient(circle,rgba(255,122,89,0.11),rgba(255,154,61,0.045)_38%,transparent_70%)] blur-[150px] will-change-transform" />
       <div className="ambient-light-sage bg-sage/[0.05] absolute -bottom-[28rem] -left-[24rem] size-[66rem] rounded-full blur-[160px] will-change-transform" />
       <div className="ambient-checker absolute inset-0 opacity-60" />
       <div className="ambient-scan absolute inset-y-0 left-0 w-[42%] will-change-transform" />

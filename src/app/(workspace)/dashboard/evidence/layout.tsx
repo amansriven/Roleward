@@ -1,5 +1,4 @@
-import { Plus } from "lucide-react";
-import Image from "next/image";
+import { Library, Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { EvidenceNav } from "@/components/resume/evidence-nav";
@@ -10,15 +9,8 @@ export default function EvidenceLayout({ children }: { children: ReactNode }) {
     <div className="space-y-8">
       <PageIntro
         icon={
-          <span className="border-amber/25 bg-amber/[.05] flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
-            <Image
-              src="/brand/evidence-avatar.png"
-              alt="The Evidence Library owl archivist"
-              width={64}
-              height={64}
-              className="shrink-0 object-cover object-top"
-              priority
-            />
+          <span className="border-amber/25 bg-amber/[.06] text-amber flex size-16 shrink-0 items-center justify-center rounded-2xl border">
+            <Library className="size-7" aria-hidden="true" />
           </span>
         }
         eyebrow="Evidence Library"

@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-night: #0d0e10;
-  --color-workshop: #121418;
-  --color-raised: #191b20;
-  --color-amber: #df7c68;
+  --color-night: #0f1116;
+  --color-workshop: #13161c;
+  --color-raised: #171a21;
+  --color-amber: #ff7a59;
+  --color-sunset: #ff9a3d;
   --color-sage: #73a897;
   --color-linen: #f5f2ed;
   --color-canvas: #a9aab2;
   --color-dust: #73757e;
-  --color-iron: #2a2d34;
-  --color-kiln: #df7c68;
-  --color-copper: #df7c68;
+  --color-iron: #2a2f38;
+  --color-kiln: #ff7a59;
+  --color-copper: #ff9a3d;
   --color-cobalt: #68a5b8;
   --color-plum: #a9799f;
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -20,17 +21,18 @@
 
 :root {
   color-scheme: dark;
-  --night: #0d0e10;
-  --workshop: #121418;
-  --raised: #191b20;
-  --amber: #df7c68;
+  --night: #0f1116;
+  --workshop: #13161c;
+  --raised: #171a21;
+  --amber: #ff7a59;
+  --sunset: #ff9a3d;
   --sage: #73a897;
   --linen: #f5f2ed;
   --canvas: #a9aab2;
   --dust: #73757e;
-  --iron: #2a2d34;
-  --kiln: #df7c68;
-  --copper: #df7c68;
+  --iron: #2a2f38;
+  --kiln: #ff7a59;
+  --copper: #ff9a3d;
   --cobalt: #68a5b8;
   --plum: #a9799f;
 }
@@ -97,7 +99,7 @@ summary:focus-visible {
 }
 
 .section-label {
-  color: var(--amber);
+  color: var(--sunset);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 500;
@@ -105,7 +107,7 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
-.backstage-card {
+.roleward-card {
   border: 1px solid rgb(42 45 52 / 92%);
   background: linear-gradient(145deg, rgb(25 27 32 / 96%), rgb(18 20 24 / 96%));
   box-shadow:
@@ -113,20 +115,27 @@ summary:focus-visible {
     0 24px 70px rgb(0 0 0 / 18%);
 }
 
-.backstage-card-accent {
-  border-color: rgb(223 124 104 / 38%);
+.roleward-card-accent {
+  border-color: rgb(255 122 89 / 38%);
   background:
-    radial-gradient(circle at 10% 50%, rgb(223 124 104 / 8%), transparent 28%),
+    radial-gradient(circle at 10% 50%, rgb(255 122 89 / 9%), transparent 28%),
     linear-gradient(145deg, rgb(25 27 32 / 98%), rgb(18 20 24 / 98%));
 }
 
-.backstage-empty {
+.roleward-empty {
   border: 1px dashed rgb(115 117 126 / 28%);
   background: rgb(18 20 24 / 46%);
 }
 
 .text-balance {
   text-wrap: balance;
+}
+
+.roleward-gradient-text {
+  color: transparent;
+  background: linear-gradient(110deg, var(--amber) 8%, var(--sunset) 92%);
+  background-clip: text;
+  -webkit-background-clip: text;
 }
 
 .ambient-light-amber {

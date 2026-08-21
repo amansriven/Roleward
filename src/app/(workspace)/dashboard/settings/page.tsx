@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await auth();
-  const name = session?.user?.name || "Your Backstage account";
+  const name = session?.user?.name || "Your Roleward account";
   const email = session?.user?.email || "No email available";
 
   return (

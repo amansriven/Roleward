@@ -43,7 +43,7 @@ import type {
 import { uploadPrivateFile } from "@/modules/uploads/client";
 
 type Step = "upload" | "processing" | "review" | "complete";
-const storageKey = "backstage:evidence-library";
+const storageKey = "roleward:evidence-library";
 
 /**
  * Everything arrives as "proposed". Nothing is verified until the candidate
@@ -97,7 +97,7 @@ export function ResumeIntakeFlow() {
     try {
       const contentHash = await hashFile(file);
       const storageKey = await uploadPrivateFile(file, "resume");
-      const existingHash = localStorage.getItem("backstage:resume-hash");
+      const existingHash = localStorage.getItem("roleward:resume-hash");
       if (existingHash === contentHash) {
         setError(
           "This exact resume has already been processed. Opening its evidence instead of creating a duplicate.",
@@ -156,7 +156,7 @@ export function ResumeIntakeFlow() {
       setContactConfirmed(false);
       setItems(toEvidenceItems(body.items));
       setDroppedCount(body.droppedCount ?? 0);
-      localStorage.setItem("backstage:resume-hash", contentHash);
+      localStorage.setItem("roleward:resume-hash", contentHash);
       setStep("review");
     } catch (problem) {
       setError(
@@ -233,7 +233,7 @@ export function ResumeIntakeFlow() {
             event.preventDefault();
             void receive(event.dataTransfer.files[0]);
           }}
-          className="backstage-card rounded-[22px] p-5 sm:p-8"
+          className="roleward-card rounded-[22px] p-5 sm:p-8"
         >
           <button
             onClick={() => input.current?.click()}

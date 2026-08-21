@@ -134,7 +134,7 @@ export function InterviewSetup() {
     if (!response.ok || !body?.description) {
       setError(
         body?.error ??
-          "Backstage could not read that link. Paste the description instead.",
+          "Roleward could not read that link. Paste the description instead.",
       );
       return null;
     }
@@ -172,7 +172,7 @@ export function InterviewSetup() {
         error?: string;
       } | null;
       if (!response.ok || !body?.session) {
-        setError(body?.error ?? "Backstage could not start that interview.");
+        setError(body?.error ?? "Roleward could not start that interview.");
         return;
       }
       router.push(`/dashboard/stage-fright/session/${body.session.id}`);
@@ -255,7 +255,7 @@ export function InterviewSetup() {
                 selected={roleMode === "application"}
                 onClick={() => setRoleMode("application")}
                 title="A role you saved"
-                detail="Uses the requirements already in Backstage"
+                detail="Uses the requirements already in Roleward"
               />
             )}
             <Choice

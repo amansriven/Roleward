@@ -99,7 +99,7 @@ async function assertPublicHost(hostname: string) {
     if (addressBlocked(record.address, record.family))
       throw new JobSourceError(
         "blocked_host",
-        "That address is not reachable from Backstage.",
+        "That address is not reachable from Roleward.",
       );
 }
 
@@ -142,7 +142,7 @@ export async function fetchJobPosting(rawUrl: string) {
       } catch {
         throw new JobSourceError(
           "unreachable",
-          "Backstage could not open that link.",
+          "Roleward could not open that link.",
         );
       }
       if (response.status >= 300 && response.status < 400) {

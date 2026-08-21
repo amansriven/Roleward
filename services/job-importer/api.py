@@ -8,7 +8,7 @@ from pydantic import BaseModel, HttpUrl
 from job_importer import JobImportError, JobPosting, import_job
 
 
-app = FastAPI(title="Backstage job importer", docs_url=None, redoc_url=None)
+app = FastAPI(title="Roleward job importer", docs_url=None, redoc_url=None)
 
 
 class ImportJobRequest(BaseModel):

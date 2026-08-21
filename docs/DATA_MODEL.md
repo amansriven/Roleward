@@ -1,4 +1,4 @@
-# Backstage Core Data Model
+# Roleward Core Data Model
 
 ## 1. Modeling principles
 
