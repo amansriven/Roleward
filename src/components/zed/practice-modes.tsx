@@ -10,13 +10,7 @@ import {
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
-import {
-  PracticeFlow,
-  type ArchetypeOption,
-  type RecommendationView,
-} from "./practice-flow";
 
-type Mode = "zed" | "leetcode";
 type ImportedProblem = {
   url: string;
   slug: string;
@@ -26,59 +20,7 @@ type ImportedProblem = {
 };
 type Message = { role: "assistant" | "user"; content: string };
 
-export function PracticeModes(props: {
-  archetypes: ArchetypeOption[];
-  skillLabels: Record<string, string>;
-  recommendation: RecommendationView | null;
-}) {
-  const [mode, setMode] = useState<Mode>("zed");
-  return (
-    <div>
-      <div
-        className="border-iron mb-6 flex gap-1 border-b"
-        aria-label="Practice mode"
-      >
-        <ModeButton active={mode === "zed"} onClick={() => setMode("zed")}>
-          Zed problem
-        </ModeButton>
-        <ModeButton
-          active={mode === "leetcode"}
-          onClick={() => setMode("leetcode")}
-        >
-          LeetCode companion
-        </ModeButton>
-      </div>
-      {mode === "zed" ? <PracticeFlow {...props} /> : <LeetCodeCompanion />}
-    </div>
-  );
-}
-
-function ModeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "relative px-4 pb-3 text-xs font-semibold transition",
-        active
-          ? "text-linen after:bg-amber after:absolute after:inset-x-0 after:bottom-[-1px] after:h-px"
-          : "text-dust hover:text-canvas",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function LeetCodeCompanion() {
+export function LeetCodeCompanion() {
   const [url, setUrl] = useState("");
   const [problem, setProblem] = useState<ImportedProblem | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -158,22 +100,22 @@ function LeetCodeCompanion() {
 
   if (!problem)
     return (
-      <div className="border-iron/80 border-y py-7">
+      <div className="border-iron/80 min-h-[55vh] border-y py-10 sm:py-14">
         <div className="text-amber flex items-center gap-2">
           <Link2 className="size-3.5" />
           <p className="font-mono text-[10px] tracking-wide uppercase">
             Bring your own problem
           </p>
         </div>
-        <h3 className="mt-3 text-2xl font-semibold tracking-[-.035em]">
+        <h3 className="mt-3 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">
           Work through a LeetCode problem with Zed
         </h3>
-        <p className="text-canvas mt-2 max-w-2xl text-sm leading-6">
+        <p className="text-canvas mt-3 max-w-3xl text-sm leading-6 sm:text-base sm:leading-7">
           Paste the problem link. Zed reads it privately, then guides your
           reasoning one checkpoint at a time while you code and run tests on
           LeetCode.
         </p>
-        <div className="mt-6 flex max-w-2xl flex-col gap-2 sm:flex-row">
+        <div className="mt-8 flex max-w-4xl flex-col gap-3 sm:flex-row">
           <input
             type="url"
             value={url}
@@ -182,13 +124,13 @@ function LeetCodeCompanion() {
               if (event.key === "Enter") void importProblem();
             }}
             placeholder="https://leetcode.com/problems/two-sum/"
-            className="border-iron bg-raised text-linen placeholder:text-dust focus:border-amber/50 min-h-11 flex-1 rounded-xl border px-3 text-xs outline-none"
+            className="border-iron bg-raised text-linen placeholder:text-dust focus:border-amber/50 min-h-14 flex-1 rounded-xl border px-4 text-sm outline-none"
           />
           <button
             type="button"
             onClick={() => void importProblem()}
             disabled={busy || !url.trim()}
-            className="bg-amber text-night inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-xs font-semibold disabled:opacity-40"
+            className="bg-amber text-night inline-flex min-h-14 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold disabled:opacity-40"
           >
             {busy ? (
               <LoaderCircle className="size-4 animate-spin" />
@@ -207,13 +149,15 @@ function LeetCodeCompanion() {
     );
 
   return (
-    <div className="border-iron/80 border-y py-6">
+    <div className="border-iron/80 flex min-h-[65vh] flex-col border-y py-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-amber font-mono text-[10px] uppercase">
             LeetCode companion · {problem.difficulty}
           </p>
-          <h3 className="mt-2 text-xl font-semibold">{problem.title}</h3>
+          <h3 className="mt-2 text-2xl font-semibold sm:text-3xl">
+            {problem.title}
+          </h3>
           <p className="text-dust mt-2 text-[11px]">
             {problem.topics.join(" · ") || "Discover the pattern as you work"}
           </p>
@@ -222,17 +166,17 @@ function LeetCodeCompanion() {
           href={problem.url}
           target="_blank"
           rel="noreferrer"
-          className="border-iron text-canvas hover:text-linen inline-flex min-h-10 items-center gap-2 rounded-xl border px-4 text-xs font-semibold"
+          className="border-iron text-canvas hover:text-linen inline-flex min-h-12 items-center gap-2 rounded-xl border px-5 text-sm font-semibold"
         >
           Open problem <ArrowUpRight className="size-3.5" />
         </a>
       </div>
-      <div className="mt-6 space-y-3" aria-live="polite">
+      <div className="mt-8 flex-1 space-y-4" aria-live="polite">
         {messages.map((message, index) => (
           <div
             key={index}
             className={cn(
-              "max-w-[90%] rounded-xl border p-4 text-sm leading-6",
+              "max-w-[88%] rounded-2xl border p-5 text-sm leading-7 sm:p-6 sm:text-base",
               message.role === "assistant"
                 ? "border-iron bg-raised text-canvas"
                 : "border-amber/25 bg-amber/5 text-linen ml-auto",
@@ -245,19 +189,19 @@ function LeetCodeCompanion() {
           </div>
         ))}
       </div>
-      <form onSubmit={send} className="mt-5 flex gap-2">
+      <form onSubmit={send} className="mt-8 flex gap-3">
         <textarea
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder="Explain what you’re thinking or ask for a hint…"
-          rows={2}
-          className="border-iron bg-raised text-linen placeholder:text-dust focus:border-amber/50 min-h-14 flex-1 resize-none rounded-xl border px-3 py-2.5 text-xs outline-none"
+          rows={3}
+          className="border-iron bg-raised text-linen placeholder:text-dust focus:border-amber/50 min-h-20 flex-1 resize-none rounded-2xl border px-4 py-3 text-sm outline-none"
         />
         <button
           type="submit"
           disabled={busy || !draft.trim()}
           aria-label="Send to Zed"
-          className="bg-amber text-night flex w-12 items-center justify-center rounded-xl disabled:opacity-40"
+          className="bg-amber text-night flex w-16 items-center justify-center rounded-2xl disabled:opacity-40 sm:w-20"
         >
           {busy ? (
             <LoaderCircle className="size-4 animate-spin" />
