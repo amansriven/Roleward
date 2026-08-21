@@ -50,6 +50,77 @@ export function Panel({
   );
 }
 
+export function SectionIntro({
+  eyebrow,
+  title,
+  copy,
+  action,
+}: {
+  eyebrow: string;
+  title: string;
+  copy: string;
+  action?: ReactNode;
+}) {
+  return (
+    <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+      <div className="max-w-2xl">
+        <p className="section-label">{eyebrow}</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-[-.04em] sm:text-[1.75rem]">
+          {title}
+        </h2>
+        <p className="text-canvas mt-2 text-sm leading-6">{copy}</p>
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </header>
+  );
+}
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  copy,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  copy: string;
+  action?: ReactNode;
+}) {
+  return (
+    <section className="roleward-empty flex min-h-64 flex-col items-center justify-center rounded-[24px] px-6 py-14 text-center">
+      <span className="border-amber/20 bg-amber/[.07] text-amber flex size-12 items-center justify-center rounded-2xl border">
+        <Icon className="size-5" />
+      </span>
+      <h2 className="mt-5 text-lg font-semibold">{title}</h2>
+      <p className="text-canvas mt-2 max-w-md text-sm leading-6">{copy}</p>
+      {action && <div className="mt-6">{action}</div>}
+    </section>
+  );
+}
+
+export function MetricCard({
+  label,
+  value,
+  note,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  note: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <div className="roleward-card rounded-[20px] p-5">
+      <div className="text-amber bg-amber/[.07] flex size-8 items-center justify-center rounded-lg">
+        <Icon className="size-4" />
+      </div>
+      <p className="mt-5 text-3xl font-semibold tracking-[-.05em]">{value}</p>
+      <p className="text-canvas mt-1 text-xs font-medium">{label}</p>
+      <p className="text-dust mt-1 text-[10px]">{note}</p>
+    </div>
+  );
+}
+
 export function ReadinessCard({
   icon: Icon,
   label,

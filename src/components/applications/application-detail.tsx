@@ -99,9 +99,10 @@ function Detail({
         <ArrowLeft className="size-3.5" /> All applications
       </Link>
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
+      <header className="roleward-card roleward-card-accent flex flex-wrap items-start justify-between gap-4 rounded-[24px] p-6 sm:p-7">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-[-.03em]">
+          <p className="section-label">Application workspace</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-[-.045em]">
             {application.companyName}
           </h1>
           <p className="text-canvas mt-1 text-sm">{application.roleTitle}</p>
@@ -123,7 +124,7 @@ function Detail({
         )}
       </header>
 
-      <section className="roleward-card rounded-[22px] p-5">
+      <section className="roleward-card rounded-[22px] p-5 sm:p-6">
         <p className="section-label">Status</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {STATUS_ORDER.map((status) => (
@@ -198,7 +199,7 @@ function Detail({
         </section>
       )}
 
-      <section className="border-iron bg-workshop/70 overflow-hidden rounded-2xl border">
+      <section className="roleward-card overflow-hidden rounded-[22px]">
         <div className="border-iron/70 border-b p-5">
           <p className="font-semibold">Requirements</p>
           <p className="text-dust mt-1 text-xs">

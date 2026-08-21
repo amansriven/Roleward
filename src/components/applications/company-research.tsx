@@ -13,6 +13,13 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   companyResearchSchema,
   type CompanyResearch,
 } from "@/modules/applications/company-research";
@@ -21,6 +28,7 @@ import {
   workspaceUpdatedEvent,
   type StoredApplication,
 } from "@/modules/workspace/repository";
+import { EmptyState, SectionIntro } from "@/components/workspace/dashboard-ui";
 
 interface SavedResearch {
   research: CompanyResearch;
@@ -112,39 +120,31 @@ export function CompanyResearchWorkspace() {
 
   if (!applications.length)
     return (
-      <section className="border-iron/80 border-y py-16 text-center">
-        <Building2 className="text-amber mx-auto size-6" />
-        <h2 className="mt-4 text-xl font-semibold">
-          Save a role to research it
-        </h2>
-        <p className="text-canvas mx-auto mt-2 max-w-md text-sm leading-6">
-          Company research uses the actual posting to find relevant news,
-          company context, and stronger interview questions.
-        </p>
-        <Link
-          href="/dashboard/applications/new"
-          className="text-amber mt-5 inline-flex items-center gap-2 text-sm font-semibold"
-        >
-          Add an application <ArrowRight className="size-4" />
-        </Link>
-      </section>
+      <EmptyState
+        icon={Building2}
+        title="Save a role to research it"
+        copy="Company research uses the actual posting to find relevant news, company context, and stronger interview questions."
+        action={
+          <Link
+            href="/dashboard/applications/new"
+            className="text-amber inline-flex items-center gap-2 text-sm font-semibold"
+          >
+            Add an application <ArrowRight className="size-4" />
+          </Link>
+        }
+      />
     );
 
   const research = result?.research;
 
   return (
     <div className="space-y-10">
-      <section className="border-iron/80 flex flex-col justify-between gap-5 border-b pb-8 sm:flex-row sm:items-end">
-        <div>
-          <p className="section-label">Company research</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-.035em]">
-            Know the company before the conversation.
-          </h2>
-          <p className="text-canvas mt-2 max-w-2xl text-sm leading-6">
-            Roleward connects current company events to this specific role, then
-            turns the research into useful interview angles.
-          </p>
-        </div>
+      <section className="roleward-card flex flex-col justify-between gap-5 rounded-[22px] p-5 sm:flex-row sm:items-end sm:p-6">
+        <SectionIntro
+          eyebrow="Company research"
+          title="Know the company before the conversation."
+          copy="Roleward connects current company events to this specific role, then turns the research into useful interview angles."
+        />
         <div className="flex shrink-0 flex-col gap-2 sm:min-w-72">
           <label
             htmlFor="research-application"
@@ -152,23 +152,25 @@ export function CompanyResearchWorkspace() {
           >
             Application
           </label>
-          <select
-            id="research-application"
+          <Select
             value={selectedId}
-            onChange={(event) => {
-              const nextId = event.target.value;
+            onValueChange={(nextId) => {
               setSelectedId(nextId);
               setResult(loadSavedResearch(nextId));
               setError("");
             }}
-            className="border-iron bg-night min-h-11 rounded-lg border px-3 text-sm"
           >
-            {applications.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.companyName} · {item.roleTitle}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="research-application" className="bg-night">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {applications.map((item) => (
+                <SelectItem key={item.id} value={item.id}>
+                  {item.companyName} · {item.roleTitle}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </section>
 

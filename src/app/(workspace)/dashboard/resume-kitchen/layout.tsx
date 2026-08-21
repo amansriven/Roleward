@@ -13,7 +13,7 @@ export default function ResumeKitchenLayout({
     <div className="space-y-8">
       <PageIntro
         icon={
-          <span className="border-amber/25 bg-amber/[.06] text-amber flex size-16 shrink-0 items-center justify-center rounded-2xl border">
+          <span className="border-amber/25 bg-amber/[.07] text-amber flex size-16 shrink-0 items-center justify-center rounded-2xl border shadow-[0_12px_40px_rgba(255,122,89,.08)]">
             <FileText className="size-7" aria-hidden="true" />
           </span>
         }
@@ -30,7 +30,7 @@ export default function ResumeKitchenLayout({
             </Link>
             <Link
               href="/dashboard/resume-kitchen/intake"
-              className="bg-amber text-night inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold"
+              className="bg-amber text-night inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold shadow-[0_10px_28px_rgba(255,122,89,.18)] transition-all hover:-translate-y-0.5"
             >
               Import resume
             </Link>

@@ -12,6 +12,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import type { JobRequirement } from "@/modules/applications/schema";
@@ -216,7 +223,7 @@ export function ApplicationIntakeFlow() {
           Paste a job link or the description. We’ll turn it into a clear
           preparation map.
         </p>
-        <div className="border-iron bg-workshop/70 mt-8 space-y-5 rounded-2xl border p-5 sm:p-7">
+        <div className="roleward-card mt-8 space-y-5 rounded-[22px] p-5 sm:p-7">
           <div className="border-iron/70 border-b pb-6">
             <label htmlFor="job-posting-url" className="text-xs font-medium">
               Job posting link
@@ -362,7 +369,7 @@ export function ApplicationIntakeFlow() {
         {extracting && requirements.length === 0 && (
           <p className="text-dust mt-7 text-xs">Reading the posting…</p>
         )}
-        <div className="border-iron bg-workshop/70 mt-7 overflow-hidden rounded-2xl border">
+        <div className="roleward-card mt-7 overflow-hidden rounded-[22px]">
           {requirements.map((item) => (
             <div
               key={item.id}
@@ -393,20 +400,32 @@ export function ApplicationIntakeFlow() {
                   className="w-full bg-transparent text-sm font-medium outline-none"
                 />
                 <div className="mt-2 flex gap-2">
-                  <select
+                  <Select
                     value={item.importance}
-                    onChange={(event) =>
+                    onValueChange={(value) =>
                       update(item.id, {
-                        importance: event.target
-                          .value as JobRequirement["importance"],
+                        importance: value as JobRequirement["importance"],
                       })
                     }
-                    className="border-iron bg-night text-canvas rounded-md border px-2 py-1 text-[10px]"
                   >
-                    <option value="required">Required</option>
-                    <option value="preferred">Preferred</option>
-                    <option value="inferred">Inferred</option>
-                  </select>
+                    <SelectTrigger
+                      aria-label={`Importance for ${item.content}`}
+                      className="min-h-7 w-auto rounded-md px-2 text-[10px]"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="required" className="text-xs">
+                        Required
+                      </SelectItem>
+                      <SelectItem value="preferred" className="text-xs">
+                        Preferred
+                      </SelectItem>
+                      <SelectItem value="inferred" className="text-xs">
+                        Inferred
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <span className="bg-linen/[.04] text-dust rounded px-2 py-1 text-[10px]">
                     {item.category}
                   </span>
@@ -469,7 +488,7 @@ export function ApplicationIntakeFlow() {
           value={readiness.application.level.replace("_", " ")}
         />
       </div>
-      <section className="border-iron bg-workshop/70 overflow-hidden rounded-2xl border">
+      <section className="roleward-card overflow-hidden rounded-[22px]">
         <div className="border-iron/60 border-b p-5">
           <h2 className="font-semibold">Requirement map</h2>
           <p className="text-dust mt-1 text-xs">

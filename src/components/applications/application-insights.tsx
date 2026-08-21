@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BriefcaseBusiness,
   CalendarClock,
   CheckCircle2,
   CircleDot,
@@ -9,6 +10,11 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { STATUS_LABELS } from "@/modules/applications/timeline";
+import {
+  EmptyState,
+  MetricCard,
+  SectionIntro,
+} from "@/components/workspace/dashboard-ui";
 import {
   applicationReadiness,
   loadWorkspace,
@@ -29,17 +35,19 @@ function useApplicationWorkspace() {
 
 function EmptyApplications() {
   return (
-    <section className="border-iron/80 border-y py-16 text-center">
-      <p className="text-canvas text-sm">
-        Add an application to build this view.
-      </p>
-      <Link
-        href="/dashboard/applications/new"
-        className="text-amber mt-4 inline-flex text-sm font-semibold"
-      >
-        Add application
-      </Link>
-    </section>
+    <EmptyState
+      icon={BriefcaseBusiness}
+      title="Your pipeline is ready"
+      copy="Add an application to start building this view."
+      action={
+        <Link
+          href="/dashboard/applications/new"
+          className="bg-amber text-night inline-flex min-h-10 items-center rounded-xl px-4 text-xs font-semibold"
+        >
+          Add application
+        </Link>
+      }
+    />
   );
 }
 
@@ -96,17 +104,13 @@ export function ApplicationTimeline() {
   if (!workspace.applications.length) return <EmptyApplications />;
 
   return (
-    <div>
-      <div>
-        <p className="section-label">Timeline</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-[-.035em]">
-          Dates that shape your search.
-        </h2>
-        <p className="text-canvas mt-2 text-sm leading-6">
-          Deadlines and interviews across every application, in one sequence.
-        </p>
-      </div>
-      <div className="border-iron/80 mt-8 border-t">
+    <div className="space-y-7">
+      <SectionIntro
+        eyebrow="Timeline"
+        title="Dates that shape your search."
+        copy="Deadlines and interviews across every application, in one sequence."
+      />
+      <div className="roleward-card overflow-hidden rounded-[22px]">
         {events.map((event) => {
           const date = new Date(event.date);
           const past = date.getTime() < renderedAt;
@@ -114,7 +118,7 @@ export function ApplicationTimeline() {
             <Link
               key={event.id}
               href={`/dashboard/applications/${event.applicationId}`}
-              className="group border-iron/70 grid gap-3 border-b py-5 sm:grid-cols-[8rem_2rem_1fr_auto] sm:items-center"
+              className="group border-iron/70 hover:bg-linen/[.025] grid gap-3 border-b px-5 py-5 last:border-b-0 sm:grid-cols-[8rem_2rem_1fr_auto] sm:items-center"
             >
               <time className="text-dust font-mono text-[10px] uppercase">
                 {date.toLocaleDateString(undefined, {
@@ -184,36 +188,35 @@ export function ApplicationProgress() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <p className="section-label">Progress</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-[-.035em]">
-          A useful view of momentum.
-        </h2>
-        <p className="text-canvas mt-2 text-sm leading-6">
-          Preparation quality and pipeline movement, without vanity metrics.
-        </p>
-      </div>
+      <SectionIntro
+        eyebrow="Progress"
+        title="A useful view of momentum."
+        copy="Preparation quality and pipeline movement, without vanity metrics."
+      />
 
-      <section className="border-iron/80 grid border-y sm:grid-cols-3">
-        <ProgressMetric
+      <section className="grid gap-4 sm:grid-cols-3">
+        <MetricCard
+          icon={BriefcaseBusiness}
           label="Applications"
           value={String(workspace.applications.length)}
-          detail="Roles currently tracked"
+          note="Roles currently tracked"
         />
-        <ProgressMetric
+        <MetricCard
+          icon={TrendingUp}
           label="Average readiness"
           value={`${average}%`}
-          detail="Evidence matched to requirements"
+          note="Evidence matched to requirements"
         />
-        <ProgressMetric
+        <MetricCard
+          icon={CheckCircle2}
           label="Interview stage"
           value={String(interviews)}
-          detail="Interviewing or offer"
+          note="Interviewing or offer"
         />
       </section>
 
-      <section className="grid gap-10 lg:grid-cols-2">
-        <div>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="roleward-card rounded-[22px] p-6">
           <div className="flex items-center gap-2">
             <TrendingUp className="text-amber size-4" />
             <h3 className="font-semibold">Requirement coverage</h3>
@@ -238,7 +241,7 @@ export function ApplicationProgress() {
           </div>
         </div>
 
-        <div>
+        <div className="roleward-card rounded-[22px] p-6">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="text-amber size-4" />
             <h3 className="font-semibold">Pipeline distribution</h3>
@@ -259,26 +262,6 @@ export function ApplicationProgress() {
           </div>
         </div>
       </section>
-    </div>
-  );
-}
-
-function ProgressMetric({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div className="border-iron/80 px-0 py-6 sm:border-l sm:px-6 sm:first:border-l-0 sm:first:pl-0">
-      <p className="text-dust text-[10px] tracking-[.08em] uppercase">
-        {label}
-      </p>
-      <p className="mt-3 text-3xl font-semibold tracking-[-.04em]">{value}</p>
-      <p className="text-dust mt-1 text-xs">{detail}</p>
     </div>
   );
 }

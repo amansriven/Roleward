@@ -9,6 +9,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   versionEvidence,
@@ -155,19 +162,27 @@ function VersionManagerContent({
               <span className="text-dust text-[10px] font-semibold uppercase">
                 Open version
               </span>
-              <select
+              <Select
                 value={active.id}
-                onChange={(event) =>
-                  setActiveResumeVersion(localStorage, event.target.value)
+                onValueChange={(value) =>
+                  setActiveResumeVersion(localStorage, value)
                 }
-                className="border-iron bg-night/50 text-canvas mt-1.5 w-full rounded-lg border px-3 py-2 text-xs outline-none"
               >
-                {workspace.resumeVersions.map((version) => (
-                  <option key={version.id} value={version.id}>
-                    {version.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="mt-1.5 min-h-9 rounded-lg text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {workspace.resumeVersions.map((version) => (
+                    <SelectItem
+                      key={version.id}
+                      value={version.id}
+                      className="text-xs"
+                    >
+                      {version.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </label>
             <label>
               <span className="text-dust text-[10px] font-semibold uppercase">

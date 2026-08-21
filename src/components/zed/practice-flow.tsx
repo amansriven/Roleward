@@ -16,6 +16,13 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   EXECUTABLE_LANGUAGES,
@@ -30,6 +37,7 @@ import type { Difficulty } from "@/modules/zed/archetypes";
 import type { CoachingPoint, PracticeGate } from "@/modules/zed/practice";
 import type { ClientProblem } from "@/modules/zed/schema";
 import { renderStub } from "@/modules/zed/stubs";
+import { applySmartEnter, applyTab } from "@/modules/zed/editor";
 
 /**
  * The practice loop.
@@ -786,18 +794,24 @@ function PickStage({
             <span className="text-dust text-[10px] font-semibold tracking-wide uppercase">
               Pattern
             </span>
-            <select
-              value={archetypeId}
-              onChange={(event) => setArchetypeId(event.target.value)}
-              className="border-iron bg-raised text-linen mt-2 min-h-11 w-full rounded-xl border px-3 text-xs outline-none"
+            <Select
+              value={archetypeId || "surprise-me"}
+              onValueChange={(value) =>
+                setArchetypeId(value === "surprise-me" ? "" : value)
+              }
             >
-              <option value="">Surprise me</option>
-              {archetypes.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="bg-raised mt-2 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="surprise-me">Surprise me</SelectItem>
+                {archetypes.map((item) => (
+                  <SelectItem key={item.id} value={item.id}>
+                    {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
 
           <div>
@@ -972,21 +986,30 @@ function SolveStage({
         <div className="border-iron/70 flex min-h-12 items-center justify-between border-b px-4">
           <div className="flex items-center gap-2">
             <Braces className="text-amber size-3.5" />
-            <select
+            <Select
               value={language}
-              onChange={(event) => onLanguage(event.target.value as Language)}
-              aria-label="Language"
-              className="bg-transparent text-xs outline-none"
+              onValueChange={(value) => onLanguage(value as Language)}
             >
-              {ORDERED_LANGUAGES.map((item) => (
-                <option key={item} value={item} className="bg-workshop">
-                  {LANGUAGE_LABELS[item]}
-                  {isExecutable(item) ? "" : " (editor only)"}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                aria-label="Language"
+                className="hover:bg-linen/[0.04] min-h-8 w-auto max-w-48 border-transparent bg-transparent px-2.5 text-xs focus:shadow-none"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ORDERED_LANGUAGES.map((item) => (
+                  <SelectItem key={item} value={item} className="text-xs">
+                    {LANGUAGE_LABELS[item]}
+                    {isExecutable(item) ? "" : " (editor only)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center gap-3">
+            <span className="text-sage hidden items-center gap-1.5 text-[10px] sm:inline-flex">
+              <span className="bg-sage size-1.5 rounded-full" /> Smart indent
+            </span>
             <span className="text-dust font-mono text-[10px]">
               {code.split("\n").length} lines
             </span>
@@ -1012,6 +1035,24 @@ function SolveStage({
           <textarea
             value={code}
             onChange={(event) => onCode(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" && event.key !== "Tab") return;
+              event.preventDefault();
+              const target = event.currentTarget;
+              const selection = {
+                start: target.selectionStart,
+                end: target.selectionEnd,
+              };
+              const edit =
+                event.key === "Enter"
+                  ? applySmartEnter(code, selection, language)
+                  : applyTab(code, selection, event.shiftKey);
+              onCode(edit.value);
+              requestAnimationFrame(() => {
+                target.selectionStart = edit.selection.start;
+                target.selectionEnd = edit.selection.end;
+              });
+            }}
             spellCheck={false}
             aria-label="Solution"
             className="text-linen selection:bg-amber/30 h-full w-full resize-none bg-transparent p-5 font-mono text-[13px] leading-6 outline-none"

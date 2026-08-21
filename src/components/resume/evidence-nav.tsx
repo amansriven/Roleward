@@ -19,9 +19,9 @@ export function EvidenceNav() {
   return (
     <nav
       aria-label="Evidence Library sections"
-      className="border-iron/80 -mt-3 overflow-x-auto border-b"
+      className="surface -mt-3 overflow-x-auto rounded-xl p-1.5"
     >
-      <div className="flex min-w-max gap-7">
+      <div className="flex min-w-max gap-1">
         {sections.map((section) => {
           const active =
             section.href === "/dashboard/evidence"
@@ -33,13 +33,15 @@ export function EvidenceNav() {
               href={section.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative py-4 text-sm font-medium transition-colors",
-                active ? "text-linen" : "text-dust hover:text-canvas",
+                "relative flex min-h-10 items-center rounded-lg px-4 text-xs font-semibold transition-all",
+                active
+                  ? "bg-linen/[.07] text-linen shadow-[inset_0_1px_0_rgba(255,255,255,.04)]"
+                  : "text-dust hover:bg-linen/[.025] hover:text-canvas",
               )}
             >
               {section.label}
               {active && (
-                <span className="bg-amber absolute inset-x-0 bottom-0 h-0.5 rounded-full" />
+                <span className="bg-amber absolute bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full" />
               )}
             </Link>
           );

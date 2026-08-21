@@ -280,7 +280,7 @@ function Kitchen({
 
       <section>
         <p className="section-label">At a glance</p>
-        <div className="border-iron/75 divide-iron/75 mt-4 grid divide-y border-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Summary
             label="Current version"
             value={activeVersion?.name ?? "Original resume"}
@@ -312,7 +312,7 @@ function Kitchen({
           <p className="section-label">Where to go next</p>
           <h2 className="mt-2 text-xl font-semibold">Pick one job to do.</h2>
         </div>
-        <div className="border-iron/75 divide-iron/75 mt-4 divide-y border-y">
+        <div className="roleward-card mt-4 divide-y divide-[var(--iron)] overflow-hidden rounded-[22px]">
           <KitchenDestination
             icon={FileStack}
             title="Manage resume versions"
@@ -373,7 +373,7 @@ function Summary({
   note: string;
 }) {
   return (
-    <div className="min-w-0 px-1 py-5 first:pl-0 sm:px-6 sm:first:pl-0">
+    <div className="roleward-card min-w-0 rounded-[20px] p-5">
       <p className="text-dust text-[11px] tracking-[.08em] uppercase">
         {label}
       </p>
@@ -397,7 +397,7 @@ function KitchenDestination({
   return (
     <Link
       href={href}
-      className="group hover:bg-linen/[.025] flex items-center gap-4 py-5 transition-colors sm:px-3"
+      className="group hover:bg-linen/[.025] flex items-center gap-4 px-5 py-5 transition-colors"
     >
       <span className="border-iron bg-raised text-copper flex size-10 shrink-0 items-center justify-center rounded-xl border">
         <Icon className="size-4" strokeWidth={1.8} />

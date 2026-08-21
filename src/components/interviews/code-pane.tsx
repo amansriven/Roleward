@@ -3,6 +3,13 @@
 import { Braces, Check, Eye, LoaderCircle, Play, X } from "lucide-react";
 import { useRef, useState } from "react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   createEditLog,
   describeActivity,
   diffToOp,
@@ -113,19 +120,25 @@ export function CodePane({
       <div className="border-iron/70 flex items-center justify-between border-b px-4 py-2">
         <div className="flex items-center gap-2">
           <Braces className="text-cobalt size-3.5" />
-          <select
+          <Select
             value={language}
-            onChange={(event) => switchLanguage(event.target.value as Language)}
-            aria-label="Language"
-            className="bg-transparent text-xs outline-none"
+            onValueChange={(value) => switchLanguage(value as Language)}
           >
-            {ORDERED_LANGUAGES.map((item) => (
-              <option key={item} value={item} className="bg-workshop">
-                {LANGUAGE_LABELS[item]}
-                {isExecutable(item) ? "" : " (editor only)"}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              aria-label="Language"
+              className="hover:bg-linen/[0.04] min-h-8 w-auto max-w-48 border-transparent bg-transparent px-2.5 text-xs focus:shadow-none"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ORDERED_LANGUAGES.map((item) => (
+                <SelectItem key={item} value={item} className="text-xs">
+                  {LANGUAGE_LABELS[item]}
+                  {isExecutable(item) ? "" : " (editor only)"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <span className="text-dust font-mono text-[10px]">{lines} lines</span>
       </div>

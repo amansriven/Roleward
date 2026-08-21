@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { EmptyState, SectionIntro } from "@/components/workspace/dashboard-ui";
 import {
   assessUrgency,
   isSettled,
@@ -59,20 +60,19 @@ export function ApplicationList() {
           query={query}
           onQuery={setQuery}
         />
-        <section className="border-iron/80 border-y py-20 text-center">
-          <BriefcaseBusiness className="text-amber mx-auto size-6" />
-          <h2 className="mt-5 text-xl font-semibold">No applications yet</h2>
-          <p className="text-canvas mx-auto mt-2 max-w-lg text-sm leading-6">
-            Paste a job link or add the role manually. Roleward will connect it
-            to your resume evidence and preparation plan.
-          </p>
-          <Link
-            href="/dashboard/applications/new"
-            className="bg-amber text-night mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
-          >
-            <Plus className="size-4" /> Add application
-          </Link>
-        </section>
+        <EmptyState
+          icon={BriefcaseBusiness}
+          title="No applications yet"
+          copy="Paste a job link or add the role manually. Roleward will connect it to your resume evidence and preparation plan."
+          action={
+            <Link
+              href="/dashboard/applications/new"
+              className="bg-amber text-night mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
+            >
+              <Plus className="size-4" /> Add application
+            </Link>
+          }
+        />
       </div>
     );
 
@@ -136,11 +136,12 @@ export function ApplicationList() {
         query={query}
         onQuery={setQuery}
       />
-      <section>
-        <div className="mb-4 flex items-baseline gap-3">
-          <h2 className="text-lg font-semibold">Focus application</h2>
-          <p className="text-dust text-xs">Your current preparation target</p>
-        </div>
+      <section className="space-y-4">
+        <SectionIntro
+          eyebrow="Priority"
+          title="Focus application"
+          copy="Your current preparation target, ranked by urgency and readiness gaps."
+        />
         <div className="roleward-card roleward-card-accent rounded-[28px] p-6 sm:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <span className="bg-amber/12 text-amber ring-amber/15 flex size-14 shrink-0 items-center justify-center rounded-2xl ring-1">
@@ -176,7 +177,7 @@ export function ApplicationList() {
             </div>
             <Link
               href={`/dashboard/applications/${focus.app.id}`}
-              className="text-amber inline-flex shrink-0 items-center gap-2 text-sm font-semibold"
+              className="bg-linen/[.06] text-linen hover:bg-linen/[.1] inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all"
             >
               Open application <ArrowRight className="size-4" />
             </Link>
@@ -184,13 +185,12 @@ export function ApplicationList() {
         </div>
       </section>
 
-      <section>
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">All applications</h2>
-          <p className="text-dust mt-1 text-xs">
-            Ordered by deadlines and preparation gaps
-          </p>
-        </div>
+      <section className="space-y-4">
+        <SectionIntro
+          eyebrow="Pipeline"
+          title="All applications"
+          copy="Ordered by deadlines and preparation gaps."
+        />
         {remaining.length === 0 ? (
           <div className="roleward-empty rounded-[24px] px-6 py-12 text-center">
             <p className="text-canvas text-sm">No other applications yet.</p>
@@ -213,7 +213,7 @@ export function ApplicationList() {
                 <div
                   key={app.id}
                   className={cn(
-                    "roleward-card rounded-[22px] p-5",
+                    "roleward-card group hover:border-canvas/35 rounded-[22px] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_56px_rgba(0,0,0,.24)]",
                     isActive && "border-amber/45",
                     settled && "opacity-60",
                   )}
@@ -329,7 +329,7 @@ function PipelineControls({
     { value: "closed", label: "Closed" },
   ];
   return (
-    <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+    <div className="surface flex flex-col justify-between gap-3 rounded-2xl p-3 lg:flex-row lg:items-center">
       <div className="flex scrollbar-none gap-2 overflow-x-auto">
         {filters.map((item) => {
           const count = applications.filter((application) =>

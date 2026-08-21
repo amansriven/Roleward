@@ -1,6 +1,6 @@
 import { ArrowUpRight, Clock3, Target } from "lucide-react";
 import Link from "next/link";
-import { PracticeFlow } from "@/components/zed/practice-flow";
+import { PracticeModes } from "@/components/zed/practice-modes";
 import { ARCHETYPES, CODING_SKILL_LABELS } from "@/modules/zed/archetypes";
 import { getZedDashboard } from "@/modules/zed/dashboard";
 import { recommendNext } from "@/modules/zed/skills";
@@ -50,7 +50,7 @@ export default async function ZedPage() {
             Untimed practice
           </span>
         </div>
-        <PracticeFlow
+        <PracticeModes
           archetypes={ARCHETYPES.map(({ id, name }) => ({ id, name }))}
           skillLabels={CODING_SKILL_LABELS}
           recommendation={recommendation}

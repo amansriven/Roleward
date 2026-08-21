@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/workspace/dashboard-ui";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import {
   loadWorkspace,
@@ -175,19 +176,19 @@ export function EvidenceLibrary({
 
   if (!items.length)
     return (
-      <div className="border-iron/75 rounded-[22px] border py-20 text-center">
-        <Database className="text-dust mx-auto size-6" />
-        <h2 className="mt-5 text-xl font-semibold">No evidence yet.</h2>
-        <p className="text-canvas mx-auto mt-2 max-w-md text-sm leading-6">
-          Import a resume, review what was read, and confirm only what is true.
-        </p>
-        <Link
-          href="/dashboard/resume-kitchen/intake"
-          className="bg-copper text-night mt-6 inline-flex rounded-lg px-4 py-2.5 text-sm font-semibold"
-        >
-          Import resume
-        </Link>
-      </div>
+      <EmptyState
+        icon={Database}
+        title="No evidence yet"
+        copy="Import a resume, review what was read, and confirm only what is true."
+        action={
+          <Link
+            href="/dashboard/resume-kitchen/intake"
+            className="bg-copper text-night inline-flex rounded-xl px-4 py-2.5 text-sm font-semibold"
+          >
+            Import resume
+          </Link>
+        }
+      />
     );
 
   if (view === "overview")
@@ -212,15 +213,15 @@ export function EvidenceLibrary({
     <div className="space-y-7">
       <SectionHeading {...meta} />
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="border-iron flex flex-1 items-center gap-3 border-b px-1">
+      <div className="surface flex flex-col gap-3 rounded-2xl p-3 sm:flex-row">
+        <div className="border-iron bg-night/30 flex min-h-11 flex-1 items-center gap-3 rounded-xl border px-3">
           <Search className="text-dust size-4 shrink-0" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={`Search ${scoped.length} ${scoped.length === 1 ? "entry" : "entries"}`}
             aria-label={`Search ${meta.eyebrow.toLowerCase()}`}
-            className="text-canvas placeholder:text-dust w-full bg-transparent py-3 text-sm outline-none"
+            className="text-canvas placeholder:text-dust w-full bg-transparent py-2 text-sm outline-none"
           />
           {query && (
             <button
@@ -234,17 +235,17 @@ export function EvidenceLibrary({
           )}
         </div>
         {claimCount > 0 && (
-          <div className="border-iron flex shrink-0 items-center gap-5 border-b px-1">
+          <div className="bg-night/20 flex shrink-0 items-center gap-1 rounded-xl p-1">
             {(["all", "confirmed", "proposed"] as Filter[]).map((option) => (
               <button
                 key={option}
                 type="button"
                 onClick={() => setFilter(option)}
                 className={cn(
-                  "relative py-3 text-xs font-medium capitalize transition",
+                  "relative rounded-lg px-3 py-2 text-xs font-medium capitalize transition",
                   filter === option
-                    ? "text-linen after:bg-copper after:absolute after:inset-x-0 after:bottom-0 after:h-0.5"
-                    : "text-dust hover:text-canvas",
+                    ? "bg-linen/[.07] text-linen"
+                    : "text-dust hover:bg-linen/[.025] hover:text-canvas",
                 )}
               >
                 {option}
@@ -257,7 +258,7 @@ export function EvidenceLibrary({
       {visible.length === 0 ? (
         <SectionEmpty view={view} query={query} />
       ) : (
-        <div className="border-iron/75 divide-iron/75 divide-y border-y">
+        <div className="space-y-3">
           {visible.map((item) => (
             <EvidenceRecord
               key={item.id}
@@ -345,7 +346,7 @@ function EvidenceOverview({
 
       <section>
         <p className="section-label">At a glance</p>
-        <div className="border-iron/75 divide-iron/75 mt-4 grid divide-y border-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Summary
             label="Entries"
             value={String(items.length)}
@@ -370,7 +371,7 @@ function EvidenceOverview({
 
       <section>
         <p className="section-label">Browse your evidence</p>
-        <div className="border-iron/75 divide-iron/75 mt-4 divide-y border-y">
+        <div className="roleward-card mt-4 divide-y divide-[var(--iron)] overflow-hidden rounded-[22px]">
           {destinations.map((destination) => (
             <EvidenceDestination key={destination.href} {...destination} />
           ))}
@@ -410,7 +411,7 @@ function Summary({
   note: string;
 }) {
   return (
-    <div className="min-w-0 py-5 sm:px-6 sm:first:pl-0">
+    <div className="roleward-card min-w-0 rounded-[20px] p-5">
       <p className="text-dust text-[10px] tracking-[.08em] uppercase">
         {label}
       </p>
@@ -436,7 +437,7 @@ function EvidenceDestination({
   return (
     <Link
       href={href}
-      className="group hover:bg-linen/[.025] flex items-center gap-4 py-5 transition sm:px-3"
+      className="group hover:bg-linen/[.025] flex items-center gap-4 px-5 py-5 transition"
     >
       <span className="border-iron bg-raised text-copper flex size-10 shrink-0 items-center justify-center rounded-xl border">
         <Icon className="size-4" strokeWidth={1.8} />
@@ -467,7 +468,7 @@ function EvidenceRecord({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   return (
-    <article className="py-7 sm:px-2">
+    <article className="roleward-card rounded-[22px] p-5 sm:p-6">
       <div className="flex items-start justify-between gap-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
