@@ -7,7 +7,7 @@ export default function ApplicationsPage() {
   return (
     <div className="space-y-7">
       <PageIntro
-        icon={<FeatureIcon feature="applications" size="lg" active />}
+        icon={<FeatureIcon feature="applications" size="xl" active />}
         eyebrow="Your search"
         title="Applications"
         copy="Keep every role, deadline, résumé version, and practice plan together. Backstage surfaces the application that needs attention now without turning your search into a spreadsheet."

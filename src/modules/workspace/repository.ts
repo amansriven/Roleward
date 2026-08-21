@@ -480,7 +480,7 @@ export function recommendActions(
       title: `Strengthen: ${gap.content}`,
       detail: "Resume · required evidence gap",
       minutes: 10,
-      href: "/dashboard/resume-kitchen",
+      href: "/dashboard/resume-kitchen/tailor",
       area: "resume",
     });
   const technical = technicalSignals(workspace.interviewSummaries);

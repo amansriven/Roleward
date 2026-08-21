@@ -9,7 +9,7 @@ export default function EvidencePage() {
   return (
     <div className="space-y-8">
       <PageIntro
-        icon={<FeatureIcon feature="evidence" size="lg" active />}
+        icon={<FeatureIcon feature="evidence" size="xl" active />}
         eyebrow="Shared foundation"
         title="Evidence Library"
         copy="The verified experience every Backstage feature can use. Edit the wording, confirm what is accurate, or remove anything you do not want used in a résumé or interview."

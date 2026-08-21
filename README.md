@@ -1,107 +1,183 @@
 <div align="center">
-  <img src="src/app/icon.svg" alt="Backstage" width="72" height="72" />
+  <img src="public/brand/backstage-mark.svg" alt="Backstage logo" width="88" height="88" />
 
 # Backstage
 
-**A calmer, more connected way to prepare for the role you want.**
+**Get where you need to be.**
 
-Backstage brings résumé tailoring, technical practice, and behavioral rehearsal
-into one focused workspace built around each target job.
+Backstage is a job-specific preparation workspace for early-career software
+engineers. It connects verified résumé evidence, target-job requirements,
+technical practice, and behavioral rehearsal—then keeps the next useful action
+visible.
 
-[![Production](https://img.shields.io/badge/production-sweetplus.vercel.app-DF7C68?style=flat-square)](https://sweetplus.vercel.app)
-![Next.js](https://img.shields.io/badge/Next.js-16-0D0E10?style=flat-square&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-6-68A5B8?style=flat-square&logo=typescript&logoColor=white)
-![Amazon Cognito](https://img.shields.io/badge/Auth-Amazon_Cognito-DF7C68?style=flat-square&logo=amazonwebservices&logoColor=white)
+[![Live product](https://img.shields.io/badge/live-sweetplus.vercel.app-DF7C68?style=flat-square)](https://sweetplus.vercel.app)
+![Next.js](https://img.shields.io/badge/Next.js-16-17191E?style=flat-square&logo=next.js)
+![React](https://img.shields.io/badge/React-19-68A5B8?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Tests](https://img.shields.io/badge/unit_tests-210_passing-73A897?style=flat-square)
 
-[Explore the app](https://sweetplus.vercel.app) · [Product specification](docs/PRODUCT_SPEC.md) · [Roadmap](docs/ROADMAP.md)
+[Open Backstage](https://sweetplus.vercel.app) · [Full product specification](docs/PRODUCT_SPEC.md) · [Roadmap](docs/ROADMAP.md)
 </div>
 
 ---
 
-## The product at a glance
+## The product
 
 <p align="center">
   <a href="https://sweetplus.vercel.app">
-    <img src="docs/images/product-home.jpg" alt="Backstage homepage showing a role-specific preparation workspace and readiness plan" width="100%" />
+    <img src="docs/images/backstage-home.png" alt="Backstage homepage showing a job-specific readiness plan" width="100%" />
   </a>
 </p>
 
-<p align="center"><sub>A job-specific preparation workspace that keeps the next useful action visible.</sub></p>
+Backstage starts with two sources of truth: what the candidate can verify and
+what the target role actually asks for. Every plan, suggestion, and practice
+recommendation is grounded in that context.
+
+```text
+Verified experience + target job
+                 ↓
+        requirement coverage
+                 ↓
+ Resume Kitchen · Zed · Stage Fright
+                 ↓
+        one useful action next
+```
+
+## Product specification snapshot
+
+### Core promise
+
+> Know what to work on next for the software engineering role you want.
+
+### Product rules
+
+- **Evidence before generation.** Résumé suggestions can only use experience
+  the candidate has confirmed.
+- **Keep the original.** Resume Kitchen stores the imported résumé as a locked
+  original and keeps every editable revision as a separately named version.
+- **Coach rather than answer.** Zed and Stage Fright strengthen reasoning and
+  delivery instead of completing interviews for the candidate.
+- **Explain readiness.** Preparation labels expose the evidence and activity
+  behind them; they are not predictions of interviews or offers.
+- **One target, shared context.** Applications connect the résumé, coding plan,
+  and behavioral preparation for a specific role.
+- **Private by default.** Résumés, evidence, attempts, stories, and session data
+  are treated as sensitive workspace information.
+
+### Workspace map
+
+| Workspace          | Current product behavior                                                                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Applications**   | Save a role, preserve the posting, confirm requirements, track status and dates, and build a preparation map.                                         |
+| **Evidence**       | Review extracted claims and keep a verified record of projects, experience, metrics, and outcomes.                                                    |
+| **Resume Kitchen** | Import PDF or DOCX résumés, lock the original, create named revisions, edit each version independently, and ground suggestions in confirmed evidence. |
+| **Zed**            | Classify a technical pattern, commit to an approach, solve in the editor, use progressive hints, run tests, and review coaching.                      |
+| **Stage Fright**   | Build a story bank, rehearse behavioral questions, track competency coverage, and review session feedback.                                            |
+| **Home**           | Show the active role, readiness signals, and the highest-value next preparation action.                                                               |
+
+## Feature previews
 
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/images/product-login.jpg" alt="Backstage login page with email, Google, and Apple authentication" width="100%" />
+      <img src="docs/images/backstage-resume-kitchen.png" alt="Resume Kitchen product page showing evidence-grounded résumé tailoring" width="100%" />
     </td>
     <td width="50%">
-      <img src="docs/images/product-signup.jpg" alt="Backstage account creation page introducing Resume Kitchen, Zed, and Stage Fright" width="100%" />
+      <img src="docs/images/backstage-zed.png" alt="Zed product page showing technical pattern practice and coaching" width="100%" />
     </td>
   </tr>
   <tr>
-    <td align="center"><sub><strong>Welcome back</strong> — return to your preparation without rebuilding context.</sub></td>
-    <td align="center"><sub><strong>Start with direction</strong> — create one private workspace for all three tools.</sub></td>
+    <td align="center"><sub><strong>Resume Kitchen</strong> — tailor the résumé while keeping every claim defensible.</sub></td>
+    <td align="center"><sub><strong>Zed</strong> — practise recognition, reasoning, implementation, and testing separately.</sub></td>
   </tr>
 </table>
 
-## One workspace, three focused tools
+<p align="center">
+  <img src="docs/images/backstage-stage-fright.png" alt="Stage Fright product page showing behavioral story rehearsal" width="100%" />
+</p>
 
-|        | Tool             | Purpose                                                                |
-| ------ | ---------------- | ---------------------------------------------------------------------- |
-| **01** | **Resume Kitchen**      | Turn verified experience into credible, role-specific résumé evidence. |
-| **02** | **Zed**          | Identify technical gaps and organize deliberate interview practice.    |
-| **03** | **Stage Fright** | Develop and rehearse behavioral stories until delivery feels natural.  |
+<p align="center"><sub><strong>Stage Fright</strong> — turn real experiences into flexible stories that still sound natural.</sub></p>
 
-Backstage does not promise interviews or offers. It helps candidates understand what a role requires, recognize preparation gaps, and choose the most useful thing to work on next.
+## Resume Kitchen version contract
 
-## What works today
+Résumé versioning is deliberately non-destructive:
 
-- Responsive product pages and a private candidate dashboard
-- Email/password registration, verification, login, and recovery
-- Google authentication through Amazon Cognito
-- Server-side sessions with protected workspace routes
-- Candidate onboarding and preparation preferences
-- Résumé intake with evidence confirmation
-- Target-job requirements and readiness mapping
-- Dedicated application, evidence, Resume Kitchen, Zed, and Stage Fright workspaces
+1. The first confirmed import becomes the **original résumé**.
+2. Original content is locked, but the user can give the source a clearer name.
+3. Every revision is created as a separately named copy.
+4. Revisions can change headlines, skills, bullets, and section content without
+   modifying the source.
+5. A revision can be associated with the active application while remaining
+   independently selectable later.
+6. Existing workspaces migrate their confirmed evidence into a protected
+   original snapshot.
 
-## Technology
+## Technical architecture
 
-| Layer           | Technology                          |
-| --------------- | ----------------------------------- |
-| **Application** | Next.js 16, React 19, TypeScript 6  |
-| **Interface**   | Tailwind CSS, Geist, Lucide         |
-| **Identity**    | Auth.js, Amazon Cognito, AWS SDK    |
-| **Validation**  | Zod                                 |
-| **Testing**     | Vitest, Testing Library, Playwright |
-| **Deployment**  | Vercel                              |
+Backstage is a modular Next.js application. Route handlers and server
+components stay close to the product surfaces they support, while domain rules
+live in testable modules.
 
-The codebase follows a modular-monolith structure: routes and layouts live in `src/app`, reusable interface components in `src/components`, and product domains in `src/modules`.
+| Layer            | Technology                                       |
+| ---------------- | ------------------------------------------------ |
+| **Application**  | Next.js 16, React 19, TypeScript 6               |
+| **Interface**    | Tailwind CSS 4, Geist, Lucide                    |
+| **Identity**     | Auth.js, Amazon Cognito, Google federation       |
+| **Storage**      | AWS DynamoDB and S3-compatible workspace storage |
+| **AI workflows** | OpenAI structured outputs with Zod validation    |
+| **Execution**    | AWS Lambda-backed coding test execution          |
+| **Testing**      | Vitest, Testing Library, Playwright              |
+| **Deployment**   | Vercel                                           |
 
 ```text
 src/
-├── app/          routes, layouts, and server endpoints
-├── components/   product, workspace, and interface components
-├── modules/      identity and preparation-domain logic
-├── lib/          shared utilities
-└── types/        application type extensions
+├── app/                    routes, layouts, and server endpoints
+├── components/             brand, product, and workspace interface
+├── modules/
+│   ├── applications/       job intake and requirement matching
+│   ├── evidence/           verified candidate claims
+│   ├── resume-kitchen/     extraction, versions, and tailoring rules
+│   ├── zed/                practice generation, validation, and coaching
+│   ├── interviews/         Stage Fright sessions and reports
+│   └── workspace/          local and cloud workspace state
+└── lib/                    shared utilities
 ```
 
-## Run it locally
+## Authentication
 
-### 1. Requirements
+Backstage supports email/password and Google sign-in through Amazon Cognito.
+Auth.js exchanges the Cognito authorization result for a server-side application
+session; protected dashboard routes never rely on a browser-only identity flag.
+
+```text
+Email/password ──→ Cognito validation ──→ Auth.js session ──→ Dashboard
+Google ──→ Cognito hosted authorization ──→ Google ──→ callback ──→ Dashboard
+```
+
+| Environment | Cognito callback                                         |
+| ----------- | -------------------------------------------------------- |
+| Local       | `http://localhost:3000/api/auth/callback/cognito`        |
+| Production  | `https://sweetplus.vercel.app/api/auth/callback/cognito` |
+
+See [AUTH_SETUP.md](docs/AUTH_SETUP.md) for the app-client secret, OAuth scopes,
+Google federation, callback URLs, and deployment variables.
+
+## Run locally
+
+### Requirements
 
 - Node.js 22 or newer
 - npm 10
-- An Amazon Cognito user pool with a traditional web app client
+- An Amazon Cognito user pool and confidential web app client
 
-### 2. Install and configure
+### Install
 
 ```bash
 npm install
 cp .env.example .env
 ```
 
-Add the server-only authentication values:
+Add the required server-only identity values:
 
 ```env
 AUTH_SECRET=
@@ -111,37 +187,15 @@ AUTH_COGNITO_ISSUER=https://cognito-idp.us-east-2.amazonaws.com/YOUR_USER_POOL_I
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-Generate a secure Auth.js secret:
+Generate the Auth.js secret and start the development server:
 
 ```bash
 openssl rand -base64 32
-```
-
-Never prefix authentication secrets with `NEXT_PUBLIC_`, and never commit a populated environment file.
-
-### 3. Start developing
-
-```bash
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000).
-
-## Authentication flow
-
-```text
-Email + password ──→ Backstage interface ──→ Cognito validation ──→ Dashboard
-Google            ──→ Google consent   ──→ Cognito callback   ──→ Dashboard
-```
-
-Email registration, verification codes, login, and password recovery stay inside the Backstage interface. Cognito remains the secure identity store, while Auth.js creates and validates the application session.
-
-| Environment | Cognito callback                                         |
-| ----------- | -------------------------------------------------------- |
-| Local       | `http://localhost:3000/api/auth/callback/cognito`        |
-| Production  | `https://sweetplus.vercel.app/api/auth/callback/cognito` |
-
-See the [authentication setup guide](docs/AUTH_SETUP.md) for app-client settings, OAuth scopes, Google federation, and Vercel environment configuration.
+Open [localhost:3000](http://localhost:3000). Never prefix authentication
+secrets with `NEXT_PUBLIC_`, and never commit a populated environment file.
 
 ## Quality checks
 
@@ -149,23 +203,23 @@ See the [authentication setup guide](docs/AUTH_SETUP.md) for app-client settings
 npm run lint          # ESLint
 npm run typecheck     # TypeScript
 npm test              # Unit and component tests
-npm run test:e2e      # Playwright flows
+npm run test:e2e      # Browser flows
 npm run format:check  # Prettier
 npm run build         # Production build
 ```
 
-## Documentation
+## Project documentation
 
-| Document                                      | What it covers                             |
-| --------------------------------------------- | ------------------------------------------ |
-| [Product specification](docs/PRODUCT_SPEC.md) | Product goals, users, and feature behavior |
-| [System architecture](docs/ARCHITECTURE.md)   | Services, modules, and system boundaries   |
-| [Data model](docs/DATA_MODEL.md)              | Core entities and relationships            |
-| [Delivery roadmap](docs/ROADMAP.md)           | Milestones and implementation sequence     |
-| [Authentication setup](docs/AUTH_SETUP.md)    | Cognito, OAuth, callbacks, and deployment  |
+| Document                                      | Coverage                                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------------ |
+| [Product specification](docs/PRODUCT_SPEC.md) | Product principles, feature behavior, readiness, and MVP boundaries      |
+| [System architecture](docs/ARCHITECTURE.md)   | Services, modules, persistence, and execution boundaries                 |
+| [Data model](docs/DATA_MODEL.md)              | Candidate, application, résumé-version, evidence, and interview entities |
+| [Delivery roadmap](docs/ROADMAP.md)           | Delivery phases and remaining work                                       |
+| [Authentication setup](docs/AUTH_SETUP.md)    | Cognito, OAuth, callbacks, and Vercel configuration                      |
 
 ---
 
 <div align="center">
-  <sub>Built to make serious preparation feel focused, honest, and manageable.</sub>
+  <sub>Serious preparation, kept focused, defensible, and connected.</sub>
 </div>

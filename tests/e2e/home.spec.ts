@@ -4,9 +4,11 @@ test("shows the Backstage product foundation", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "One role in",
+    "Get where you need to be",
   );
-  await expect(page.getByRole("heading", { name: "Resume Kitchen" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Resume Kitchen" }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Zed" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Stage Fright", exact: true }),

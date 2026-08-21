@@ -30,6 +30,7 @@ const sizes = {
   sm: { frame: "size-7 rounded-lg", icon: "size-3.5" },
   md: { frame: "size-9 rounded-[10px]", icon: "size-4" },
   lg: { frame: "size-11 rounded-xl", icon: "size-[18px]" },
+  xl: { frame: "size-14 rounded-2xl", icon: "size-[22px]" },
 } as const;
 
 export function FeatureIcon({

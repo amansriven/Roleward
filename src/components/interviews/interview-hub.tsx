@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Mic, Plus, Sparkles, Type } from "lucide-react";
+import { ArrowRight, Mic, Plus, Type } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FeatureIcon } from "@/components/brand/feature-icon";
@@ -51,13 +51,15 @@ export function InterviewHub() {
     return (
       <div className="space-y-7">
         <PageIntro
-          icon={<FeatureIcon feature="stage-fright" size="lg" active />}
+          icon={<FeatureIcon feature="stage-fright" size="xl" active />}
           eyebrow="Stage Fright"
           title="Practice the interview before it counts."
           copy="Pick the kind of interview, the role, and how hard it should feel. Answer by typing or out loud, then get scored feedback on what to fix."
         />
         <Panel className="py-20 text-center">
-          <Sparkles className="text-plum mx-auto size-7" />
+          <div className="flex justify-center">
+            <FeatureIcon feature="stage-fright" size="xl" active />
+          </div>
           <h2 className="mt-5 text-xl font-semibold">
             You haven’t run an interview yet.
           </h2>
@@ -78,7 +80,7 @@ export function InterviewHub() {
   return (
     <div className="space-y-7">
       <PageIntro
-        icon={<FeatureIcon feature="stage-fright" size="lg" active />}
+        icon={<FeatureIcon feature="stage-fright" size="xl" active />}
         eyebrow="Stage Fright"
         title="Practice the interview before it counts."
         copy="Every interview is scored and stored, so you can watch specific weaknesses close over time."

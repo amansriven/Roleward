@@ -1,7 +1,6 @@
 import { Check, ChevronDown, Clock3 } from "lucide-react";
 import Image from "next/image";
 import { auth } from "@/auth";
-import { FeatureIcon } from "@/components/brand/feature-icon";
 import { PageIntro } from "@/components/workspace/dashboard-ui";
 import { PracticeFlow } from "@/components/zed/practice-flow";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
@@ -83,7 +82,16 @@ export default async function ZedPage() {
   return (
     <div className="space-y-10">
       <PageIntro
-        icon={<FeatureIcon feature="zed" size="lg" active />}
+        icon={
+          <Image
+            src="/brand/zed-avatar.png"
+            alt="Zed, your technical practice coach"
+            width={56}
+            height={56}
+            className="border-amber/30 size-14 rounded-2xl border object-cover"
+            priority
+          />
+        }
         eyebrow="Zed"
         title="Technical practice"
         copy="Work through one problem at a time. Name the pattern, commit to an approach, write the solution, and review what actually happened."
