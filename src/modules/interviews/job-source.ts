@@ -2,6 +2,7 @@ import "server-only";
 
 import { lookup } from "node:dns/promises";
 
+import { parseJobPostingDocument } from "@/modules/applications/job-posting";
 import { addressBlocked } from "./net-guard";
 
 const MAX_BYTES = 512 * 1024;
@@ -60,24 +61,6 @@ function assertHttpsUrl(raw: string) {
   return url;
 }
 
-function htmlToText(html: string) {
-  return html
-    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
-    .replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
 async function readCapped(response: Response) {
   const buffer = await response.arrayBuffer();
   if (buffer.byteLength > MAX_BYTES)
@@ -85,7 +68,7 @@ async function readCapped(response: Response) {
   return new TextDecoder().decode(buffer);
 }
 
-export async function fetchJobDescription(rawUrl: string) {
+export async function fetchJobPosting(rawUrl: string) {
   let url = assertHttpsUrl(rawUrl);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -121,13 +104,16 @@ export async function fetchJobDescription(rawUrl: string) {
           "unreachable",
           `That site returned ${response.status}. Paste the description instead.`,
         );
-      const text = htmlToText(await readCapped(response));
-      if (text.length < 200)
+      const posting = parseJobPostingDocument(await readCapped(response));
+      if (posting.description.length < 200)
         throw new JobSourceError(
           "empty",
           "That page did not contain a readable job description.",
         );
-      return text.slice(0, 12_000);
+      return {
+        ...posting,
+        description: posting.description.slice(0, 12_000),
+      };
     }
     throw new JobSourceError(
       "unreachable",
@@ -136,4 +122,8 @@ export async function fetchJobDescription(rawUrl: string) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+export async function fetchJobDescription(rawUrl: string) {
+  return (await fetchJobPosting(rawUrl)).description;
 }

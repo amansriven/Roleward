@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import {
-  fetchJobDescription,
+  fetchJobPosting,
   JobSourceError,
 } from "@/modules/interviews/job-source";
 
@@ -20,8 +20,7 @@ export async function POST(request: Request) {
   if (!parsed.success)
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   try {
-    const description = await fetchJobDescription(parsed.data.url);
-    return NextResponse.json({ description });
+    return NextResponse.json(await fetchJobPosting(parsed.data.url));
   } catch (error) {
     if (error instanceof JobSourceError)
       return NextResponse.json(

@@ -5,6 +5,7 @@ import {
   BriefcaseBusiness,
   CalendarClock,
   Plus,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -32,6 +33,8 @@ import {
  */
 export function ApplicationList() {
   const [workspace, setWorkspace] = useState<WorkspaceSnapshot | null>(null);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<PipelineFilter>("all");
   useEffect(() => {
     const refresh = () => setWorkspace(loadWorkspace(localStorage));
     queueMicrotask(refresh);
@@ -48,29 +51,42 @@ export function ApplicationList() {
 
   if (!workspace.applications.length)
     return (
-      <section className="backstage-empty rounded-[28px] p-5 sm:p-10">
-        <div className="border-iron/70 flex min-h-[360px] flex-col items-center justify-center rounded-[22px] border border-dashed px-6 py-16 text-center">
-          <span className="bg-raised text-amber flex size-14 items-center justify-center rounded-2xl">
-            <BriefcaseBusiness className="size-6" />
-          </span>
-          <h2 className="mt-6 text-xl font-semibold">Add your first role</h2>
+      <div className="space-y-8">
+        <PipelineControls
+          applications={workspace.applications}
+          filter={filter}
+          onFilter={setFilter}
+          query={query}
+          onQuery={setQuery}
+        />
+        <section className="border-iron/80 border-y py-20 text-center">
+          <BriefcaseBusiness className="text-amber mx-auto size-6" />
+          <h2 className="mt-5 text-xl font-semibold">No applications yet</h2>
           <p className="text-canvas mx-auto mt-2 max-w-lg text-sm leading-6">
-            Backstage will connect the job requirements to the right résumé,
-            coding practice, and interview plan—then keep the original inputs
-            available whenever you need them.
+            Paste a job link or add the role manually. Backstage will connect it
+            to your résumé evidence and preparation plan.
           </p>
           <Link
             href="/dashboard/applications/new"
-            className="bg-amber text-night mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
+            className="bg-amber text-night mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
           >
             <Plus className="size-4" /> Add application
           </Link>
-        </div>
-      </section>
+        </section>
+      </div>
     );
 
   const active = getActiveApplication(workspace);
-  const ranked = workspace.applications
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleApplications = workspace.applications.filter((application) => {
+    const matchesQuery =
+      !normalizedQuery ||
+      `${application.companyName} ${application.roleTitle}`
+        .toLowerCase()
+        .includes(normalizedQuery);
+    return matchesQuery && matchesPipelineFilter(application.status, filter);
+  });
+  const ranked = visibleApplications
     .map((app) => {
       const readiness = applicationReadiness(app, workspace);
       return {
@@ -85,6 +101,22 @@ export function ApplicationList() {
       };
     })
     .sort((left, right) => right.urgency.score - left.urgency.score);
+
+  if (!ranked.length)
+    return (
+      <div className="space-y-8">
+        <PipelineControls
+          applications={workspace.applications}
+          filter={filter}
+          onFilter={setFilter}
+          query={query}
+          onQuery={setQuery}
+        />
+        <p className="border-iron/80 text-dust border-y py-16 text-center text-sm">
+          No applications match this view.
+        </p>
+      </div>
+    );
   const focus = (
     active
       ? (ranked.find(({ app }) => app.id === active.id) ?? ranked[0])
@@ -97,6 +129,13 @@ export function ApplicationList() {
 
   return (
     <div className="space-y-10">
+      <PipelineControls
+        applications={workspace.applications}
+        filter={filter}
+        onFilter={setFilter}
+        query={query}
+        onQuery={setQuery}
+      />
       <section>
         <div className="mb-4 flex items-baseline gap-3">
           <h2 className="text-lg font-semibold">Focus application</h2>
@@ -254,6 +293,76 @@ export function ApplicationList() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+type PipelineFilter = "all" | "in_progress" | "interviewing" | "closed";
+
+function matchesPipelineFilter(
+  status: WorkspaceSnapshot["applications"][number]["status"],
+  filter: PipelineFilter,
+) {
+  if (filter === "all") return true;
+  if (filter === "interviewing") return status === "interviewing";
+  if (filter === "closed") return status === "closed" || status === "offer";
+  return ["saved", "preparing", "applied", "assessment"].includes(status);
+}
+
+function PipelineControls({
+  applications,
+  filter,
+  onFilter,
+  query,
+  onQuery,
+}: {
+  applications: WorkspaceSnapshot["applications"];
+  filter: PipelineFilter;
+  onFilter: (filter: PipelineFilter) => void;
+  query: string;
+  onQuery: (query: string) => void;
+}) {
+  const filters: { value: PipelineFilter; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "in_progress", label: "In progress" },
+    { value: "interviewing", label: "Interviewing" },
+    { value: "closed", label: "Closed" },
+  ];
+  return (
+    <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+      <div className="flex scrollbar-none gap-2 overflow-x-auto">
+        {filters.map((item) => {
+          const count = applications.filter((application) =>
+            matchesPipelineFilter(application.status, item.value),
+          ).length;
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => onFilter(item.value)}
+              className={cn(
+                "border-iron flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-xs",
+                filter === item.value
+                  ? "border-amber/60 text-linen"
+                  : "text-dust hover:text-canvas",
+              )}
+            >
+              {item.label}{" "}
+              <span className="font-mono text-[10px]">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+      <label className="border-iron bg-night/35 focus-within:border-canvas/50 flex min-h-11 items-center gap-3 rounded-xl border px-4 lg:w-80">
+        <Search className="text-dust size-4" />
+        <span className="sr-only">Search applications</span>
+        <input
+          value={query}
+          onChange={(event) => onQuery(event.target.value)}
+          placeholder="Search company or role…"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+        />
+      </label>
     </div>
   );
 }

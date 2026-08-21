@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   CircleAlert,
   Link2,
+  LoaderCircle,
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,14 @@ import { assessReadiness } from "@/modules/readiness/model";
 import { saveApplication } from "@/modules/workspace/repository";
 
 type Step = "job" | "requirements" | "map";
+type ImportedPostingResponse = {
+  description?: string;
+  companyName?: string;
+  roleTitle?: string;
+  location?: string;
+  error?: string;
+};
+
 const sampleDescription =
   "We are looking for a Software Engineer to build scalable backend services and APIs using Node.js and TypeScript. You will work with PostgreSQL databases, apply strong data structures and algorithms fundamentals, and collaborate with cross-functional engineering teams. Experience designing reliable distributed systems is preferred.";
 
@@ -32,6 +41,8 @@ export function ApplicationIntakeFlow() {
   const [step, setStep] = useState<Step>("job");
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
+  const [location, setLocation] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
   const [application, setApplication] = useState<TargetApplication | null>(
@@ -40,14 +51,73 @@ export function ApplicationIntakeFlow() {
   const [requirements, setRequirements] = useState<JobRequirement[]>([]);
   const [evidenceConfirmed, setEvidenceConfirmed] = useState(false);
   const [extracting, setExtracting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [linkLoaded, setLinkLoaded] = useState(false);
   /** True when the posting could not be read and the keyword guess was used. */
   const [fellBack, setFellBack] = useState(false);
   const [error, setError] = useState("");
 
+  async function readPostingLink() {
+    const url = sourceUrl.trim();
+    if (!url) {
+      setError("Paste a job posting link first.");
+      return null;
+    }
+
+    setError("");
+    setLinkLoaded(false);
+    setImporting(true);
+    try {
+      const response = await fetch("/api/interviews/job-source", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const body = (await response
+        .json()
+        .catch(() => null)) as ImportedPostingResponse | null;
+      if (!response.ok || !body?.description) {
+        setError(
+          body?.error ??
+            "Backstage could not read that link. Paste the description below instead.",
+        );
+        return null;
+      }
+
+      setDescription(body.description);
+      if (body.companyName) setCompany(body.companyName);
+      if (body.roleTitle) setRole(body.roleTitle);
+      if (body.location) setLocation(body.location);
+      setLinkLoaded(true);
+      return body;
+    } catch {
+      setError(
+        "Backstage could not read that link. Paste the description below instead.",
+      );
+      return null;
+    } finally {
+      setImporting(false);
+    }
+  }
+
   async function analyze() {
     setError("");
+    setFellBack(false);
     try {
-      const contentHash = await hashDescription(description);
+      let jobDescription = description.trim();
+      let companyName = company;
+      let roleTitle = role;
+      let applicationLocation = location;
+      if (jobDescription.length < 80 && sourceUrl.trim()) {
+        const imported = await readPostingLink();
+        if (!imported?.description) return;
+        jobDescription = imported.description;
+        companyName = imported.companyName || companyName;
+        roleTitle = imported.roleTitle || roleTitle;
+        applicationLocation = imported.location || applicationLocation;
+      }
+
+      const contentHash = await hashDescription(jobDescription);
       const existing = localStorage.getItem("backstage:job-hash");
       if (existing === contentHash) {
         setError(
@@ -56,12 +126,13 @@ export function ApplicationIntakeFlow() {
       }
       const next = targetApplicationSchema.parse({
         id: crypto.randomUUID(),
-        companyName: company,
-        roleTitle: role,
-        sourceUrl: "",
+        companyName,
+        roleTitle,
+        location: applicationLocation.trim() || undefined,
+        sourceUrl: sourceUrl.trim(),
         deadline: deadline || undefined,
         status: "preparing",
-        jobDescription: description,
+        jobDescription,
         contentHash,
         createdAt: new Date().toISOString(),
       });
@@ -77,7 +148,7 @@ export function ApplicationIntakeFlow() {
         const response = await fetch("/api/resume/requirements", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ jobDescription: description }),
+          body: JSON.stringify({ jobDescription }),
         });
         const body = (await response.json().catch(() => null)) as {
           requirements?: JobRequirement[];
@@ -88,18 +159,18 @@ export function ApplicationIntakeFlow() {
         else {
           // Falling back is better than an empty screen, but the candidate is
           // told these were guessed rather than read.
-          setRequirements(extractRequirements(description));
+          setRequirements(extractRequirements(jobDescription));
           setFellBack(true);
         }
       } catch {
-        setRequirements(extractRequirements(description));
+        setRequirements(extractRequirements(jobDescription));
         setFellBack(true);
       } finally {
         setExtracting(false);
       }
     } catch {
       setError(
-        "Add a company, role, and at least a short job description (80 characters). ",
+        "Add a company, role, and a readable job link or description of at least 80 characters.",
       );
     }
   }
@@ -142,9 +213,58 @@ export function ApplicationIntakeFlow() {
           What role are you preparing for?
         </h1>
         <p className="text-canvas mt-2 text-sm">
-          Paste the posting once. We’ll turn it into a clear preparation map.
+          Paste a job link or the description. We’ll turn it into a clear
+          preparation map.
         </p>
         <div className="border-iron bg-workshop/70 mt-8 space-y-5 rounded-2xl border p-5 sm:p-7">
+          <div className="border-iron/70 border-b pb-6">
+            <label htmlFor="job-posting-url" className="text-xs font-medium">
+              Job posting link
+            </label>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <input
+                id="job-posting-url"
+                type="url"
+                inputMode="url"
+                value={sourceUrl}
+                onChange={(event) => {
+                  setSourceUrl(event.target.value);
+                  setLinkLoaded(false);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void readPostingLink();
+                  }
+                }}
+                placeholder="https://company.com/jobs/…"
+                className="border-iron bg-night/45 text-linen focus:border-amber min-h-11 min-w-0 flex-1 rounded-lg border px-3 text-sm outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => void readPostingLink()}
+                disabled={importing || !sourceUrl.trim()}
+                className="border-iron bg-linen/[.04] hover:border-canvas/50 disabled:text-dust flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border px-4 text-xs font-semibold disabled:cursor-not-allowed"
+              >
+                {importing ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Link2 className="size-4" />
+                )}
+                {importing ? "Reading link…" : "Import posting"}
+              </button>
+            </div>
+            <p
+              className={cn(
+                "mt-2 text-[11px] leading-5",
+                linkLoaded ? "text-sage" : "text-dust",
+              )}
+            >
+              {linkLoaded
+                ? "Posting imported. Review the details below before continuing."
+                : "We’ll fill the company, role, location, and description when the site allows it."}
+            </p>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label="Company"
@@ -159,12 +279,20 @@ export function ApplicationIntakeFlow() {
               placeholder="Software Engineer, New Grad"
             />
           </div>
-          <Field
-            label="Application deadline (optional)"
-            value={deadline}
-            onChange={setDeadline}
-            type="date"
-          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Location (optional)"
+              value={location}
+              onChange={setLocation}
+              placeholder="Austin, TX or Remote"
+            />
+            <Field
+              label="Application deadline (optional)"
+              value={deadline}
+              onChange={setDeadline}
+              type="date"
+            />
+          </div>
           <label className="block">
             <span className="text-xs font-medium">Job description</span>
             <textarea
@@ -179,6 +307,9 @@ export function ApplicationIntakeFlow() {
               onClick={() => {
                 setCompany("Stripe");
                 setRole("Software Engineer, New Grad");
+                setLocation("Remote");
+                setSourceUrl("");
+                setLinkLoaded(false);
                 setDescription(sampleDescription);
               }}
               className="text-dust hover:text-canvas text-left text-xs"
