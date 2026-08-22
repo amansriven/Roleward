@@ -8,8 +8,10 @@ import {
   workspaceUpdatedEvent,
   type WorkspaceSnapshot,
 } from "./repository";
+import { claimLocalWorkspace } from "./owner";
 
 interface CloudWorkspace {
+  owner: string;
   workspace: WorkspaceSnapshot;
   version: number;
   updatedAt: string | null;
@@ -118,6 +120,12 @@ export async function hydrateCloudWorkspace(storage: Storage) {
   const cloud = await readCloud();
   if (!cloud) return "unconfigured" as const;
   cloudVersion = cloud.version;
+  // Drop another account's leftovers before they can be read or merged into
+  // this account's cloud record.
+  if (cloud.owner)
+    claimLocalWorkspace(storage, cloud.owner, {
+      hasCloudWorkspace: cloud.version > 0,
+    });
   const local = loadWorkspace(storage);
   const merged = mergeForMigration(cloud.workspace, local);
   saveWorkspaceSnapshot(storage, merged);

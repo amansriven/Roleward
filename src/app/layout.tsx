@@ -21,6 +21,14 @@ export const metadata: Metadata = {
   },
   description: DEFAULT_DESCRIPTION,
   category: "career development",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   creator: SITE_NAME,
   publisher: SITE_NAME,
   formatDetection: {

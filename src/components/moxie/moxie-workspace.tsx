@@ -2,6 +2,7 @@
 
 import {
   ArrowUp,
+  Brain,
   Check,
   Copy,
   Database,
@@ -19,7 +20,9 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { MoxieHistory } from "@/components/moxie/moxie-history";
+import { MoxieInspector } from "@/components/moxie/moxie-inspector";
 import { MoxieResponse } from "@/components/moxie/moxie-response";
+import { moxieHistoryText } from "@/modules/moxie/contract";
 import {
   activeMoxieConversation,
   appendMoxieMessage,
@@ -58,6 +61,9 @@ const clockTime = (iso: string) =>
 export function MoxieWorkspace() {
   const [library, setLibrary] = useState<MoxieLibrary | null>(null);
   const [historyOpen, setHistoryOpen] = useState(true);
+  const [memoryOpen, setMemoryOpen] = useState(false);
+  // Bumped when a proposal is confirmed so the rail refetches.
+  const [inspectorKey, setInspectorKey] = useState(0);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -125,9 +131,10 @@ export function MoxieWorkspace() {
           message,
           pathname: "/dashboard/moxie",
           workspace: loadWorkspace(localStorage),
-          history: before.messages
-            .slice(-10)
-            .map(({ role, content }) => ({ role, content })),
+          history: before.messages.slice(-10).map(({ role, content }) => ({
+            role,
+            content: moxieHistoryText(content),
+          })),
         }),
       });
       const body = (await response.json().catch(() => null)) as {
@@ -227,7 +234,7 @@ export function MoxieWorkspace() {
               <h1 className="truncate font-semibold tracking-[-.02em]">
                 {empty ? "Moxie" : conversation.title}
               </h1>
-              <span className="border-sage/25 bg-sage/[.07] text-sage hidden rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase sm:inline">
+              <span className="border-sage/25 bg-sage/[.07] text-sage hidden shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold whitespace-nowrap uppercase 2xl:inline">
                 Workspace aware
               </span>
             </div>
@@ -235,7 +242,7 @@ export function MoxieWorkspace() {
               Your career operating partner
             </p>
           </div>
-          <div className="text-dust ml-auto hidden items-center gap-4 text-[10px] xl:flex">
+          <div className="text-dust ml-auto hidden items-center gap-4 text-[10px] whitespace-nowrap 2xl:flex">
             <span className="flex items-center gap-1.5">
               <Database className="text-sage size-3" /> 5 grounded sources
             </span>
@@ -245,9 +252,23 @@ export function MoxieWorkspace() {
           </div>
           <button
             type="button"
+            onClick={() => setMemoryOpen((current) => !current)}
+            aria-label="Goals and memory"
+            aria-pressed={memoryOpen}
+            className={cn(
+              "ml-auto flex size-9 shrink-0 items-center justify-center rounded-xl border transition 2xl:ml-0",
+              memoryOpen
+                ? "border-sage/40 bg-sage/[.08] text-sage"
+                : "border-iron text-canvas hover:border-canvas/40 hover:text-linen",
+            )}
+          >
+            <Brain className="size-4" />
+          </button>
+          <button
+            type="button"
             onClick={startNew}
             aria-label="New chat"
-            className="border-iron text-canvas hover:border-canvas/40 hover:text-linen ml-auto flex min-h-9 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs transition xl:ml-0"
+            className="border-iron text-canvas hover:border-canvas/40 hover:text-linen flex min-h-9 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs transition"
           >
             <MessageSquarePlus className="size-3.5" />
             <span className="hidden sm:inline">New chat</span>
@@ -270,9 +291,9 @@ export function MoxieWorkspace() {
 
         <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
           {empty ? (
-            <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-center px-5 py-12 sm:px-10">
-              <div className="max-w-2xl">
-                <div className="text-amber flex items-center gap-2">
+            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center px-5 py-12 text-center sm:px-8">
+              <div>
+                <div className="text-amber flex items-center justify-center gap-2">
                   <Sparkles className="size-4" />
                   <span className="font-mono text-[10px] tracking-[.14em] uppercase">
                     Grounded in your work
@@ -281,18 +302,18 @@ export function MoxieWorkspace() {
                 <h2 className="mt-5 text-4xl leading-[1.04] font-semibold tracking-[-.06em] sm:text-5xl">
                   Make the next move count.
                 </h2>
-                <p className="text-canvas mt-5 max-w-xl text-base leading-7">
+                <p className="text-canvas mx-auto mt-5 max-w-xl text-base leading-7">
                   Think through a decision, connect patterns across your search,
                   or turn recent practice into a focused plan.
                 </p>
               </div>
-              <div className="mt-10 grid max-w-3xl gap-3 sm:grid-cols-2">
+              <div className="mt-10 grid w-full gap-3 sm:grid-cols-2">
                 {starters.map((item, index) => (
                   <button
                     key={item}
                     type="button"
                     onClick={() => void send(item)}
-                    className="border-iron/80 bg-linen/[.02] hover:border-canvas/40 hover:bg-linen/[.045] group rounded-2xl border p-5 text-left transition"
+                    className="border-iron/80 bg-linen/[.02] hover:border-canvas/40 hover:bg-linen/[.045] group rounded-2xl border p-5 text-center transition"
                   >
                     <span className="text-dust font-mono text-[9px]">
                       0{index + 1}
@@ -334,7 +355,19 @@ export function MoxieWorkspace() {
                       className="mt-0.5 size-8 shrink-0 rounded-lg object-cover"
                     />
                     <div className="border-iron/70 bg-raised/50 min-w-0 flex-1 rounded-2xl border px-4 py-3.5 sm:px-5">
-                      <MoxieResponse content={message.content} />
+                      <MoxieResponse
+                        content={message.content}
+                        sourceMessageId={message.createdAt}
+                        conversationId={conversation.id}
+                        onProposalSaved={() =>
+                          setInspectorKey((current) => current + 1)
+                        }
+                        onRevise={(draft) =>
+                          setDraft(
+                            `Revise this ${draft.label.toLowerCase()}: "${draft.text}"\n\nWhat I want changed: `,
+                          )
+                        }
+                      />
                       <div className="border-iron/50 mt-3 flex items-center gap-1 border-t pt-2.5">
                         <button
                           type="button"
@@ -453,6 +486,28 @@ export function MoxieWorkspace() {
           </p>
         </footer>
       </section>
+
+      <div
+        className={cn(
+          "z-30 h-full shrink-0 overflow-hidden transition-[width] duration-300 max-md:absolute max-md:inset-y-0 max-md:right-0",
+          memoryOpen ? "w-[17.5rem] max-md:w-[85vw]" : "w-0",
+        )}
+      >
+        {memoryOpen && (
+          <MoxieInspector
+            reloadKey={inspectorKey}
+            onClose={() => setMemoryOpen(false)}
+          />
+        )}
+      </div>
+      {memoryOpen && (
+        <button
+          type="button"
+          aria-label="Close memory"
+          onClick={() => setMemoryOpen(false)}
+          className="bg-night/60 absolute inset-0 z-20 md:hidden"
+        />
+      )}
     </div>
   );
 }

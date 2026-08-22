@@ -20,6 +20,7 @@ import {
   type FeatureIconName,
 } from "@/components/brand/feature-icon";
 import { WorkspaceSync } from "@/components/workspace/workspace-sync";
+import { clearLocalWorkspace } from "@/modules/workspace/owner";
 import { MoxieDrawer } from "@/components/moxie/moxie-drawer";
 import { FeedbackDialog } from "@/components/workspace/feedback-dialog";
 import { cn } from "@/lib/utils";
@@ -317,7 +318,12 @@ function SidebarContent({
                 <Settings className="size-3.5" />
                 {!condensed && "Settings"}
               </Link>
-              <form action={endSession}>
+              <form
+                action={endSession}
+                // The next account to use this browser must not inherit this
+                // one's resume, applications, or notes.
+                onSubmit={() => clearLocalWorkspace(localStorage)}
+              >
                 <button
                   type="submit"
                   title={condensed ? "Log out" : undefined}

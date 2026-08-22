@@ -4,10 +4,16 @@ import {
   type WorkspaceSnapshot,
 } from "@/modules/workspace/repository";
 import type { PracticeAttempt } from "@/modules/zed/schema";
+import {
+  summarizeMoxieMemories,
+  type MoxieMemory,
+} from "@/modules/moxie/memory";
+import { summarizeMoxieGoals, type MoxieGoal } from "@/modules/moxie/goal";
+import type { MoxieTranscriptExcerpt } from "@/modules/moxie/transcript";
 
 export const moxieMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
-  content: z.string().trim().min(1).max(6_000),
+  content: z.string().trim().min(1).max(24_000),
 });
 
 export const moxieRequestSchema = z.object({
@@ -25,10 +31,16 @@ export function buildMoxieContext({
   workspace,
   pathname,
   attempts,
+  memories = [],
+  goals = [],
+  transcripts = [],
 }: {
   workspace: WorkspaceSnapshot;
   pathname: string;
   attempts: PracticeAttempt[];
+  memories?: MoxieMemory[];
+  goals?: MoxieGoal[];
+  transcripts?: MoxieTranscriptExcerpt[];
 }) {
   const activeApplication = workspace.applications.find(
     (item) => item.id === workspace.activeApplicationId,
@@ -61,6 +73,9 @@ export function buildMoxieContext({
 
   return JSON.stringify({
     currentPage: pathname,
+    // Only user-approved memories reach the model.
+    memory: summarizeMoxieMemories(memories),
+    goals: summarizeMoxieGoals(goals),
     candidate: {
       name: workspace.candidateName,
       headline: workspace.candidateHeadline,
@@ -101,6 +116,7 @@ export function buildMoxieContext({
           bullets: activeResume.items
             .flatMap((item) =>
               item.bullets.map((bullet) => ({
+                id: bullet.id,
                 section: item.title,
                 content: bullet.content,
                 sourceClaimIds: bullet.sourceClaimIds,
@@ -117,6 +133,7 @@ export function buildMoxieContext({
       updatedAt: item.updatedAt,
     })),
     stageFright: workspace.interviewSummaries.slice(0, 20),
+    interviewTranscripts: transcripts,
     zed,
   });
 }

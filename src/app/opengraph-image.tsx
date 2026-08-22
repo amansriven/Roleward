@@ -1,9 +1,16 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { ImageResponse } from "next/og";
 
 export const alt =
   "Roleward — one contextualized AI workspace for your entire job search";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const lockupDataUri = `data:image/png;base64,${readFileSync(
+  join(process.cwd(), "public/brand/roleward-lockup.png"),
+).toString("base64")}`;
 
 export default function OpenGraphImage() {
   return new ImageResponse(
@@ -24,68 +31,29 @@ export default function OpenGraphImage() {
       <div
         style={{
           display: "flex",
-          alignItems: "center",
-          gap: "22px",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: "2px",
         }}
       >
-        <div
+        <img
+          src={lockupDataUri}
+          width={394}
+          height={85}
+          alt=""
+          style={{ width: "394px", height: "85px" }}
+        />
+        <span
           style={{
-            position: "relative",
-            width: "78px",
-            height: "78px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "1px solid rgba(255,122,89,.45)",
-            borderRadius: "20px",
-            background:
-              "linear-gradient(145deg, rgba(31,34,42,.96), rgba(15,17,22,.98))",
-            boxShadow: "0 18px 50px rgba(0,0,0,.3)",
+            color: "#ff9a3d",
+            fontSize: "14px",
+            letterSpacing: "3px",
+            textTransform: "uppercase",
+            marginLeft: "8px",
           }}
         >
-          <span
-            style={{
-              fontSize: "50px",
-              lineHeight: 1,
-              fontWeight: 800,
-              letterSpacing: "-8px",
-              transform: "translateX(-3px)",
-            }}
-          >
-            R
-          </span>
-          <span
-            style={{
-              position: "absolute",
-              right: "10px",
-              top: "7px",
-              color: "#ff7a59",
-              fontSize: "31px",
-              fontWeight: 800,
-            }}
-          >
-            ↗
-          </span>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "4px",
-          }}
-        >
-          <span style={{ fontSize: "31px", fontWeight: 700 }}>Roleward</span>
-          <span
-            style={{
-              color: "#ff9a3d",
-              fontSize: "14px",
-              letterSpacing: "3px",
-              textTransform: "uppercase",
-            }}
-          >
-            Move forward · Go further
-          </span>
-        </div>
+          Move forward · Go further
+        </span>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column" }}>

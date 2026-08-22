@@ -50,6 +50,7 @@ export async function GET() {
   try {
     const item = await getWorkspace(session.user.id);
     return NextResponse.json({
+      owner: session.user.id,
       workspace: item?.workspace ?? emptyWorkspace,
       version: item?.version ?? 0,
       updatedAt: item?.updatedAt ?? null,

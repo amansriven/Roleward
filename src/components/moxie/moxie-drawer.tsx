@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { MoxieResponse } from "@/components/moxie/moxie-response";
 import { loadWorkspace } from "@/modules/workspace/repository";
+import { moxieHistoryText } from "@/modules/moxie/contract";
 import {
   appendMoxieMessage,
   loadMoxieConversation,
@@ -18,6 +19,7 @@ import {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  createdAt?: string;
 }
 
 function suggestions(pathname: string) {
@@ -63,6 +65,7 @@ export function MoxieDrawer() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
+  const [conversationId, setConversationId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
@@ -70,8 +73,13 @@ export function MoxieDrawer() {
   useEffect(() => {
     const refresh = () => {
       const conversation = loadMoxieConversation(localStorage);
+      setConversationId(conversation.id);
       setMessages(
-        conversation.messages.map(({ role, content }) => ({ role, content })),
+        conversation.messages.map(({ role, content, createdAt }) => ({
+          role,
+          content,
+          createdAt,
+        })),
       );
     };
     queueMicrotask(refresh);
@@ -116,7 +124,10 @@ export function MoxieDrawer() {
           message,
           pathname,
           workspace,
-          history: messages.slice(-10),
+          history: messages.slice(-10).map(({ role, content }) => ({
+            role,
+            content: moxieHistoryText(content),
+          })),
         }),
       });
       const body = (await response.json().catch(() => null)) as {
@@ -306,7 +317,16 @@ export function MoxieDrawer() {
                           {message.content}
                         </div>
                       ) : (
-                        <MoxieResponse content={message.content} />
+                        <MoxieResponse
+                          content={message.content}
+                          sourceMessageId={message.createdAt}
+                          conversationId={conversationId}
+                          onRevise={(draft) =>
+                            setDraft(
+                              `Revise this ${draft.label.toLowerCase()}: "${draft.text}"\n\nWhat I want changed: `,
+                            )
+                          }
+                        />
                       )}
                     </article>
                   ))}

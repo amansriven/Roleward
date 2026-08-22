@@ -73,8 +73,10 @@ export const homeStructuredData = {
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/brand/roleward-mark.svg`,
-        contentUrl: `${SITE_URL}/brand/roleward-mark.svg`,
+        url: `${SITE_URL}/roleward-logo.png`,
+        contentUrl: `${SITE_URL}/roleward-logo.png`,
+        width: 512,
+        height: 512,
       },
     },
     {

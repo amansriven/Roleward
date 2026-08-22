@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const moxieConversationMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
-  content: z.string().min(1).max(6_000),
+  content: z.string().min(1).max(24_000),
   createdAt: z.string().datetime(),
 });
 export type MoxieConversationMessage = z.infer<

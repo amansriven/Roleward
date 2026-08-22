@@ -81,7 +81,7 @@ Every context bundle records source type, source ID, title, timestamp, verificat
 - Drafting never changes the source record.
 - Every factual career claim must cite confirmed or corrected Evidence.
 - Proposed or unverified facts must be visibly labeled.
-- Workspace writes use preview → confirmation → commit.
+- Workspace writes use preview → confirmation → commit, and the user accepts or denies each one.
 - Destructive actions require a separate confirmation and state the exact target.
 - Moxie never submits applications, sends messages, or publishes a portfolio without explicit authorization.
 - Durable memory is opt-in, visible, editable, and deletable.
@@ -175,7 +175,9 @@ Moxie responses can contain:
 7. Transcript-grounded voice coaching.
 8. Audio-derived coaching after privacy and retention review.
 
-The first release must remain read-only. It can analyze, explain, plan, coach from existing text, and draft content, but it cannot change workspace records.
+The first release is read-only by default: Moxie analyzes, explains, plans, coaches, and drafts, and it never writes on its own initiative. The one exception is an applied draft. When Moxie rewrites an existing resume bullet, the draft card shows the exact before and after and the user accepts or denies it; accepting writes the new wording and the change stays undoable. The bullet keeps its original `sourceClaimIds`, so an applied draft remains tied to the confirmed evidence the bullet already rested on.
+
+Everything else stays read-only. Moxie does not create or delete records, does not touch evidence verification status, and does not submit, send, or publish anything.
 
 ## Milestone 8 — response design system
 
