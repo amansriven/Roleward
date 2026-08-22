@@ -11,3 +11,16 @@ export function track(
   if (!analyticsEnabled) return;
   posthog.capture(event, properties);
 }
+
+/**
+ * Errors are worth recording even when analytics is disabled, so the console
+ * path always runs — otherwise a local crash would leave no trace at all.
+ */
+export function reportException(
+  error: unknown,
+  properties?: Record<string, unknown>,
+) {
+  console.error(error);
+  if (!analyticsEnabled) return;
+  posthog.captureException(error, properties);
+}

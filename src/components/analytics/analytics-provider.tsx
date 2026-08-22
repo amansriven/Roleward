@@ -35,6 +35,14 @@ export function AnalyticsProvider() {
       capture_pageview: false,
       capture_pageleave: true,
       persistence: "localStorage+cookie",
+      // Replay is how dead clicks and abandoned steps get diagnosed. Inputs are
+      // masked by default, which matters here: onboarding and the workspace
+      // carry resumes, job descriptions, and interview answers.
+      disable_session_recording: false,
+      session_recording: {
+        maskAllInputs: true,
+        maskTextSelector: "[data-private]",
+      },
     });
   }, []);
 
