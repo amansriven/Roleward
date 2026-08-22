@@ -6,7 +6,8 @@ import Link from "next/link";
 import { ZedDemo } from "@/components/demos/zed-demo";
 import { ProductVisual } from "@/components/brand/product-visual";
 import { Button } from "@/components/ui/button";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbStructuredData, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Coding Interview Practice",
@@ -36,6 +37,7 @@ const observations: Array<[LucideIcon, string, string]> = [
 export default function ZedPage() {
   return (
     <main>
+      <JsonLd data={breadcrumbStructuredData("Coding Interview Practice", "/zed")} />
       <section className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:px-12 lg:py-28">
         <div>
           <p className="section-label">Zed</p>

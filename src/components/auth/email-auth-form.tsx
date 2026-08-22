@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AnalyticsEvent } from "@/modules/analytics/config";
+import { track } from "@/modules/analytics/track";
 
 export function EmailAuthForm({ mode }: { mode: "login" | "signup" }) {
   const signup = mode === "signup";
@@ -20,7 +22,16 @@ export function EmailAuthForm({ mode }: { mode: "login" | "signup" }) {
   );
 
   return (
-    <form action={action} className="grid gap-4">
+    <form
+      action={action}
+      className="grid gap-4"
+      onSubmit={() =>
+        track(
+          signup ? AnalyticsEvent.signupStarted : AnalyticsEvent.loginStarted,
+          { method: "email" },
+        )
+      }
+    >
       <div className="grid gap-2">
         <Label htmlFor={`${mode}-email`}>Email address</Label>
         <Input

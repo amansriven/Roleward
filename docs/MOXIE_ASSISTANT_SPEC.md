@@ -84,7 +84,7 @@ Every context bundle records source type, source ID, title, timestamp, verificat
 - Workspace writes use preview → confirmation → commit, and the user accepts or denies each one.
 - Destructive actions require a separate confirmation and state the exact target.
 - Moxie never submits applications, sends messages, or publishes a portfolio without explicit authorization.
-- Durable memory is opt-in, visible, editable, and deletable.
+- Durable memory is opt-in, visible, editable, and deletable. Memory and goals are removed by soft delete: the deployed IAM role has no `dynamodb:DeleteItem` permission, so removal is a write that stamps `deletedAt` and hides the record.
 
 ## Voice coaching
 
@@ -99,7 +99,9 @@ After permission is granted, Moxie can analyze:
 - Vocal energy and confidence proxies
 - Whether examples answer the actual question
 
-The UI separates observable measures from interpretation. For example, “162 words per minute” is a measurement; “you sounded rushed” is coaching. Users can replay only the relevant moment and see a transcript-aligned suggestion. Voice-derived data is excluded from durable memory unless saved by the user.
+The UI separates observable measures from interpretation. For example, “162 words per minute” is a measurement; “you sounded rushed” is coaching. Voice-derived data is excluded from durable memory unless saved by the user.
+
+Audio is never recorded or stored. Loudness is measured on the live stream in the browser and discarded frame by frame, leaving only the derived numbers on the turn. Replaying a specific moment would require retaining audio and is therefore not offered; suggestions are aligned to the transcript instead.
 
 ## Interaction design
 
@@ -173,7 +175,7 @@ Moxie responses can contain:
 5. Goal and memory controls.
 6. Draft previews and confirmed write actions.
 7. Transcript-grounded voice coaching.
-8. Audio-derived coaching after privacy and retention review.
+8. Audio-derived coaching. Delivered without voice retention: the microphone stream is analysed in the browser as it plays and reduced to numbers (speaking time, pauses, loudness spread) that are stored on the turn. No audio is recorded, uploaded, or retained, so there is nothing to set a retention window on. Replaying a moment, which does require stored audio, is deliberately not built.
 
 The first release is read-only by default: Moxie analyzes, explains, plans, coaches, and drafts, and it never writes on its own initiative. The one exception is an applied draft. When Moxie rewrites an existing resume bullet, the draft card shows the exact before and after and the user accepts or denies it; accepting writes the new wording and the change stays undoable. The bullet keeps its original `sourceClaimIds`, so an applied draft remains tied to the confirmed evidence the bullet already rested on.
 

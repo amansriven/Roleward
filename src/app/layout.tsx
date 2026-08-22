@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_TITLE,
@@ -21,14 +22,6 @@ export const metadata: Metadata = {
   },
   description: DEFAULT_DESCRIPTION,
   category: "career development",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
-      { url: "/icon.png", sizes: "192x192", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
-  },
   creator: SITE_NAME,
   publisher: SITE_NAME,
   formatDetection: {
@@ -43,20 +36,11 @@ export const metadata: Metadata = {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
     url: "/",
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "Roleward — one contextualized AI workspace for your entire job search",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -80,7 +64,10 @@ export default function RootLayout({
       lang="en"
       data-scroll-behavior="smooth"
     >
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <AnalyticsProvider />
+      </body>
     </html>
   );
 }

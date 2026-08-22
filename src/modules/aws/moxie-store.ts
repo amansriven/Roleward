@@ -2,7 +2,6 @@ import "server-only";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
-  DeleteCommand,
   DynamoDBDocumentClient,
   PutCommand,
   QueryCommand,
@@ -99,13 +98,4 @@ export async function listGoals(userId: string, limit = 100) {
 export async function getGoal(userId: string, goalId: string) {
   const goals = await listGoals(userId);
   return goals.find((goal) => goal.id === goalId) ?? null;
-}
-
-export async function deleteGoal(userId: string, goalId: string) {
-  await client.send(
-    new DeleteCommand({
-      TableName: workspaceTable,
-      Key: goalKey(userId, goalId),
-    }),
-  );
 }

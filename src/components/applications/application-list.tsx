@@ -6,6 +6,7 @@ import {
   CalendarClock,
   Plus,
   Search,
+  WandSparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -175,12 +176,20 @@ export function ApplicationList() {
                 </span>
               </div>
             </div>
-            <Link
-              href={`/dashboard/applications/${focus.app.id}`}
-              className="bg-linen/[.06] text-linen hover:bg-linen/[.1] inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all"
-            >
-              Open application <ArrowRight className="size-4" />
-            </Link>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Link
+                href={`/dashboard/resume-kitchen/tailor?application=${focus.app.id}`}
+                className="bg-amber text-night inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold"
+              >
+                <WandSparkles className="size-4" /> Tailor resume
+              </Link>
+              <Link
+                href={`/dashboard/applications/${focus.app.id}`}
+                className="bg-linen/[.06] text-linen hover:bg-linen/[.1] inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all"
+              >
+                Open application <ArrowRight className="size-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

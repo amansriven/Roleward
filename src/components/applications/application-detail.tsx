@@ -7,6 +7,7 @@ import {
   CircleDot,
   ExternalLink,
   Target,
+  WandSparkles,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -117,11 +118,19 @@ function Detail({
             </a>
           )}
         </div>
-        {urgency.headline && (
-          <span className="border-copper/40 bg-copper/10 text-copper rounded-full border px-3 py-1 text-[11px] font-semibold">
-            {urgency.headline}
-          </span>
-        )}
+        <div className="flex flex-col items-end gap-3">
+          {urgency.headline && (
+            <span className="border-copper/40 bg-copper/10 text-copper rounded-full border px-3 py-1 text-[11px] font-semibold">
+              {urgency.headline}
+            </span>
+          )}
+          <Link
+            href={`/dashboard/resume-kitchen/tailor?application=${application.id}`}
+            className="bg-amber text-night inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-xs font-semibold"
+          >
+            <WandSparkles className="size-3.5" /> Tailor my resume
+          </Link>
+        </div>
       </header>
 
       <section className="roleward-card rounded-[22px] p-5 sm:p-6">
@@ -191,7 +200,7 @@ function Detail({
             the room.
           </p>
           <Link
-            href="/dashboard/resume-kitchen"
+            href={`/dashboard/resume-kitchen/tailor?application=${application.id}`}
             className="text-copper mt-3 inline-block text-xs font-semibold"
           >
             Work on these in Resume Kitchen →

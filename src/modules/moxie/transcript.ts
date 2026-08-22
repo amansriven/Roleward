@@ -2,6 +2,7 @@ import type {
   InterviewSession,
   InterviewTurn,
 } from "@/modules/interviews/schema";
+import { speakingPace } from "@/modules/interviews/delivery-metrics";
 
 /**
  * Turns a stored interview into something Moxie can coach from. Whole
@@ -22,6 +23,15 @@ export interface MoxieCoachableAnswer {
    * reads slower than pure speaking pace.
    */
   wordsPerMinute: number | null;
+  /**
+   * Pace excluding pauses, from the audio meter. More honest than
+   * `wordsPerMinute`, and present only for spoken answers.
+   */
+  speakingWordsPerMinute: number | null;
+  /** Heard pauses inside the answer, from the audio meter. */
+  pauses: { count: number; longestMs: number } | null;
+  /** Loudness spread while speaking; low values read as monotone. */
+  energyVariation: number | null;
 }
 
 export interface MoxieTranscriptExcerpt {
@@ -78,6 +88,16 @@ export function selectCoachableAnswers(
       answer: clip(turn.content, 700),
       words,
       wordsPerMinute: paceFor(turn, session.turns[index + 1], words),
+      speakingWordsPerMinute: turn.delivery
+        ? speakingPace(words, turn.delivery)
+        : null,
+      pauses: turn.delivery
+        ? {
+            count: turn.delivery.pauseCount,
+            longestMs: turn.delivery.longestPauseMs,
+          }
+        : null,
+      energyVariation: turn.delivery?.energyVariation ?? null,
     });
   });
   // The longest answers are where pace and rambling problems show up.

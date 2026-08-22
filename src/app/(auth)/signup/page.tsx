@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
 
 import { AuthForm } from "@/components/auth/auth-form";
+import { indexMetadata, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Create an account" };
+export const metadata: Metadata = {
+  ...pageMetadata({
+    title: "Sign Up",
+    description:
+      "Create a free Roleward workspace to track applications, tailor your resume against real evidence, practice coding interviews, and rehearse behavioral questions.",
+    path: "/signup",
+  }),
+  ...indexMetadata,
+};
 export default function SignupPage() {
   return (
     <div className="grid w-full items-center gap-12 lg:grid-cols-[minmax(400px,480px)_minmax(0,1fr)] lg:gap-20">

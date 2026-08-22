@@ -3,7 +3,8 @@ import { Check } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbStructuredData, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "AI Career Preparation Pricing",
@@ -45,6 +46,7 @@ const plans = [
 export default function PricingPage() {
   return (
     <main>
+      <JsonLd data={breadcrumbStructuredData("Pricing", "/pricing")} />
       <section className="mx-auto max-w-4xl px-5 py-20 text-center sm:px-8 lg:py-28">
         <p className="section-label">Simple pricing</p>
         <h1 className="mt-5 text-5xl font-semibold tracking-[-0.045em] text-balance sm:text-6xl">

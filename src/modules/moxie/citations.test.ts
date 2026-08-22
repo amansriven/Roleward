@@ -67,4 +67,34 @@ describe("Moxie citations", () => {
     ]);
     expect(collectMoxieCitations("Plain answer")).toEqual([]);
   });
+
+  it("resolves the context's own key names, which is what live answers cite", () => {
+    expect(resolveMoxieCitation("activeApplication")).toMatchObject({
+      href: "/dashboard/applications",
+      label: "Active application",
+    });
+    expect(resolveMoxieCitation("zed")).toMatchObject({
+      href: "/dashboard/zed",
+      label: "Zed",
+    });
+    expect(resolveMoxieCitation("activeResume").href).toBe(
+      "/dashboard/resume-kitchen",
+    );
+    expect(resolveMoxieCitation("stageFright").href).toBe(
+      "/dashboard/stage-fright",
+    );
+    expect(resolveMoxieCitation("interviewTranscripts").href).toBe(
+      "/dashboard/stage-fright",
+    );
+    expect(resolveMoxieCitation("otherApplications").href).toBe(
+      "/dashboard/applications",
+    );
+  });
+
+  it("leaves human-written labels as written", () => {
+    expect(resolveMoxieCitation("Stage Fright").label).toBe("Stage Fright");
+    expect(resolveMoxieCitation("Active application").label).toBe(
+      "Active application",
+    );
+  });
 });

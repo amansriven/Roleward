@@ -26,6 +26,7 @@ import {
   type RealtimeSession,
   type RealtimeStatus,
 } from "@/modules/interviews/realtime-client";
+import type { DeliveryMetrics } from "@/modules/interviews/delivery-metrics";
 import {
   summarizeSession,
   type InterviewSession,
@@ -36,6 +37,8 @@ import { CodePane } from "./code-pane";
 interface Message {
   role: "interviewer" | "candidate";
   content: string;
+  /** Delivery numbers for a spoken answer; absent for typed turns. */
+  delivery?: DeliveryMetrics;
 }
 
 const VOICE_STATUS_COPY: Record<RealtimeStatus, string> = {
@@ -90,9 +93,12 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
           if (detail) setError(detail);
         }
       },
-      onTranscript: (role, text) =>
+      onTranscript: (role, text, delivery) =>
         !cancelled &&
-        setMessages((current) => [...current, { role, content: text }]),
+        setMessages((current) => [
+          ...current,
+          { role, content: text, ...(delivery ? { delivery } : {}) },
+        ]),
       onSpeakingChange: (value) => !cancelled && setSpeaking(value),
     }).then((instance) => {
       if (cancelled) instance?.close();

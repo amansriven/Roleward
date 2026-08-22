@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
 import { getInterview, putInterview } from "@/modules/aws/interview-store";
 import { truncateAnswer } from "@/modules/interviews/conversation";
+import { deliveryMetricsSchema } from "@/modules/interviews/schema";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,8 @@ const requestSchema = z.object({
       z.object({
         role: z.enum(["interviewer", "candidate"]),
         content: z.string().trim().min(1),
+        // Loudness-derived numbers only; the audio never leaves the browser.
+        delivery: deliveryMetricsSchema.optional(),
       }),
     )
     .max(200),
@@ -56,6 +59,7 @@ export async function POST(request: Request) {
     role: turn.role,
     content: truncateAnswer(turn.content),
     competency: null,
+    ...(turn.delivery ? { delivery: turn.delivery } : {}),
     createdAt: now,
   }));
   await putInterview(auth_.user.id, session);

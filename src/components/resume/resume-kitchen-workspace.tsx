@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import type { JobRequirement } from "@/modules/applications/schema";
 import type { EvidenceItem } from "@/modules/evidence/schema";
 import { PortfolioPublish } from "./portfolio-publish";
+import { ResumeTailorRun } from "./resume-tailor-run";
 import { ResumeVersionManager } from "./resume-version-manager";
 import {
   getActiveApplication,
@@ -52,9 +53,18 @@ export function ResumeKitchenWorkspace({
   view?: ResumeKitchenView;
 }) {
   const [workspace, setWorkspace] = useState<WorkspaceSnapshot | null>(null);
+  // Read from the URL rather than useSearchParams so this component does not
+  // drag a Suspense boundary onto every page that renders it. The Tailor
+  // button on an application is the only thing that sets it.
+  const [requestedApplicationId, setRequestedApplicationId] = useState("");
   useEffect(() => {
     const refresh = () => setWorkspace(loadWorkspace(localStorage));
-    queueMicrotask(refresh);
+    queueMicrotask(() => {
+      refresh();
+      setRequestedApplicationId(
+        new URLSearchParams(window.location.search).get("application") ?? "",
+      );
+    });
     window.addEventListener(workspaceUpdatedEvent, refresh);
     return () => window.removeEventListener(workspaceUpdatedEvent, refresh);
   }, []);
@@ -66,7 +76,13 @@ export function ResumeKitchenWorkspace({
       </div>
     );
 
-  return <Kitchen workspace={workspace} view={view} />;
+  return (
+    <Kitchen
+      workspace={workspace}
+      view={view}
+      requestedApplicationId={requestedApplicationId}
+    />
+  );
 }
 
 function confirmedClaims(evidence: EvidenceItem[]) {
@@ -88,11 +104,17 @@ function confirmedClaims(evidence: EvidenceItem[]) {
 function Kitchen({
   workspace,
   view,
+  requestedApplicationId,
 }: {
   workspace: WorkspaceSnapshot;
   view: ResumeKitchenView;
+  requestedApplicationId: string;
 }) {
-  const application = getActiveApplication(workspace);
+  // A Tailor button on a specific application wins over whichever one the
+  // workspace happens to have active.
+  const application =
+    workspace.applications.find((item) => item.id === requestedApplicationId) ??
+    getActiveApplication(workspace);
   const activeVersion = getActiveResumeVersion(workspace);
   const claims = useMemo(
     () => confirmedClaims(workspace.evidence),
@@ -131,106 +153,123 @@ function Kitchen({
     );
 
   if (view === "tailor") {
-    if (!application)
-      return (
-        <Empty
-          icon={
-            <span className="border-amber/30 bg-amber/10 text-amber inline-flex size-11 items-center justify-center rounded-xl border">
-              <WandSparkles className="size-[18px]" strokeWidth={1.8} />
-            </span>
-          }
-          title="Add the role you are targeting"
-          copy={`You have ${claims.length} confirmed ${claims.length === 1 ? "claim" : "claims"}. Add a job posting and we will compare its requirements with your actual experience.`}
-          href="/dashboard/applications/new"
-          action="Add an application"
-        />
-      );
-
     return (
       <div className="space-y-7">
         <SectionHeading
           eyebrow="Tailor"
-          title={`${application.roleTitle} at ${application.companyName}`}
-          copy="Work through the requirements from this posting. Every suggestion must trace back to a claim you confirmed."
+          title={
+            application
+              ? `${application.roleTitle} at ${application.companyName}`
+              : "Tailor your resume to a role"
+          }
+          copy="Rewrite the whole resume for one posting in a single pass, or work through its requirements one bullet at a time. Either way, every word traces back to something you confirmed."
         />
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Stat
-            label="Requirement coverage"
-            value={`${covered} / ${requirements.length}`}
-            note={
-              gaps.length
-                ? `${gaps.length} required ${gaps.length === 1 ? "gap" : "gaps"}`
-                : "Every requirement matched"
-            }
-          />
-          <Stat
-            label="Confirmed claims"
-            value={String(claims.length)}
-            note={`Across ${workspace.evidence.length} ${workspace.evidence.length === 1 ? "entry" : "entries"}`}
-          />
-          <Stat
-            label="Active version"
-            value={activeVersion?.name ?? "Original resume"}
-            note={
-              activeVersion?.kind === "revision"
-                ? "Named revision"
-                : "Protected original"
-            }
-          />
-        </div>
+        <ResumeTailorRun
+          key={application?.id ?? "none"}
+          workspace={workspace}
+          versions={workspace.resumeVersions}
+          initialVersionId={activeVersion?.id ?? ""}
+          initialApplicationId={application?.id ?? ""}
+        />
 
-        <div className="grid gap-7 xl:grid-cols-[minmax(0,1.55fr)_minmax(260px,.45fr)]">
-          <div className="space-y-4">
-            <div>
-              <p className="font-semibold">Requirements from this posting</p>
-              <p className="text-dust mt-1 max-w-2xl text-xs leading-5">
-                Open one requirement at a time. If your evidence cannot support
-                a bullet, Resume Kitchen will leave it blank.
-              </p>
-            </div>
-            {requirements.map((requirement) => (
-              <RequirementCard
-                key={requirement.id}
-                requirement={requirement}
-                evidence={workspace.evidence}
-                claims={claims}
+        {!application ? (
+          <Empty
+            icon={
+              <span className="border-amber/30 bg-amber/10 text-amber inline-flex size-11 items-center justify-center rounded-xl border">
+                <WandSparkles className="size-[18px]" strokeWidth={1.8} />
+              </span>
+            }
+            title="Save an application for the bullet-by-bullet view"
+            copy={`You have ${claims.length} confirmed ${claims.length === 1 ? "claim" : "claims"}. Add a job posting and we will compare its requirements with your actual experience, one at a time.`}
+            href="/dashboard/applications/new"
+            action="Add an application"
+          />
+        ) : (
+          <>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Stat
+                label="Requirement coverage"
+                value={`${covered} / ${requirements.length}`}
+                note={
+                  gaps.length
+                    ? `${gaps.length} required ${gaps.length === 1 ? "gap" : "gaps"}`
+                    : "Every requirement matched"
+                }
               />
-            ))}
-            {requirements.length === 0 && (
-              <p className="text-dust text-xs">
-                No requirements were read from this posting.
-              </p>
-            )}
-          </div>
+              <Stat
+                label="Confirmed claims"
+                value={String(claims.length)}
+                note={`Across ${workspace.evidence.length} ${workspace.evidence.length === 1 ? "entry" : "entries"}`}
+              />
+              <Stat
+                label="Active version"
+                value={activeVersion?.name ?? "Original resume"}
+                note={
+                  activeVersion?.kind === "revision"
+                    ? "Named revision"
+                    : "Protected original"
+                }
+              />
+            </div>
 
-          <aside className="space-y-4">
-            <section className="roleward-card rounded-[22px] p-5">
-              <FileText className="text-copper size-4" />
-              <p className="mt-3 text-sm font-semibold">Evidence ready</p>
-              <p className="text-dust mt-2 text-xs leading-5">
-                {claims.length} confirmed{" "}
-                {claims.length === 1 ? "claim is" : "claims are"} available for
-                tailoring.
-              </p>
-              <Link
-                href="/dashboard/evidence"
-                className="text-copper mt-4 inline-flex items-center gap-1.5 text-xs font-semibold"
-              >
-                Review evidence <ArrowRight className="size-3" />
-              </Link>
-            </section>
+            <div className="grid gap-7 xl:grid-cols-[minmax(0,1.55fr)_minmax(260px,.45fr)]">
+              <div className="space-y-4">
+                <div>
+                  <p className="font-semibold">
+                    Requirements from this posting
+                  </p>
+                  <p className="text-dust mt-1 max-w-2xl text-xs leading-5">
+                    Open one requirement at a time. If your evidence cannot
+                    support a bullet, Resume Kitchen will leave it blank.
+                  </p>
+                </div>
+                {requirements.map((requirement) => (
+                  <RequirementCard
+                    key={requirement.id}
+                    requirement={requirement}
+                    evidence={workspace.evidence}
+                    claims={claims}
+                  />
+                ))}
+                {requirements.length === 0 && (
+                  <p className="text-dust text-xs">
+                    No requirements were read from this posting.
+                  </p>
+                )}
+              </div>
 
-            <section className="border-iron/75 rounded-[22px] border p-5">
-              <ShieldCheck className="text-sage size-4" />
-              <p className="mt-3 text-sm font-semibold">No invented claims</p>
-              <p className="text-dust mt-2 text-xs leading-5">
-                Unsupported figures and claims are rejected before they reach
-                your resume.
-              </p>
-            </section>
-          </aside>
-        </div>
+              <aside className="space-y-4">
+                <section className="roleward-card rounded-[22px] p-5">
+                  <FileText className="text-copper size-4" />
+                  <p className="mt-3 text-sm font-semibold">Evidence ready</p>
+                  <p className="text-dust mt-2 text-xs leading-5">
+                    {claims.length} confirmed{" "}
+                    {claims.length === 1 ? "claim is" : "claims are"} available
+                    for tailoring.
+                  </p>
+                  <Link
+                    href="/dashboard/evidence"
+                    className="text-copper mt-4 inline-flex items-center gap-1.5 text-xs font-semibold"
+                  >
+                    Review evidence <ArrowRight className="size-3" />
+                  </Link>
+                </section>
+
+                <section className="border-iron/75 rounded-[22px] border p-5">
+                  <ShieldCheck className="text-sage size-4" />
+                  <p className="mt-3 text-sm font-semibold">
+                    No invented claims
+                  </p>
+                  <p className="text-dust mt-2 text-xs leading-5">
+                    Unsupported figures and claims are rejected before they
+                    reach your resume.
+                  </p>
+                </section>
+              </aside>
+            </div>
+          </>
+        )}
       </div>
     );
   }

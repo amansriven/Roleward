@@ -6,13 +6,6 @@ export const DEFAULT_TITLE = "Roleward | AI Job Search & Interview Preparation";
 export const DEFAULT_DESCRIPTION =
   "Roleward is an AI job search assistant for internship and job applications, resume tailoring, coding practice, and mock interview preparation.";
 
-const socialImage = {
-  url: "/opengraph-image",
-  width: 1200,
-  height: 630,
-  alt: "Roleward — one contextualized AI workspace for your entire job search",
-};
-
 export function pageMetadata({
   title,
   description,
@@ -35,16 +28,27 @@ export function pageMetadata({
       title: shareTitle,
       description,
       url: path,
-      images: [socialImage],
     },
     twitter: {
       card: "summary_large_image",
       title: shareTitle,
       description,
-      images: [socialImage.url],
     },
   };
 }
+
+export const indexMetadata: Metadata = {
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
 
 export const noIndexMetadata: Metadata = {
   robots: {
@@ -116,3 +120,27 @@ export const homeStructuredData = {
     },
   ],
 };
+
+export function breadcrumbStructuredData(
+  name: string,
+  path: `/${string}`,
+): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: SITE_NAME,
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name,
+        item: `${SITE_URL}${path}`,
+      },
+    ],
+  };
+}

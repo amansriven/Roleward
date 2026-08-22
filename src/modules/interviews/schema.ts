@@ -82,11 +82,26 @@ export const interviewConfigSchema = z.object({
 });
 export type InterviewConfig = z.infer<typeof interviewConfigSchema>;
 
+/**
+ * Audio-derived delivery numbers for one spoken answer. Computed in the browser
+ * from the live microphone; the audio itself is never recorded or stored, so
+ * this is the only trace a voice answer leaves beyond its transcript.
+ */
+export const deliveryMetricsSchema = z.object({
+  speakingMs: z.number().min(0),
+  silenceMs: z.number().min(0),
+  pauseCount: z.number().int().min(0),
+  longestPauseMs: z.number().min(0),
+  meanEnergy: z.number().min(0).max(1),
+  energyVariation: z.number().min(0).max(1),
+});
+
 export const interviewTurnSchema = z.object({
   id: z.string().min(1),
   role: z.enum(["interviewer", "candidate"]),
   content: z.string(),
   competency: competencySchema.nullable().default(null),
+  delivery: deliveryMetricsSchema.optional(),
   createdAt: z.string().datetime(),
 });
 export type InterviewTurn = z.infer<typeof interviewTurnSchema>;

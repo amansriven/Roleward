@@ -23,33 +23,63 @@ const evidenceSections = [
   "activities",
 ] as const;
 
-const routes: { match: RegExp; href: string; label: string }[] = [
+/**
+ * Matched by keyword rather than exact phrase: live responses cite sources
+ * using whatever the context calls them, including raw JSON keys such as
+ * `activeApplication`, so anchored patterns miss. Order is priority.
+ */
+const routes: { keyword: string; href: string; label: string }[] = [
+  { keyword: "evidence", href: "/dashboard/evidence", label: "Evidence" },
   {
-    match: /^(active )?application/,
-    href: "/dashboard/applications",
-    label: "Applications",
-  },
-  { match: /^evidence/, href: "/dashboard/evidence", label: "Evidence" },
-  {
-    match: /^(active )?resume|^resume kitchen/,
+    keyword: "resume",
     href: "/dashboard/resume-kitchen",
     label: "Resumes",
   },
-  { match: /^zed/, href: "/dashboard/zed", label: "Zed" },
+  { keyword: "zed", href: "/dashboard/zed", label: "Zed" },
   {
-    match: /^stage ?fright|^interview/,
+    keyword: "stage fright",
     href: "/dashboard/stage-fright",
     label: "Stage Fright",
   },
-  { match: /^goal/, href: "/dashboard", label: "Goals" },
+  {
+    keyword: "interview",
+    href: "/dashboard/stage-fright",
+    label: "Stage Fright",
+  },
+  {
+    keyword: "application",
+    href: "/dashboard/applications",
+    label: "Applications",
+  },
+  { keyword: "goal", href: "/dashboard", label: "Goals" },
 ];
+
+/** `activeApplication` → `active application`, for matching. */
+function normalize(value: string) {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+/** Key-like tokens get prettified; text a human would write is left alone. */
+function displayLabel(head: string) {
+  const keyLike =
+    !/\s/.test(head) &&
+    (/[a-z0-9][A-Z]/.test(head) || head === head.toLowerCase());
+  if (!keyLike) return head;
+  const spaced = normalize(head);
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 
 /** Maps one raw marker body onto a labelled workspace link. */
 export function resolveMoxieCitation(raw: string): MoxieCitation {
   const [head = "", ...rest] = raw.split("·").map((part) => part.trim());
   const detail = rest.join(" · ");
-  const category = head.toLowerCase();
-  const route = routes.find((item) => item.match.test(category));
+  const category = normalize(head);
+  const route = routes.find((item) => category.includes(item.keyword));
   let href = route?.href ?? "/dashboard";
 
   // Evidence names its own sub-surface often enough to deep-link it.
@@ -60,7 +90,7 @@ export function resolveMoxieCitation(raw: string): MoxieCitation {
     if (section) href = `/dashboard/evidence/${section}`;
   }
 
-  const label = detail || head || route?.label || "Workspace";
+  const label = detail || displayLabel(head) || route?.label || "Workspace";
   return { label, href, key: `${href}:${label.toLowerCase()}` };
 }
 

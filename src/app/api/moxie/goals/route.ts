@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { workspaceStorageConfigured } from "@/modules/aws/config";
-import {
-  deleteGoal,
-  getGoal,
-  listGoals,
-  putGoal,
-} from "@/modules/aws/moxie-store";
+import { getGoal, listGoals, putGoal } from "@/modules/aws/moxie-store";
 import {
   addMoxieMilestone,
   createMoxieGoal,
@@ -16,6 +11,7 @@ import {
   removeMoxieMilestone,
   setMoxieGoalStatus,
   sortMoxieGoals,
+  withdrawMoxieGoal,
   toggleMoxieMilestone,
 } from "@/modules/moxie/goal";
 
@@ -114,7 +110,12 @@ export async function DELETE(request: Request) {
   const parsed = deleteSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
     return NextResponse.json({ error: "Missing goal id." }, { status: 400 });
-  const removed = await deleteGoal(userId, parsed.data.id)
+  const existing = await getGoal(userId, parsed.data.id).catch(() => null);
+  if (!existing)
+    return NextResponse.json({ error: "Goal not found." }, { status: 404 });
+  // Soft delete: the deployed role cannot DeleteItem, and this keeps goals
+  // consistent with memory's auditable removal.
+  const removed = await putGoal(userId, withdrawMoxieGoal(existing))
     .then(() => true)
     .catch(() => false);
   if (!removed)

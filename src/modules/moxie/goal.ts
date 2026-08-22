@@ -34,6 +34,11 @@ export const moxieGoalSchema = z.object({
   createdAt: z.string().datetime(),
   approvedAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  /**
+   * Soft delete, matching memory. The deployed IAM role has no
+   * dynamodb:DeleteItem permission, so removal is a write, not a delete.
+   */
+  deletedAt: z.string().datetime().optional(),
 });
 export type MoxieGoal = z.infer<typeof moxieGoalSchema>;
 
@@ -67,6 +72,13 @@ export function createMoxieGoal(
     approvedAt: now,
     updatedAt: now,
   });
+}
+
+export function withdrawMoxieGoal(
+  goal: MoxieGoal,
+  now = new Date().toISOString(),
+): MoxieGoal {
+  return { ...goal, deletedAt: now, updatedAt: now };
 }
 
 export function setMoxieGoalStatus(
@@ -137,13 +149,15 @@ export function moxieGoalProgress(goal: MoxieGoal) {
 /** Active goals first, then by nearest target date. */
 export function sortMoxieGoals(goals: MoxieGoal[]) {
   const rank = (goal: MoxieGoal) => moxieGoalStatuses.indexOf(goal.status);
-  return [...goals].sort(
-    (a, b) =>
-      rank(a) - rank(b) ||
-      (a.targetDate ?? "9999-12-31").localeCompare(
-        b.targetDate ?? "9999-12-31",
-      ),
-  );
+  return [...goals]
+    .filter((goal) => !goal.deletedAt)
+    .sort(
+      (a, b) =>
+        rank(a) - rank(b) ||
+        (a.targetDate ?? "9999-12-31").localeCompare(
+          b.targetDate ?? "9999-12-31",
+        ),
+    );
 }
 
 /** Compact form the context broker embeds so answers respect stated goals. */

@@ -6,7 +6,8 @@ import Link from "next/link";
 import { ResumeDemo } from "@/components/demos/resume-demo";
 import { ProductVisual } from "@/components/brand/product-visual";
 import { Button } from "@/components/ui/button";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbStructuredData, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "AI Resume Review & Tailoring",
@@ -36,6 +37,7 @@ const workflow: Array<[LucideIcon, string, string]> = [
 export default function ResumeKitchenPage() {
   return (
     <main>
+      <JsonLd data={breadcrumbStructuredData("Resume Kitchen", "/resume-kitchen")} />
       <section className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-12 lg:py-28">
         <div>
           <p className="section-label">Resume Kitchen</p>

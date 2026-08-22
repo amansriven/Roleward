@@ -4,8 +4,17 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { auth } from "@/auth";
 import { describeAuthError } from "@/modules/identity/auth-error";
+import { indexMetadata, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Log in" };
+export const metadata: Metadata = {
+  ...pageMetadata({
+    title: "Log In",
+    description:
+      "Log in to Roleward to pick up your job search where you left off — your applications, resume drafts, coding practice, and interview prep in one workspace.",
+    path: "/login",
+  }),
+  ...indexMetadata,
+};
 export default async function LoginPage({
   searchParams,
 }: {

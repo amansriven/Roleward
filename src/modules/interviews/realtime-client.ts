@@ -1,11 +1,19 @@
 "use client";
 
+import { createDeliveryMeter } from "./delivery-meter";
+import type { DeliveryMetrics } from "./delivery-metrics";
+
 export type RealtimeStatus =
   "connecting" | "live" | "closed" | "unsupported" | "mic_denied" | "failed";
 
 export interface RealtimeHandlers {
   onStatus: (status: RealtimeStatus, detail?: string) => void;
-  onTranscript: (role: "interviewer" | "candidate", text: string) => void;
+  onTranscript: (
+    role: "interviewer" | "candidate",
+    text: string,
+    /** Present for candidate turns when the delivery meter is available. */
+    delivery?: DeliveryMetrics,
+  ) => void;
   onSpeakingChange?: (speaking: boolean) => void;
 }
 
@@ -57,6 +65,11 @@ export async function startRealtimeInterview(
     return null;
   }
 
+  // Measures loudness on the live stream. No audio is recorded or uploaded.
+  const meter = createDeliveryMeter(microphone);
+  // Start of the answer currently being spoken, so metrics cover just that turn.
+  let answerStartedAt = 0;
+
   const connection = new RTCPeerConnection();
   const audio = new Audio();
   audio.autoplay = true;
@@ -101,11 +114,15 @@ export async function startRealtimeInterview(
       }
       case "conversation.item.input_audio_transcription.completed": {
         const text = message.transcript;
-        if (typeof text === "string" && text.trim())
-          handlers.onTranscript("candidate", text.trim());
+        if (typeof text === "string" && text.trim()) {
+          const delivery = meter?.since(answerStartedAt) ?? undefined;
+          handlers.onTranscript("candidate", text.trim(), delivery);
+          answerStartedAt = meter?.elapsed() ?? 0;
+        }
         break;
       }
       case "input_audio_buffer.speech_started": {
+        if (meter && answerStartedAt === 0) answerStartedAt = meter.elapsed();
         if (activeItemId) {
           send({
             type: "conversation.item.truncate",
@@ -125,6 +142,7 @@ export async function startRealtimeInterview(
   };
 
   const cleanup = () => {
+    meter?.stop();
     microphone.getTracks().forEach((track) => track.stop());
     audio.srcObject = null;
     connection.close();

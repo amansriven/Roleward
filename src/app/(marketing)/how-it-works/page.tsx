@@ -3,7 +3,8 @@ import { ArrowRight, Check, FileUp, ListTodo, Target } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbStructuredData, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "How Roleward Works",
@@ -38,6 +39,7 @@ const steps = [
 export default function HowItWorksPage() {
   return (
     <main>
+      <JsonLd data={breadcrumbStructuredData("How Roleward Works", "/how-it-works")} />
       <section className="mx-auto max-w-4xl px-5 py-20 text-center sm:px-8 lg:py-28">
         <p className="section-label">How Roleward works</p>
         <h1 className="mt-5 text-5xl leading-[1.02] font-semibold tracking-[-0.045em] text-balance sm:text-6xl">
