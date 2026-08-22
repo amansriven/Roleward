@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { ImageResponse } from "next/og";
@@ -6,25 +6,46 @@ import { ImageResponse } from "next/og";
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 
-const asset = (path: string) => readFileSync(join(process.cwd(), path));
+/**
+ * Card assets live in `assets/og` rather than `node_modules` or `public`:
+ * Vercel prunes node_modules in the lambda, and only project files named by
+ * `outputFileTracingIncludes` are guaranteed to ship with a server trace.
+ */
+const assetPath = (file: string) => join(process.cwd(), "assets/og", file);
 
-const lockupDataUri = `data:image/png;base64,${asset(
-  "public/brand/roleward-lockup.png",
-).toString("base64")}`;
+/**
+ * Loaded on first render rather than at module scope. A module-level read that
+ * throws takes the whole chunk down with it, which turns a missing font into a
+ * failed page render instead of a failed image.
+ */
+let assetsPromise: Promise<{
+  lockup: string;
+  semiBold: Buffer;
+  regular: Buffer;
+}> | null = null;
 
-const geistSemiBold = asset(
-  "node_modules/geist/dist/fonts/geist-sans/Geist-SemiBold.ttf",
-);
-const geistRegular = asset(
-  "node_modules/geist/dist/fonts/geist-sans/Geist-Regular.ttf",
-);
+function loadAssets() {
+  assetsPromise ??= (async () => {
+    const [lockup, semiBold, regular] = await Promise.all([
+      readFile(assetPath("roleward-lockup.png")),
+      readFile(assetPath("Geist-SemiBold.ttf")),
+      readFile(assetPath("Geist-Regular.ttf")),
+    ]);
+    return {
+      lockup: `data:image/png;base64,${lockup.toString("base64")}`,
+      semiBold,
+      regular,
+    };
+  })();
+  return assetsPromise;
+}
 
 /**
  * Shared social card. `headline` renders in linen and `accent` in orange
  * directly beneath it, so each page can say what it actually is instead of
  * every link previewing as the homepage.
  */
-export function renderOgCard({
+export async function renderOgCard({
   eyebrow,
   headline,
   accent,
@@ -35,6 +56,8 @@ export function renderOgCard({
   accent: string;
   footer: string;
 }) {
+  const { lockup, semiBold, regular } = await loadAssets();
+
   return new ImageResponse(
     (
       <div
@@ -62,7 +85,7 @@ export function renderOgCard({
           {/* satori renders raw <img>; next/image is not available here */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={lockupDataUri}
+            src={lockup}
             width={394}
             height={85}
             alt=""
@@ -127,8 +150,8 @@ export function renderOgCard({
     {
       ...ogSize,
       fonts: [
-        { name: "Geist", data: geistSemiBold, weight: 600, style: "normal" },
-        { name: "Geist", data: geistRegular, weight: 400, style: "normal" },
+        { name: "Geist", data: semiBold, weight: 600, style: "normal" },
+        { name: "Geist", data: regular, weight: 400, style: "normal" },
       ],
     },
   );

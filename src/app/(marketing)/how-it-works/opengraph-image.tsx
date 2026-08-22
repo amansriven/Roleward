@@ -4,7 +4,7 @@ export const alt = "How Roleward works";
 export const size = ogSize;
 export const contentType = ogContentType;
 
-export default function OpenGraphImage() {
+export default async function OpenGraphImage() {
   return renderOgCard({
     eyebrow: "How it works",
     headline: "One target role.",

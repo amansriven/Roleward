@@ -4,7 +4,7 @@ export const alt = "Stage Fright — AI mock interviews and behavioral practice"
 export const size = ogSize;
 export const contentType = ogContentType;
 
-export default function OpenGraphImage() {
+export default async function OpenGraphImage() {
   return renderOgCard({
     eyebrow: "Stage Fright",
     headline: "Rehearse the interview",

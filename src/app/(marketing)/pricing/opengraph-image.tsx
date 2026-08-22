@@ -4,7 +4,7 @@ export const alt = "Roleward pricing";
 export const size = ogSize;
 export const contentType = ogContentType;
 
-export default function OpenGraphImage() {
+export default async function OpenGraphImage() {
   return renderOgCard({
     eyebrow: "Pricing",
     headline: "Start free.",

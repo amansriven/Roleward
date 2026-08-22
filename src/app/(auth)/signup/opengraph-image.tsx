@@ -4,7 +4,7 @@ export const alt = "Create your Roleward workspace";
 export const size = ogSize;
 export const contentType = ogContentType;
 
-export default function OpenGraphImage() {
+export default async function OpenGraphImage() {
   return renderOgCard({
     eyebrow: "Get started",
     headline: "Create your workspace.",

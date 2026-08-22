@@ -5,7 +5,7 @@ export const alt =
 export const size = ogSize;
 export const contentType = ogContentType;
 
-export default function OpenGraphImage() {
+export default async function OpenGraphImage() {
   return renderOgCard({
     eyebrow: "Move forward · Go further",
     headline: "Your entire job search.",
