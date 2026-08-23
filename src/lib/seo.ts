@@ -107,7 +107,7 @@ export const homeStructuredData = {
         price: "0",
         priceCurrency: "USD",
         category: "free",
-        url: `${SITE_URL}/pricing`,
+        url: SITE_URL,
       },
       featureList: [
         "Internship and job application tracking",

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Heart,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -23,6 +24,9 @@ import { WorkspaceSync } from "@/components/workspace/workspace-sync";
 import { clearLocalWorkspace } from "@/modules/workspace/owner";
 import { MoxieDrawer } from "@/components/moxie/moxie-drawer";
 import { FeedbackDialog } from "@/components/workspace/feedback-dialog";
+import { donationsEnabled } from "@/modules/billing/config";
+import { AnalyticsEvent } from "@/modules/analytics/config";
+import { track } from "@/modules/analytics/track";
 import { cn } from "@/lib/utils";
 import {
   getActiveApplication,
@@ -318,6 +322,24 @@ function SidebarContent({
                 <Settings className="size-3.5" />
                 {!condensed && "Settings"}
               </Link>
+              {donationsEnabled && (
+                <Link
+                  href="/tip-jar"
+                  onClick={() => {
+                    track(AnalyticsEvent.donateClicked, { surface: "sidebar" });
+                    onNavigate?.();
+                  }}
+                  title={condensed ? "Tip jar" : undefined}
+                  aria-label={condensed ? "Tip jar" : undefined}
+                  className={cn(
+                    "text-dust hover:bg-linen/[.04] hover:text-linen flex min-h-9 items-center rounded-lg text-xs transition-colors",
+                    condensed ? "w-9 justify-center" : "gap-2 px-2",
+                  )}
+                >
+                  <Heart className="size-3.5" />
+                  {!condensed && "Tip jar"}
+                </Link>
+              )}
               <form
                 action={endSession}
                 // The next account to use this browser must not inherit this

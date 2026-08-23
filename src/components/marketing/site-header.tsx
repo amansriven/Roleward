@@ -9,7 +9,6 @@ const nav = [
   ["Zed", "/zed"],
   ["Stage Fright", "/stage-fright"],
   ["How it works", "/how-it-works"],
-  ["Pricing", "/pricing"],
 ] as const;
 
 export function SiteHeader() {

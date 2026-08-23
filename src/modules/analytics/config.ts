@@ -14,6 +14,7 @@ export const AnalyticsEvent = {
   signupStarted: "signup_started",
   loginStarted: "login_started",
   ctaClicked: "cta_clicked",
+  donateClicked: "donate_clicked",
 } as const;
 
 export type AnalyticsEventName =

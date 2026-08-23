@@ -15,7 +15,7 @@ const groups = [
     title: "Roleward",
     links: [
       ["How it works", "/how-it-works"],
-      ["Pricing", "/pricing"],
+      ["Tip jar", "/tip-jar"],
       ["Log in", "/login"],
     ],
   },
