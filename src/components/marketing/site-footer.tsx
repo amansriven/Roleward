@@ -27,7 +27,11 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr] lg:px-12">
         <div className="max-w-sm">
           <Logo />
-          <p className="text-canvas mt-4 text-sm leading-6">
+          {/* The name is a direction, not a noun — this is where that lands. */}
+          <p className="text-linen mt-4 text-sm font-medium">
+            Toward the role you want.
+          </p>
+          <p className="text-canvas mt-3 text-sm leading-6">
             An AI job search workspace connecting applications, resume
             tailoring, coding interview practice, and behavioral preparation for
             your next internship or job.
