@@ -60,6 +60,31 @@ export const tailoredDraftSchema = z.object({
 
 export type TailoredDraft = z.infer<typeof tailoredDraftSchema>;
 
+export const tailorScopeSchema = z.object({
+  /** Bullets the candidate ticked. Empty means every bullet. */
+  bulletIds: z.array(z.string().min(1)).max(400).default([]),
+  headline: z.boolean().default(true),
+  skills: z.boolean().default(true),
+});
+
+export type TailorScope = z.infer<typeof tailorScopeSchema>;
+
+export const wholeResumeScope: TailorScope = {
+  bulletIds: [],
+  headline: true,
+  skills: true,
+};
+
+/**
+ * Whether a bullet is one the candidate asked to have rewritten.
+ *
+ * An empty list means the whole resume, which keeps "tailor everything" from
+ * having to enumerate every id it owns.
+ */
+export function inScope(scope: TailorScope, bulletId: string) {
+  return scope.bulletIds.length === 0 || scope.bulletIds.includes(bulletId);
+}
+
 /**
  * Puts the model's wording back into the candidate's resume.
  *
@@ -71,6 +96,7 @@ export function applyTailoredResume(
   resume: TailorableResume,
   draft: TailoredDraft,
   extraContext: string,
+  scope: TailorScope = wholeResumeScope,
 ): TailoredResume {
   const changes: BulletChange[] = [];
   const rejected: RejectedRewrite[] = [];
@@ -86,6 +112,11 @@ export function applyTailoredResume(
     return {
       ...item,
       bullets: item.bullets.map((bullet) => {
+        // Out of scope is enforced here rather than asked for in the prompt.
+        // A candidate who ticked one bullet has said something about the other
+        // twenty, and it is not "surprise me".
+        if (!inScope(scope, bullet.id)) return bullet;
+
         const rewritten = draftBullets.get(bullet.id)?.trim() ?? "";
         if (!rewritten || rewritten === bullet.content) return bullet;
 
@@ -125,20 +156,21 @@ export function applyTailoredResume(
       allowed.set(normalizeForMatch(skill), skill);
   const context = normalizeForMatch(extraContext);
 
-  const skills = draft.skills.length
-    ? draft.skills
-        .map((group) => ({
-          category: group.category,
-          skills: group.skills.filter((skill) => {
-            const key = normalizeForMatch(skill);
-            if (allowed.has(key)) return true;
-            if (key.length >= 2 && context.includes(key)) return true;
-            droppedSkills.push(skill);
-            return false;
-          }),
-        }))
-        .filter((group) => group.skills.length > 0)
-    : resume.skills.map((group) => ({ ...group }));
+  const skills =
+    scope.skills && draft.skills.length
+      ? draft.skills
+          .map((group) => ({
+            category: group.category,
+            skills: group.skills.filter((skill) => {
+              const key = normalizeForMatch(skill);
+              if (allowed.has(key)) return true;
+              if (key.length >= 2 && context.includes(key)) return true;
+              droppedSkills.push(skill);
+              return false;
+            }),
+          }))
+          .filter((group) => group.skills.length > 0)
+      : resume.skills.map((group) => ({ ...group }));
 
   // Reordering may not lose a skill. If the model returned fewer than it was
   // given, the missing ones are appended rather than quietly deleted.
@@ -164,7 +196,9 @@ export function applyTailoredResume(
     extraContext,
   ]);
   const headline =
-    draft.headline && headlineCheck.ok ? draft.headline : resume.headline;
+    scope.headline && draft.headline && headlineCheck.ok
+      ? draft.headline
+      : resume.headline;
 
   return {
     resume: { headline, skills, items },

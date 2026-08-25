@@ -7,6 +7,10 @@ import {
   tailorResume,
 } from "@/modules/resume-kitchen/tailor-resume";
 import {
+  tailorScopeSchema,
+  wholeResumeScope,
+} from "@/modules/resume-kitchen/tailor-resume-merge";
+import {
   resumeVersionItemSchema,
   resumeVersionSkillGroupSchema,
 } from "@/modules/resume-kitchen/versions";
@@ -31,6 +35,8 @@ const requestSchema = z.object({
   }),
   /** The candidate's own notes for this run: new detail, or what to emphasise. */
   extraContext: z.string().trim().max(4_000).default(""),
+  /** Which parts they ticked. Absent means the whole resume. */
+  scope: tailorScopeSchema.optional(),
 });
 
 /**
@@ -66,6 +72,7 @@ export async function POST(request: Request) {
       parsed.data.resume,
       parsed.data.target,
       parsed.data.extraContext,
+      parsed.data.scope ?? wholeResumeScope,
     );
     return NextResponse.json(result);
   } catch (error) {

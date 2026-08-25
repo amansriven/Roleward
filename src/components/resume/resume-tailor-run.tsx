@@ -2,10 +2,14 @@
 
 import {
   ArrowRight,
+  Check,
+  ChevronDown,
   CircleAlert,
+  ClipboardCopy,
   Download,
   FileText,
   LoaderCircle,
+  Minus,
   RotateCcw,
   Save,
   ShieldCheck,
@@ -105,6 +109,10 @@ export function ResumeTailorRun({
   const [role, setRole] = useState("");
   const [pasted, setPasted] = useState("");
   const [notes, setNotes] = useState("");
+  const [scoped, setScoped] = useState(false);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [tailorHeadline, setTailorHeadline] = useState(true);
+  const [tailorSkills, setTailorSkills] = useState(true);
   const [busy, setBusy] = useState<Busy>("");
   const [error, setError] = useState("");
   const [guessed, setGuessed] = useState(false);
@@ -157,6 +165,11 @@ export function ResumeTailorRun({
       return;
     }
 
+    if (scoped && !picked.length && !tailorHeadline && !tailorSkills) {
+      setError("Tick at least one bullet, or switch back to the whole resume.");
+      return;
+    }
+
     let requirements =
       source === "saved"
         ? (application?.requirements ?? []).map((item) => item.content)
@@ -187,6 +200,13 @@ export function ResumeTailorRun({
             requirements,
           },
           extraContext: notes.trim(),
+          scope: scoped
+            ? {
+                bulletIds: picked,
+                headline: tailorHeadline,
+                skills: tailorSkills,
+              }
+            : undefined,
         }),
       });
       const body = (await response
@@ -266,6 +286,21 @@ export function ResumeTailorRun({
   }
 
   const working = busy !== "";
+  const extras =
+    (tailorHeadline ? 1 : 0) + (tailorSkills ? 1 : 0) > 0
+      ? [tailorHeadline && "headline", tailorSkills && "skills"]
+          .filter(Boolean)
+          .join(" and ")
+      : "";
+  const scopeLabel =
+    [
+      picked.length
+        ? `${picked.length} ${picked.length === 1 ? "bullet" : "bullets"}`
+        : "",
+      extras,
+    ]
+      .filter(Boolean)
+      .join(" plus ") || "nothing yet";
 
   return (
     <section className="roleward-card overflow-hidden rounded-[26px]">
@@ -420,6 +455,32 @@ export function ResumeTailorRun({
           </label>
         </div>
 
+        <div>
+          <p className="text-dust text-[10px] font-semibold uppercase">
+            How much to rewrite
+          </p>
+          <div className="border-iron/70 mt-2 inline-flex rounded-lg border p-1">
+            <SourceTab active={!scoped} onClick={() => setScoped(false)}>
+              The whole resume
+            </SourceTab>
+            <SourceTab active={scoped} onClick={() => setScoped(true)}>
+              Choose what to tailor
+            </SourceTab>
+          </div>
+
+          {scoped && (
+            <ScopePicker
+              version={version}
+              picked={picked}
+              onPicked={setPicked}
+              headline={tailorHeadline}
+              onHeadline={setTailorHeadline}
+              skills={tailorSkills}
+              onSkills={setTailorSkills}
+            />
+          )}
+        </div>
+
         {error && (
           <p className="text-kiln flex items-start gap-2 text-xs">
             <CircleAlert className="mt-0.5 size-3.5 shrink-0" />
@@ -445,7 +506,9 @@ export function ResumeTailorRun({
                 ? "Rewriting your resume…"
                 : result
                   ? "Tailor again"
-                  : "Tailor and build the PDF"}
+                  : scoped
+                    ? `Tailor ${scopeLabel}`
+                    : "Tailor and build the PDF"}
           </button>
           {result && !working && (
             <button
@@ -491,10 +554,20 @@ function TailoredReview({
   onDownload: () => void;
   onSave: () => void;
 }) {
+  const [copied, setCopied] = useState("");
   const total = result.resume.items.reduce(
     (count, item) => count + item.bullets.length,
     0,
   );
+
+  function copy(text: string, key: string) {
+    void navigator.clipboard?.writeText(text);
+    setCopied(key);
+  }
+
+  function copyAll() {
+    copy(result.changes.map((change) => `• ${change.after}`).join("\n"), "all");
+  }
 
   return (
     <div className="border-iron/70 border-t">
@@ -505,8 +578,9 @@ function TailoredReview({
             {total === 1 ? "bullet" : "bullets"} rewritten
           </p>
           <p className="text-dust mt-1 text-xs leading-5">
-            Everything else was already right for this role and was left alone.
-            The PDF keeps every entry, in the order your resume had them.
+            Take the whole document, or just the lines. The PDF is your full
+            resume with only these rewrites applied; copying gives you the
+            bullets alone to paste wherever you keep them.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
@@ -522,6 +596,15 @@ function TailoredReview({
               <Download className="size-3.5" />
             )}
             Download PDF
+          </button>
+          <button
+            type="button"
+            onClick={copyAll}
+            disabled={!result.changes.length}
+            className="border-iron text-canvas hover:text-linen inline-flex min-h-10 items-center gap-2 rounded-xl border px-4 text-xs font-semibold disabled:opacity-40"
+          >
+            <ClipboardCopy className="size-3.5" />
+            {copied === "all" ? "Copied" : "Copy bullets"}
           </button>
           <button
             type="button"
@@ -612,12 +695,217 @@ function TailoredReview({
                   <ArrowRight className="text-copper mt-0.5 size-3 shrink-0" />
                   {change.after}
                 </p>
+                <button
+                  type="button"
+                  onClick={() => copy(change.after, change.bulletId)}
+                  className="text-dust hover:text-canvas mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold"
+                >
+                  <ClipboardCopy className="size-3" />
+                  {copied === change.bulletId ? "Copied" : "Copy this bullet"}
+                </button>
               </li>
             ))}
           </ul>
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Entry-level and bullet-level checkboxes over one resume version.
+ *
+ * Ticking an entry ticks its bullets, because "redo my Acme internship" is the
+ * request people actually have; the bullet rows are there for the narrower
+ * one. Nothing is preselected — an empty scope is a question, not a default,
+ * and the whole-resume tab is one click away for anyone who wanted everything.
+ */
+function ScopePicker({
+  version,
+  picked,
+  onPicked,
+  headline,
+  onHeadline,
+  skills,
+  onSkills,
+}: {
+  version: ResumeVersion;
+  picked: string[];
+  onPicked: (value: string[]) => void;
+  headline: boolean;
+  onHeadline: (value: boolean) => void;
+  skills: boolean;
+  onSkills: (value: boolean) => void;
+}) {
+  const [open, setOpen] = useState<string[]>([]);
+  const chosen = new Set(picked);
+
+  function toggleBullets(ids: string[], on: boolean) {
+    const next = new Set(chosen);
+    for (const id of ids)
+      if (on) next.add(id);
+      else next.delete(id);
+    onPicked([...next]);
+  }
+
+  const everyBullet = version.items.flatMap((item) =>
+    item.bullets.map((bullet) => bullet.id),
+  );
+
+  return (
+    <div className="border-iron/60 mt-3 rounded-xl border">
+      <div className="border-iron/50 flex flex-wrap items-center justify-between gap-3 border-b p-3">
+        <p className="text-dust text-[11px]">
+          {picked.length
+            ? `${picked.length} of ${everyBullet.length} bullets selected`
+            : "Nothing selected yet"}
+        </p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => toggleBullets(everyBullet, picked.length === 0)}
+            className="text-dust hover:text-canvas text-[10px] font-semibold"
+          >
+            {picked.length ? "Clear all" : "Select all"}
+          </button>
+        </div>
+      </div>
+
+      <div className="divide-iron/50 divide-y">
+        {version.items.map((item) => {
+          const ids = item.bullets.map((bullet) => bullet.id);
+          const selected = ids.filter((id) => chosen.has(id)).length;
+          const all = ids.length > 0 && selected === ids.length;
+          const expanded = open.includes(item.id);
+
+          return (
+            <div key={item.id}>
+              <div className="flex items-center gap-3 p-3">
+                <Tick
+                  checked={all}
+                  partial={selected > 0 && !all}
+                  disabled={!ids.length}
+                  label={`Tailor ${item.title}`}
+                  onChange={() => toggleBullets(ids, !all)}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpen((current) =>
+                      current.includes(item.id)
+                        ? current.filter((entry) => entry !== item.id)
+                        : [...current, item.id],
+                    )
+                  }
+                  disabled={!ids.length}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left disabled:cursor-default"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-semibold">
+                      {item.title}
+                      {item.organization ? ` · ${item.organization}` : ""}
+                    </span>
+                    <span className="text-dust block text-[10px]">
+                      {ids.length
+                        ? `${ids.length} ${ids.length === 1 ? "bullet" : "bullets"}${
+                            selected ? ` · ${selected} selected` : ""
+                          }`
+                        : "No bullets to rewrite"}
+                    </span>
+                  </span>
+                  {ids.length > 0 && (
+                    <ChevronDown
+                      className={cn(
+                        "text-dust size-3.5 shrink-0 transition-transform",
+                        expanded && "rotate-180",
+                      )}
+                    />
+                  )}
+                </button>
+              </div>
+
+              {expanded && (
+                <ul className="border-iron/40 space-y-2 border-t p-3 pl-10">
+                  {item.bullets.map((bullet) => (
+                    <li key={bullet.id} className="flex items-start gap-3">
+                      <Tick
+                        checked={chosen.has(bullet.id)}
+                        label={`Tailor bullet: ${bullet.content.slice(0, 60)}`}
+                        onChange={() =>
+                          toggleBullets([bullet.id], !chosen.has(bullet.id))
+                        }
+                      />
+                      <span className="text-canvas flex-1 text-[11px] leading-5">
+                        {bullet.content}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="border-iron/50 flex flex-wrap gap-5 border-t p-3">
+        <label className="flex items-center gap-2.5">
+          <Tick
+            checked={headline}
+            label="Tailor the headline"
+            onChange={() => onHeadline(!headline)}
+          />
+          <span className="text-[11px]">
+            Headline
+            <span className="text-dust ml-1.5">
+              {version.headline || "none set"}
+            </span>
+          </span>
+        </label>
+        <label className="flex items-center gap-2.5">
+          <Tick
+            checked={skills}
+            label="Reorder the skills"
+            onChange={() => onSkills(!skills)}
+          />
+          <span className="text-[11px]">
+            Skills
+            <span className="text-dust ml-1.5">reorder for this role</span>
+          </span>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function Tick({
+  checked,
+  partial,
+  disabled,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  partial?: boolean;
+  disabled?: boolean;
+  label: string;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={partial ? "mixed" : checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onChange}
+      className={cn(
+        "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded border transition-colors disabled:opacity-30",
+        checked || partial ? "border-amber bg-amber text-night" : "border-iron",
+      )}
+    >
+      {checked && <Check className="size-2.5" strokeWidth={3} />}
+      {!checked && partial && <Minus className="size-2.5" strokeWidth={3} />}
+    </button>
   );
 }
 

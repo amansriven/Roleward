@@ -3,9 +3,12 @@ import "server-only";
 import { INTERVIEW_MODEL, openai } from "@/modules/interviews/openai";
 import {
   applyTailoredResume,
+  inScope,
   tailoredDraftSchema,
+  wholeResumeScope,
   type TailorableResume,
   type TailoredResume,
+  type TailorScope,
 } from "./tailor-resume-merge";
 
 /**
@@ -27,6 +30,11 @@ import {
  * source: whatever extra detail the candidate typed for this run. That text is
  * theirs, so a number in it is a number they are willing to defend — which is
  * the whole test a figure on a resume has to pass.
+ *
+ * A scope narrows which bullets may move. The rest are still sent, because a
+ * rewrite that cannot see the neighbouring bullets writes the same sentence
+ * twice — but they are marked as read-only and the merge refuses to change
+ * them whatever comes back.
  */
 
 export class ResumeTailoringError extends Error {}
@@ -98,7 +106,7 @@ const jsonSchema = {
   },
 } as const;
 
-function resumeForPrompt(resume: TailorableResume) {
+function resumeForPrompt(resume: TailorableResume, scope: TailorScope) {
   const lines: string[] = [];
   if (resume.headline) lines.push(`Headline: ${resume.headline}`);
   for (const group of resume.skills)
@@ -111,7 +119,11 @@ function resumeForPrompt(resume: TailorableResume) {
       }${item.period ? ` (${item.period})` : ""}`,
     );
     for (const bullet of item.bullets)
-      lines.push(`  [${bullet.id}] ${bullet.content}`);
+      lines.push(
+        `  [${bullet.id}]${
+          inScope(scope, bullet.id) ? "" : " (READ ONLY)"
+        } ${bullet.content}`,
+      );
   }
   return lines.join("\n");
 }
@@ -120,7 +132,9 @@ function instructions(
   resume: TailorableResume,
   target: TailorTarget,
   extraContext: string,
+  scope: TailorScope,
 ) {
+  const partial = scope.bulletIds.length > 0;
   return [
     "You rewrite an entire resume so it reads as though it was written for one specific job, without changing what the candidate actually did.",
     "",
@@ -137,8 +151,16 @@ function instructions(
     target.jobDescription.slice(0, 12_000),
     "",
     "The resume, as ids you must reuse exactly:",
-    resumeForPrompt(resume),
+    resumeForPrompt(resume, scope),
     "",
+    ...(partial
+      ? [
+          "The candidate asked for only part of this resume to be rewritten. Bullets marked READ ONLY are here so you can see what is already said and avoid repeating it. Return them exactly as given; any change to one is discarded.",
+          "",
+        ]
+      : []),
+    ...(scope.headline ? [] : ["Leave the headline exactly as it is.", ""]),
+    ...(scope.skills ? [] : ["Leave the skills exactly as they are.", ""]),
     ...(extraContext
       ? [
           "Extra detail the candidate supplied for this application. Treat it as true, and as the only new material you may draw on:",
@@ -162,12 +184,18 @@ export async function tailorResume(
   resume: TailorableResume,
   target: TailorTarget,
   extraContext: string,
+  scope: TailorScope = wholeResumeScope,
 ): Promise<TailoredResume> {
   const bullets = resume.items.reduce(
     (count, item) => count + item.bullets.length,
     0,
   );
-  if (!bullets)
+  const rewritable = resume.items.reduce(
+    (count, item) =>
+      count + item.bullets.filter((bullet) => inScope(scope, bullet.id)).length,
+    0,
+  );
+  if (!bullets || (!rewritable && !scope.headline && !scope.skills))
     return {
       resume,
       changes: [],
@@ -181,11 +209,14 @@ export async function tailorResume(
     messages: [
       {
         role: "system",
-        content: instructions(resume, target, extraContext),
+        content: instructions(resume, target, extraContext, scope),
       },
       {
         role: "user",
-        content: `Rewrite all ${bullets} bullets for this role, reusing every id exactly.`,
+        content:
+          scope.bulletIds.length > 0
+            ? `Rewrite only the ${rewritable} bullets not marked READ ONLY, reusing every id exactly.`
+            : `Rewrite all ${bullets} bullets for this role, reusing every id exactly.`,
       },
     ],
     response_format: {
@@ -211,7 +242,7 @@ export async function tailorResume(
     );
   }
 
-  const result = applyTailoredResume(resume, parsed, extraContext);
+  const result = applyTailoredResume(resume, parsed, extraContext, scope);
   if (result.rejected.length)
     console.warn("resume tailoring: unsupported rewrites discarded", {
       rejected: result.rejected.length,

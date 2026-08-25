@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applyTailoredResume } from "./tailor-resume-merge";
-import type { TailorableResume } from "./tailor-resume-merge";
+import type { TailorableResume, TailorScope } from "./tailor-resume-merge";
 
 function resume(): TailorableResume {
   return {
@@ -159,5 +159,116 @@ describe("applyTailoredResume", () => {
     );
 
     expect(result.resume.headline).toBe("Backend engineer");
+  });
+});
+
+function scope(patch: Partial<TailorScope> = {}): TailorScope {
+  return { bulletIds: [], headline: true, skills: true, ...patch };
+}
+
+describe("applyTailoredResume with a narrowed scope", () => {
+  it("refuses a rewrite of a bullet the candidate did not tick", () => {
+    const result = applyTailoredResume(
+      resume(),
+      {
+        headline: "",
+        skills: [],
+        items: [
+          {
+            id: "item-1",
+            bullets: [
+              {
+                id: "bullet-1",
+                content: "Built an ingestion service for 12 feeds",
+              },
+              {
+                id: "bullet-2",
+                content: "Owned the billing module test suite",
+              },
+            ],
+          },
+        ],
+      },
+      "",
+      scope({ bulletIds: ["bullet-2"] }),
+    );
+
+    expect(result.changes.map((change) => change.bulletId)).toEqual([
+      "bullet-2",
+    ]);
+    expect(result.resume.items[0]!.bullets[0]!.content).toBe(
+      "Helped build an ingestion service handling 12 feeds",
+    );
+  });
+
+  it("leaves the headline and skills alone when they were not ticked", () => {
+    const result = applyTailoredResume(
+      resume(),
+      {
+        headline: "Payments infrastructure engineer",
+        skills: [{ category: "Languages", skills: ["Go", "Python"] }],
+        items: [],
+      },
+      "",
+      scope({ bulletIds: ["bullet-1"], headline: false, skills: false }),
+    );
+
+    expect(result.resume.headline).toBe("Backend engineer");
+    expect(result.resume.skills).toEqual([
+      { category: "Languages", skills: ["Python", "Go"] },
+      { category: "Tools", skills: ["Docker"] },
+    ]);
+  });
+
+  it("treats an empty bullet list as the whole resume", () => {
+    const result = applyTailoredResume(
+      resume(),
+      {
+        headline: "",
+        skills: [],
+        items: [
+          {
+            id: "item-1",
+            bullets: [
+              {
+                id: "bullet-1",
+                content: "Built an ingestion service for 12 feeds",
+              },
+              {
+                id: "bullet-2",
+                content: "Owned the billing module test suite",
+              },
+            ],
+          },
+        ],
+      },
+      "",
+      scope(),
+    );
+
+    expect(result.changes).toHaveLength(2);
+  });
+
+  it("still discards an invented number inside the scope", () => {
+    const result = applyTailoredResume(
+      resume(),
+      {
+        headline: "",
+        skills: [],
+        items: [
+          {
+            id: "item-1",
+            bullets: [
+              { id: "bullet-2", content: "Raised billing coverage to 95%" },
+            ],
+          },
+        ],
+      },
+      "",
+      scope({ bulletIds: ["bullet-2"] }),
+    );
+
+    expect(result.changes).toHaveLength(0);
+    expect(result.rejected[0]!.inventedNumbers).toEqual(["95"]);
   });
 });
