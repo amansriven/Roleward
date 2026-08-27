@@ -157,9 +157,24 @@ export interface GroundingReport<T> {
   dropped: { content: string; sourceQuote: string; reason: string }[];
 }
 
-function dominantClaimType(content: string): DraftClaim["type"] {
+export function dominantClaimType(content: string): DraftClaim["type"] {
   if (/\d/.test(content)) return "metric";
   return "action";
+}
+
+/**
+ * The bullet text a quote stands for.
+ *
+ * A claim's content is its source bullet with the leading glyph removed — the
+ * extractor is told exactly that, and on every measured run returned the two
+ * fields identical. So the model is no longer asked for both: it returns the
+ * quote, and the content is derived here. Cheaper, and it removes the one way
+ * the two could ever disagree.
+ */
+export function claimContentFromQuote(sourceQuote: string): string {
+  return sourceQuote
+    .replace(/^[\s\u2022\u25aa\u25cf\u00b7*\-\u2013]+/, "")
+    .trim();
 }
 
 /**
@@ -193,9 +208,7 @@ export function coalesceClaims(claims: DraftClaim[]): DraftClaim[] {
       (left, right) => right.sourceQuote.length - left.sourceQuote.length,
     )[0]!;
     if (entries.length === 1) return longest;
-    const content = longest.sourceQuote
-      .replace(/^[\s\u2022\u25aa\u25cf\u00b7*\-\u2013]+/, "")
-      .trim();
+    const content = claimContentFromQuote(longest.sourceQuote);
     return {
       type: dominantClaimType(content),
       content,
@@ -381,17 +394,35 @@ export function bulletIsSupported(
  * "it found my GPA and nothing else". Counting what should have been found is
  * cheaper than hoping.
  */
+/**
+ * Enough glyph-prefixed lines to conclude the resume marks its own bullets.
+ *
+ * Two rather than one: a single hyphenated line is plausibly incidental, but a
+ * document does not mark exactly two bullets by accident. A resume that uses
+ * glyphs at all uses them throughout.
+ */
+const GLYPH_EVIDENCE = 2;
+
 export function countBulletLines(document: string): number {
-  return document
+  const lines = document
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter((line) => {
-      if (line.length < 25) return false;
-      // An explicit bullet glyph, or a line long enough to be a described
-      // achievement rather than a heading or a date range.
-      if (/^[\u2022\u25aa\u25cf\u00b7*\-\u2013]/.test(line)) return true;
-      return line.split(/\s+/).length >= 8;
-    }).length;
+    .filter((line) => line.length >= 25);
+
+  const glyphs = lines.filter((line) =>
+    /^[\u2022\u25aa\u25cf\u00b7*\-\u2013]/.test(line),
+  ).length;
+
+  // When the resume marks its bullets, that count is the real one. Falling
+  // back to "long line" for these documents inflates the denominator with
+  // coursework lists, honors lines, and project descriptions, and the
+  // extraction is then judged incomplete when it read everything — which cost
+  // a second, identical model call and doubled the candidate's wait.
+  if (glyphs >= GLYPH_EVIDENCE) return glyphs;
+
+  // No glyphs to go on, so fall back to length: a line long enough to be a
+  // described achievement rather than a heading or a date range.
+  return lines.filter((line) => line.split(/\s+/).length >= 8).length;
 }
 
 /** Below this share of the document's bullets, an extraction has missed most of it. */

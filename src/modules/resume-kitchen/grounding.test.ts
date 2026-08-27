@@ -396,3 +396,50 @@ describe("extractionLooksComplete", () => {
     expect(extractionLooksComplete(0, "A short prose CV.")).toBe(true);
   });
 });
+
+describe("countBulletLines on a resume that marks its bullets", () => {
+  const educationHeavy = [
+    "EDUCATION",
+    "University of Washington                      Sep 2024 - Jun 2026",
+    "Master of Science in Computer Science and Engineering, Seattle WA",
+    "GPA: 3.94 | Honors: Bowen Fellowship, Outstanding TA Award",
+    "Coursework: Advanced Operating Systems, Compilers, Program Analysis",
+    "EXPERIENCE",
+    "Compiler Engineering Intern, Silicon Forge     Jun 2025 - Sep 2025",
+    "- Added a peephole optimization pass that removed 4% of emitted instructions",
+    "- Fixed a register allocator bug that miscompiled nested loops under pressure",
+    "- Wrote the differential test harness that gates every compiler release",
+  ].join("\n");
+
+  it("counts the marked bullets, not the coursework and honors lines", () => {
+    expect(countBulletLines(educationHeavy)).toBe(3);
+  });
+
+  it("no longer calls a complete extraction incomplete", () => {
+    // Three bullets read from three bullets. The old length heuristic counted
+    // seven and demanded four, so this triggered a wasted second model call.
+    expect(extractionLooksComplete(3, educationHeavy)).toBe(true);
+  });
+
+  it("still catches an extraction that missed most of the resume", () => {
+    expect(extractionLooksComplete(1, educationHeavy)).toBe(false);
+  });
+
+  it("treats a single hyphenated line as incidental, not as a bullet style", () => {
+    const oneGlyph = [
+      "Built an ingestion service in Go that handled twelve upstream feeds",
+      "Replaced a nightly batch job with a streaming pipeline for dashboards",
+      "- Seattle, WA, and remote across two offices during the migration year",
+    ].join("\n");
+    expect(countBulletLines(oneGlyph)).toBe(3);
+  });
+
+  it("falls back to line length when the resume uses no bullet glyphs", () => {
+    const prose = [
+      "Built an ingestion service in Go that handled twelve upstream feeds",
+      "Replaced a nightly batch job with a streaming pipeline for dashboards",
+      "Wrote the integration test suite that gates every deploy to the tier",
+    ].join("\n");
+    expect(countBulletLines(prose)).toBe(3);
+  });
+});

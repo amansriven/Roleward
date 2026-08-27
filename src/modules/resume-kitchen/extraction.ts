@@ -16,6 +16,7 @@ import {
   type DraftItem,
   type DraftSkillGroup,
 } from "./grounding";
+import { salvageItems } from "./extraction-salvage";
 
 /**
  * Reads a resume and proposes evidence the candidate can confirm.
@@ -45,43 +46,9 @@ const draftSchema = z.object({
       skills: z.array(z.string().trim()),
     }),
   ),
-  items: z.array(
-    z.object({
-      type: z.enum(["experience", "project", "education", "activity", "other"]),
-      title: z.string().trim().min(1),
-      organization: z.string().trim().optional(),
-      period: z.string().trim().optional(),
-      location: z.string().trim().optional(),
-      links: z.array(
-        z.object({
-          label: z.string().trim().min(1),
-          url: z.url(),
-        }),
-      ),
-      education: z.object({
-        degree: z.string().trim(),
-        fieldOfStudy: z.string().trim(),
-        minor: z.string().trim(),
-        gpa: z.string().trim(),
-        coursework: z.array(z.string().trim()),
-        honors: z.array(z.string().trim()),
-      }),
-      summary: z.string().trim(),
-      claims: z.array(
-        z.object({
-          type: z.enum([
-            "action",
-            "outcome",
-            "metric",
-            "technology",
-            "responsibility",
-          ]),
-          content: z.string().trim().min(1),
-          sourceQuote: z.string().trim().min(1),
-        }),
-      ),
-    }),
-  ),
+  // Same reasoning as links and claims, one level up. An entry that cannot be
+  // read is dropped and counted; it does not take the resume down with it.
+  items: z.array(z.unknown()),
 });
 
 const jsonSchema = {
@@ -163,7 +130,7 @@ const jsonSchema = {
           title: {
             type: "string",
             description:
-              "Role title for experience/activities, project name for projects, or degree name for education. Copy it as written.",
+              "Role title for experience/activities, project name for projects, or degree name for education. Copy it as written. If the resume genuinely gives no title for this entry, use its organization, school, or project name rather than an empty string — unlike every other field here, this one must never be empty.",
           },
           organization: {
             type: "string",
@@ -194,7 +161,7 @@ const jsonSchema = {
             },
           },
           education: {
-            type: "object",
+            type: ["object", "null"],
             additionalProperties: false,
             required: [
               "degree",
@@ -205,7 +172,7 @@ const jsonSchema = {
               "honors",
             ],
             description:
-              "Structured education fields. Use empty strings and arrays for non-education entries or when absent.",
+              "Structured education fields, for education entries only. Return null for every other kind of entry.",
             properties: {
               degree: { type: "string" },
               fieldOfStudy: { type: "string" },
@@ -222,26 +189,12 @@ const jsonSchema = {
           },
           claims: {
             type: "array",
+            description: "One entry per bullet under this heading.",
             items: {
               type: "object",
               additionalProperties: false,
-              required: ["type", "content", "sourceQuote"],
+              required: ["sourceQuote"],
               properties: {
-                type: {
-                  type: "string",
-                  enum: [
-                    "action",
-                    "outcome",
-                    "metric",
-                    "technology",
-                    "responsibility",
-                  ],
-                },
-                content: {
-                  type: "string",
-                  description:
-                    "The complete original bullet with only its bullet glyph removed. Do not split or rewrite it.",
-                },
                 sourceQuote: {
                   type: "string",
                   description:
@@ -265,14 +218,13 @@ const INSTRUCTIONS = [
   "- Every claim must come from text that is actually on the resume. Never add an accomplishment, a technology, or a responsibility that is not written there.",
   "- sourceQuote must be copied from the resume character for character. Do not paraphrase it, tidy it, or join two separate lines into one quote.",
   "- NEVER introduce a number that is not in the source quote. Do not estimate, round, scale, or convert. If the resume says 'several users', the claim says 'several users'.",
-  "- content must not be stronger than its source. 'Helped build' does not become 'Built'. 'Contributed to' does not become 'Led'.",
   "- If a line is vague, extract it vaguely. The candidate will sharpen it themselves; that is what the confirmation step is for.",
-  "- Preserve bullet boundaries exactly: ONE source bullet becomes ONE claim. Never split a bullet into separate action, technology, outcome, or metric records, even when it contains several clauses.",
-  "- content is the complete source bullet with only the leading bullet glyph removed. Do not paraphrase or shorten it.",
+  "- Preserve bullet boundaries exactly: ONE source bullet becomes ONE claim, quoted whole. Never split a bullet into separate action, technology, outcome, or metric records, even when it contains several clauses.",
   "- Extract EVERY entry and keep its resume section: experience, projects, education, and activities (leadership, clubs, volunteering, and extracurriculars). Do not summarise or select the best ones.",
   "- For experience and activities, title is the role and organization is the employer, club, or institution. For projects, title is the project name. For education, organization is the school and title is the degree as written.",
-  "- Education is structured separately: identify degree, field of study, minor, GPA, coursework, honors, dates, school, and location. Do not turn GPA or coursework into generic claims. Education can have an empty claims array.",
+  "- Education is structured separately: identify degree, field of study, minor, GPA, coursework, honors, dates, school, and location. Do not turn GPA or coursework into generic claims. Education can have an empty claims array. Every entry that is not education must have education set to null.",
   "- Copy dates and locations as written. Leave them empty rather than guessing.",
+  "- title is the one field that must never be empty. Where the resume gives no obvious title, fall back to the organization, school, or project name; an entry returned with a blank title is dropped and the candidate loses it.",
   "- Extract contact details into contact: email, phone, header location, LinkedIn, GitHub, and personal website. Copy exactly; leave absent fields empty.",
   "- Embedded hyperlinks are listed after the resume text. Assign a hyperlink to a project only when its label, URL path, or nearby resume text clearly identifies that project. Do not attach the candidate's general LinkedIn, GitHub profile, or personal website as a project link.",
   "- For a project link, use a concise factual label such as GitHub, Live demo, or Project site and copy the full HTTP(S) URL exactly.",
@@ -366,26 +318,11 @@ async function attemptExtraction(
     );
   }
 
-  const items: DraftItem[] = parsed.items.map((item) => ({
-    ...item,
-    organization: item.organization?.trim() ? item.organization : undefined,
-    period: item.period?.trim() ? item.period : undefined,
-    location: item.location?.trim() ? item.location : undefined,
-    links: item.links,
-    education:
-      item.type === "education"
-        ? {
-            degree: item.education.degree || undefined,
-            fieldOfStudy: item.education.fieldOfStudy || undefined,
-            minor: item.education.minor || undefined,
-            gpa: item.education.gpa || undefined,
-            coursework: item.education.coursework,
-            honors: item.education.honors,
-          }
-        : undefined,
-  }));
+  const { items, unusable } = salvageItems(parsed.items);
 
-  const { kept, dropped } = groundItems(items, document);
+  const grounded = groundItems(items, document);
+  const kept = grounded.kept;
+  const dropped = [...unusable, ...grounded.dropped];
 
   // The name and headline are held to the same rule as everything else: if the
   // document does not contain them, we do not have them.
