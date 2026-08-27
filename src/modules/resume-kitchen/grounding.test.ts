@@ -443,3 +443,91 @@ describe("countBulletLines on a resume that marks its bullets", () => {
     expect(countBulletLines(prose)).toBe(3);
   });
 });
+
+describe("entries whose only evidence is a description", () => {
+  const document =
+    "PROJECTS\nTracelight\nA source-level profiler for Rust that attributes time to inlined frames.\n";
+
+  const project = {
+    type: "project" as const,
+    title: "Tracelight",
+    summary:
+      "A source-level profiler for Rust that attributes time to inlined frames.",
+    links: [],
+    claims: [],
+  };
+
+  it("keeps a project written as a sentence rather than as bullets", () => {
+    const { kept, dropped } = groundItems([project], document);
+    expect(kept).toHaveLength(1);
+    expect(kept[0]!.summary).toBe(project.summary);
+    expect(dropped).toHaveLength(0);
+  });
+
+  it("drops a summary the resume never contained, and says so", () => {
+    const { kept, dropped } = groundItems(
+      [{ ...project, summary: "An award-winning profiler used by thousands." }],
+      document,
+    );
+    // Nothing left to support the entry once the invented summary goes.
+    expect(kept).toHaveLength(0);
+    expect(dropped[0]!.reason).toBe("entry_unsupported");
+  });
+
+  it("keeps an entry with claims even when its summary is invented", () => {
+    const { kept } = groundItems(
+      [
+        {
+          ...project,
+          summary: "An award-winning profiler used by thousands.",
+          claims: [
+            {
+              type: "action" as const,
+              content: "A source-level profiler for Rust",
+              sourceQuote: "A source-level profiler for Rust",
+            },
+          ],
+        },
+      ],
+      document,
+    );
+    expect(kept).toHaveLength(1);
+    expect(kept[0]!.summary).toBe("");
+  });
+});
+
+describe("links a resume writes without a scheme", () => {
+  it("grounds a normalized https URL against a document that omits the scheme", () => {
+    const document = "Ledger\ngithub.com/dana/ledger\n";
+    const { kept } = groundItems(
+      [
+        {
+          type: "project" as const,
+          title: "Ledger",
+          summary: "",
+          links: [{ label: "GitHub", url: "https://github.com/dana/ledger" }],
+          claims: [],
+        },
+      ],
+      document,
+    );
+    expect(kept[0]!.links).toHaveLength(1);
+  });
+
+  it("still rejects a link the document never mentions", () => {
+    const { kept, dropped } = groundItems(
+      [
+        {
+          type: "project" as const,
+          title: "Ledger",
+          summary: "",
+          links: [{ label: "GitHub", url: "https://github.com/someone/else" }],
+          claims: [],
+        },
+      ],
+      "Ledger\ngithub.com/dana/ledger\n",
+    );
+    expect(kept).toHaveLength(0);
+    expect(dropped[0]!.reason).toBe("entry_unsupported");
+  });
+});

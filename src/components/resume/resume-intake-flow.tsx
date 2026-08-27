@@ -4,6 +4,7 @@ import {
   AlertCircle,
   ArrowRight,
   Check,
+  CheckCheck,
   CheckCircle2,
   FileText,
   ExternalLink,
@@ -22,7 +23,13 @@ import {
   type CandidateContact,
   type ResumeLink,
 } from "@/modules/candidates/contact";
-import { finalizeConfirmedEvidence } from "@/modules/evidence/confirmation";
+import {
+  confirmPendingEvidence,
+  confirmPendingItem,
+  finalizeConfirmedEvidence,
+  hasItemLevelEvidence,
+  pendingDecisionCount,
+} from "@/modules/evidence/confirmation";
 import {
   saveCandidateIdentity,
   saveEvidenceAndRefresh,
@@ -171,7 +178,7 @@ export function ResumeIntakeFlow() {
   function updateClaim(
     itemId: string,
     claimId: string,
-    status: "confirmed" | "rejected",
+    status: "confirmed" | "rejected" | "proposed",
     content?: string,
   ) {
     setItems((current) =>
@@ -201,6 +208,23 @@ export function ResumeIntakeFlow() {
     setItems((current) =>
       current.map((item) => (item.id === itemId ? next : item)),
     );
+  }
+
+  function confirmItem(itemId: string) {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === itemId ? confirmPendingItem(item) : item,
+      ),
+    );
+  }
+
+  /**
+   * Confirms everything still awaiting an answer, including the contact block.
+   * Anything already rejected or corrected keeps the answer it was given.
+   */
+  function confirmEverything() {
+    setItems(confirmPendingEvidence);
+    if (contact) setContactConfirmed(true);
   }
 
   function saveEvidence() {
@@ -325,23 +349,14 @@ export function ResumeIntakeFlow() {
       </div>
     );
 
-  const reviewed =
-    items
-      .flatMap((item) => item.claims)
-      .filter((claim) => claim.verificationStatus !== "proposed").length +
-    items.filter(
-      (item) =>
-        ((item.type === "education" && item.education) || item.links.length) &&
-        item.verificationStatus !== "proposed",
-    ).length +
-    (contact && contactConfirmed ? 1 : 0);
   const total =
     items.flatMap((item) => item.claims).length +
-    items.filter(
-      (item) =>
-        (item.type === "education" && item.education) || item.links.length,
-    ).length +
+    items.filter(hasItemLevelEvidence).length +
     (contact ? 1 : 0);
+  const pending =
+    items.reduce((count, item) => count + pendingDecisionCount(item), 0) +
+    (contact && !contactConfirmed ? 1 : 0);
+  const reviewed = total - pending;
   return (
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -363,9 +378,21 @@ export function ResumeIntakeFlow() {
             </p>
           )}
         </div>
-        <p className="text-canvas font-mono text-xs">
-          {reviewed} / {total} reviewed
-        </p>
+        <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+          <p className="text-canvas font-mono text-xs">
+            {reviewed} / {total} reviewed
+          </p>
+          {pending > 0 && (
+            <button
+              type="button"
+              onClick={confirmEverything}
+              className="border-sage/50 text-sage hover:bg-sage/10 inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors"
+            >
+              <CheckCheck className="size-3.5" />
+              Confirm all {pending} remaining
+            </button>
+          )}
+        </div>
       </div>
       {error && (
         <div className="border-amber/30 bg-amber/[.06] text-amber rounded-lg border p-3 text-xs">
@@ -388,17 +415,35 @@ export function ResumeIntakeFlow() {
           key={item.id}
           className="border-iron bg-workshop/75 overflow-hidden rounded-2xl border"
         >
-          <div className="border-iron/70 border-b p-5">
-            <p className="font-semibold">{item.title}</p>
-            <p className="text-dust mt-1 text-xs">
-              {[item.organization, item.period, item.location]
-                .filter(Boolean)
-                .join(" · ")}
-            </p>
+          <div className="border-iron/70 flex items-start justify-between gap-4 border-b p-5">
+            <div className="min-w-0">
+              <p className="font-semibold">{item.title}</p>
+              <p className="text-dust mt-1 text-xs">
+                {[item.organization, item.period, item.location]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            </div>
+            {pendingDecisionCount(item) > 0 && (
+              <button
+                type="button"
+                onClick={() => confirmItem(item.id)}
+                className="border-sage/50 text-sage hover:bg-sage/10 inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-[10px] font-semibold transition-colors"
+              >
+                <CheckCheck className="size-3" />
+                Confirm all {pendingDecisionCount(item)}
+              </button>
+            )}
           </div>
           <div>
             {item.type === "education" && item.education && (
               <EducationReview
+                item={item}
+                onChange={(next) => updateItem(item.id, next)}
+              />
+            )}
+            {item.summary && (
+              <ItemSummaryReview
                 item={item}
                 onChange={(next) => updateItem(item.id, next)}
               />
@@ -417,6 +462,7 @@ export function ResumeIntakeFlow() {
                   updateClaim(item.id, claim.id, "confirmed", content)
                 }
                 onReject={() => updateClaim(item.id, claim.id, "rejected")}
+                onReopen={() => updateClaim(item.id, claim.id, "proposed")}
               />
             ))}
           </div>
@@ -583,6 +629,90 @@ function ContactReview({
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * A description that is the whole entry.
+ *
+ * A project written as a sentence rather than as bullets has nothing else to
+ * confirm, and this used to render an entry with an empty body — or, before
+ * the summary was kept at all, no entry.
+ */
+function ItemSummaryReview({
+  item,
+  onChange,
+}: {
+  item: EvidenceItem;
+  onChange: (item: EvidenceItem) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(item.summary);
+  const confirmed = item.verificationStatus !== "proposed";
+
+  return (
+    <div className="border-iron/60 border-b p-5">
+      <p className="section-label">Description</p>
+      {editing ? (
+        <>
+          <textarea
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            rows={3}
+            className="border-iron bg-night/45 mt-3 w-full rounded-lg border p-3 text-xs leading-6 outline-none"
+          />
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onChange({
+                  ...item,
+                  summary: value.trim(),
+                  verificationStatus: "corrected",
+                });
+                setEditing(false);
+              }}
+              className="bg-sage text-night rounded-md px-3 py-1.5 text-[10px] font-semibold"
+            >
+              Save and confirm
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setValue(item.summary);
+                setEditing(false);
+              }}
+              className="text-dust text-[10px]"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-canvas mt-2 text-xs leading-6">{item.summary}</p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                onChange({ ...item, verificationStatus: "confirmed" })
+              }
+              disabled={confirmed}
+              className="bg-sage text-night rounded-md px-3 py-1.5 text-[10px] font-semibold disabled:opacity-40"
+            >
+              {confirmed ? "Confirmed" : "Looks right"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="border-iron text-canvas rounded-md border px-3 py-1.5 text-[10px] font-semibold"
+            >
+              Edit
+            </button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -888,10 +1018,12 @@ function ClaimReview({
   claim,
   onAccept,
   onReject,
+  onReopen,
 }: {
   claim: EvidenceItem["claims"][number];
   onAccept: (content: string) => void;
   onReject: () => void;
+  onReopen: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [content, setContent] = useState(claim.content);
@@ -941,17 +1073,28 @@ function ClaimReview({
               </>
             )}
             {decided && (
-              <span
-                className={
-                  claim.verificationStatus === "rejected"
-                    ? "text-kiln text-[10px]"
-                    : "text-sage text-[10px]"
-                }
-              >
-                {claim.verificationStatus === "corrected"
-                  ? "Corrected and confirmed"
-                  : claim.verificationStatus}
-              </span>
+              <>
+                <span
+                  className={
+                    claim.verificationStatus === "rejected"
+                      ? "text-kiln text-[10px]"
+                      : "text-sage text-[10px]"
+                  }
+                >
+                  {claim.verificationStatus === "corrected"
+                    ? "Corrected and confirmed"
+                    : claim.verificationStatus}
+                </span>
+                {/* A decision used to be final, which made confirming a whole
+                    entry at once a trap: one click and nothing could be taken
+                    back. */}
+                <button
+                  onClick={onReopen}
+                  className="text-dust hover:text-canvas text-[10px] underline underline-offset-2"
+                >
+                  Change
+                </button>
+              </>
             )}
           </div>
         </div>

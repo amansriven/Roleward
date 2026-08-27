@@ -222,8 +222,18 @@ function groundedField(value: string | undefined, document: string) {
   return compact(document).includes(compact(value)) ? value.trim() : undefined;
 }
 
+/**
+ * The scheme is ours, not necessarily theirs.
+ *
+ * A resume that writes "github.com/dana" has it normalized to an https URL
+ * before it reaches here, and the document it must be found in still says it
+ * without one. Matching on host and path keeps the check honest either way.
+ */
 function groundedUrl(url: string, document: string) {
-  const normalized = url.replace(/\/$/, "").toLowerCase();
+  const normalized = url
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/$/, "")
+    .toLowerCase();
   return document.toLowerCase().includes(normalized) ? url : undefined;
 }
 
@@ -326,10 +336,20 @@ export function groundItems(
     const links = (item.links ?? []).filter((link) =>
       Boolean(groundedUrl(link.url, document)),
     );
+    // Held to the same standard as a claim. The summary is shown in the
+    // evidence library, printed into the PDF, and published on the portfolio,
+    // so an invented one travels as far as anything else here — it was the
+    // last field reaching all three without being checked against the page.
+    const summary = groundedField(item.summary, document) ?? "";
+
     // Education is structured evidence in its own right; it should not be
     // forced into generic metric/responsibility claim rows just to survive.
+    // Nor should a project written as a sentence: "A source-level profiler for
+    // Rust" with no bullets under it is the whole entry, and dropping it lost
+    // the project silently, without even a line in `dropped` to say so.
     if (
       claims.length ||
+      summary ||
       (item.type === "education" && education) ||
       (item.type === "project" && links.length)
     )
@@ -337,9 +357,16 @@ export function groundItems(
         ...item,
         period: groundedField(item.period, document),
         location: groundedField(item.location, document),
+        summary,
         education,
         links,
         claims,
+      });
+    else
+      dropped.push({
+        content: item.title,
+        sourceQuote: "",
+        reason: "entry_unsupported",
       });
   }
 
