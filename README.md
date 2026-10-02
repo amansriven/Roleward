@@ -11,7 +11,7 @@ Roleward connects job applications, AI resume tailoring, coding interview
 practice, and mock interviews so every recommendation understands the role you
 want and the work you have already completed.
 
-[Open Roleward](https://roleward.org) · [How it works](https://roleward.org/how-it-works) · [Pricing](https://roleward.org/pricing)
+[Open Roleward](https://roleward.org) · [How it works](https://roleward.org/how-it-works)
 </div>
 
 ---
