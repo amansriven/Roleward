@@ -64,7 +64,8 @@ export default function RootLayout({
       lang="en"
       data-scroll-behavior="smooth"
     >
-      <body className="antialiased">
+      {/* Extensions such as Grammarly add attributes to <body> before hydration. */}
+      <body className="antialiased" suppressHydrationWarning>
         {children}
         <AnalyticsProvider />
       </body>
