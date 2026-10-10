@@ -12,8 +12,8 @@ import {
  * are held in memory for the length of the session and discarded on stop.
  */
 export interface DeliveryMeter {
-  /** Metrics for the window starting at `from` ms, or null if too little audio. */
-  since: (from: number) => DeliveryMetrics | null;
+  /** Metrics for the window from `from` to `to` ms, or null if too little audio. */
+  since: (from: number, to?: number) => DeliveryMetrics | null;
   /** Milliseconds since the meter started. */
   elapsed: () => number;
   stop: () => void;
@@ -54,8 +54,10 @@ export function createDeliveryMeter(stream: MediaStream): DeliveryMeter | null {
   }, sampleIntervalMs);
 
   return {
-    since: (from) =>
-      summarizeDelivery(samples.filter((sample) => sample.at >= from)),
+    since: (from, to = Infinity) =>
+      summarizeDelivery(
+        samples.filter((sample) => sample.at >= from && sample.at <= to),
+      ),
     elapsed: () => Date.now() - startedAt,
     stop: () => {
       clearInterval(timer);

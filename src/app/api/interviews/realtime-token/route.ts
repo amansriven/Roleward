@@ -7,14 +7,20 @@ import {
   interviewsConfigured,
   openaiApiKey,
   REALTIME_MODEL,
+  REALTIME_TRANSCRIBE_MODEL,
 } from "@/modules/interviews/openai";
 import { instructionsForSession } from "@/modules/interviews/server";
+import {
+  TURN_MODES,
+  turnDetectionFor,
+} from "@/modules/interviews/turn-detection";
 
 export const runtime = "nodejs";
 
 const requestSchema = z.object({
   sessionId: z.string().min(1),
   voice: z.string().trim().min(1).max(40).default("marin"),
+  turnMode: z.enum(TURN_MODES).default("auto"),
 });
 
 /**
@@ -61,7 +67,13 @@ export async function POST(request: Request) {
           model: REALTIME_MODEL,
           instructions,
           audio: {
-            input: { transcription: { model: "whisper-1" } },
+            input: {
+              // Candidates rehearse close to a laptop or headset mic; this
+              // keeps fan and keyboard noise from reading as speech.
+              noise_reduction: { type: "near_field" },
+              transcription: { model: REALTIME_TRANSCRIBE_MODEL },
+              turn_detection: turnDetectionFor(parsed.data.turnMode),
+            },
             output: { voice: parsed.data.voice },
           },
         },

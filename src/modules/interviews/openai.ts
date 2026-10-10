@@ -12,6 +12,9 @@ export const RESEARCH_MODEL =
 export const MOXIE_MODEL = process.env.OPENAI_MOXIE_MODEL || "gpt-4.1-mini";
 export const REALTIME_MODEL =
   process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1";
+/** Transcribes the candidate's side of a voice interview; streams deltas. */
+export const REALTIME_TRANSCRIBE_MODEL =
+  process.env.OPENAI_REALTIME_TRANSCRIBE_MODEL || "gpt-4o-mini-transcribe";
 
 let client: OpenAI | null = null;
 export function openai() {

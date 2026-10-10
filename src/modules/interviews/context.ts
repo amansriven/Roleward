@@ -230,5 +230,10 @@ export function buildInterviewerInstructions({
     "Speak only as the interviewer. Ask one question at a time and wait for the answer. Never grade the candidate mid-interview or reveal a score.",
   );
 
+  if (config.modality === "voice")
+    sections.push(
+      "This is a spoken conversation. Candidates pause to think mid-answer. If an answer sounds unfinished, briefly invite them to go on rather than moving to the next question. If they talk over you, stop and listen.",
+    );
+
   return sections.join("\n\n");
 }

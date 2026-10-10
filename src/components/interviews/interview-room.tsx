@@ -13,7 +13,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { ExecutionResult, Language } from "@/modules/execution/port";
 import {
@@ -26,19 +26,36 @@ import {
   type RealtimeSession,
   type RealtimeStatus,
 } from "@/modules/interviews/realtime-client";
-import type { DeliveryMetrics } from "@/modules/interviews/delivery-metrics";
+import {
+  applyLiveEvent,
+  collapseLive,
+  transcriptTurns,
+  type LiveItem,
+  type TranscriptMessage,
+} from "@/modules/interviews/live-transcript";
 import {
   summarizeSession,
   type InterviewSession,
 } from "@/modules/interviews/schema";
+import {
+  TURN_MODES,
+  TURN_MODE_LABELS,
+  type TurnMode,
+} from "@/modules/interviews/turn-detection";
 import { saveInterviewSummary } from "@/modules/workspace/repository";
 import { CodePane } from "./code-pane";
 
-interface Message {
-  role: "interviewer" | "candidate";
-  content: string;
-  /** Delivery numbers for a spoken answer; absent for typed turns. */
-  delivery?: DeliveryMetrics;
+type Message = TranscriptMessage;
+
+const turnModePreferenceKey = "roleward:interview-turn-mode";
+
+function readTurnModePreference(): TurnMode {
+  try {
+    const stored = localStorage.getItem(turnModePreferenceKey);
+    return TURN_MODES.find((mode) => mode === stored) ?? "auto";
+  } catch {
+    return "auto";
+  }
 }
 
 const VOICE_STATUS_COPY: Record<RealtimeStatus, string> = {
@@ -64,43 +81,62 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
   const [error, setError] = useState("");
   const [voiceStatus, setVoiceStatus] = useState<RealtimeStatus>("connecting");
   const [speaking, setSpeaking] = useState(false);
+  const [candidateSpeaking, setCandidateSpeaking] = useState(false);
+  const [turnMode, setTurnMode] = useState<TurnMode>("auto");
   const [fellBackToText, setFellBackToText] = useState(false);
+  // Voice turns, one per Realtime item; collapsed into messages for display.
+  const [liveItems, setLiveItems] = useState<LiveItem[]>([]);
 
   const realtime = useRef<RealtimeSession | null>(null);
   const messagesRef = useRef<Message[]>(messages);
+  // Updated as events land rather than after render, so finish() sees the
+  // last transcript the moment the session drains.
+  const liveItemsRef = useRef<LiveItem[]>([]);
   const bottom = useRef<HTMLDivElement | null>(null);
+
+  const transcript = useMemo(
+    () => [...messages, ...collapseLive(liveItems)],
+    [messages, liveItems],
+  );
 
   useEffect(() => {
     // Read by finish(), which must see the latest transcript without being
     // re-created on every message.
     messagesRef.current = messages;
     bottom.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, thinking]);
+  }, [messages, liveItems, thinking]);
 
   useEffect(() => {
     if (!isVoice) return;
     let cancelled = false;
-    void startRealtimeInterview(session.id, {
-      onStatus: (status, detail) => {
-        if (cancelled) return;
-        setVoiceStatus(status);
-        if (
-          status === "unsupported" ||
-          status === "mic_denied" ||
-          status === "failed"
-        ) {
-          setFellBackToText(true);
-          if (detail) setError(detail);
-        }
+    const initialTurnMode = readTurnModePreference();
+    queueMicrotask(() => setTurnMode(initialTurnMode));
+    void startRealtimeInterview(
+      session.id,
+      {
+        onStatus: (status, detail) => {
+          if (cancelled) return;
+          setVoiceStatus(status);
+          if (
+            status === "unsupported" ||
+            status === "mic_denied" ||
+            status === "failed"
+          ) {
+            setFellBackToText(true);
+            if (detail) setError(detail);
+          }
+        },
+        onTranscript: (event) => {
+          if (cancelled) return;
+          liveItemsRef.current = applyLiveEvent(liveItemsRef.current, event);
+          setLiveItems(liveItemsRef.current);
+        },
+        onSpeakingChange: (value) => !cancelled && setSpeaking(value),
+        onCandidateSpeakingChange: (value) =>
+          !cancelled && setCandidateSpeaking(value),
       },
-      onTranscript: (role, text, delivery) =>
-        !cancelled &&
-        setMessages((current) => [
-          ...current,
-          { role, content: text, ...(delivery ? { delivery } : {}) },
-        ]),
-      onSpeakingChange: (value) => !cancelled && setSpeaking(value),
-    }).then((instance) => {
+      { turnMode: initialTurnMode },
+    ).then((instance) => {
       if (cancelled) instance?.close();
       else realtime.current = instance;
     });
@@ -113,6 +149,21 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
 
   const voiceLive = isVoice && voiceStatus === "live" && !fellBackToText;
   const showTextInput = !isVoice || fellBackToText;
+
+  function changeTurnMode(mode: TurnMode) {
+    setTurnMode(mode);
+    realtime.current?.setTurnMode(mode);
+    try {
+      localStorage.setItem(turnModePreferenceKey, mode);
+    } catch {
+      // A preference only; the session still switches.
+    }
+  }
+
+  function toggleAnswer() {
+    if (candidateSpeaking) realtime.current?.endAnswer();
+    else realtime.current?.startAnswer();
+  }
 
   /**
    * In voice mode the digest goes straight into the live Realtime session, so a
@@ -195,21 +246,46 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
   }
 
   const finish = useCallback(async () => {
+    const current = () => [
+      ...messagesRef.current,
+      ...collapseLive(liveItemsRef.current),
+    ];
+    const answered = (messages: Message[]) =>
+      messages.some(
+        (message) => message.role === "candidate" && message.content.trim(),
+      );
+    // Checked before hanging up, so finishing too early leaves the call open.
+    if (
+      isVoice &&
+      !candidateSpeaking &&
+      !current().some(
+        (message) =>
+          message.role === "candidate" &&
+          (message.content.trim() || message.pending),
+      )
+    ) {
+      setError("Answer at least one question before finishing.");
+      return;
+    }
     setFinishing(true);
     setError("");
     try {
-      realtime.current?.close();
+      // Keeps an answer still in flight rather than cutting it off.
+      await realtime.current?.finish();
       realtime.current = null;
       if (isVoice) {
-        const transcript = messagesRef.current;
-        if (!transcript.some((message) => message.role === "candidate")) {
+        const transcript = current();
+        if (!answered(transcript)) {
           setError("Answer at least one question before finishing.");
           return;
         }
         await fetch("/api/interviews/transcript", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ sessionId: session.id, turns: transcript }),
+          body: JSON.stringify({
+            sessionId: session.id,
+            turns: transcriptTurns(transcript),
+          }),
         });
       }
       const response = await fetch("/api/interviews/report", {
@@ -233,11 +309,11 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
     } finally {
       setFinishing(false);
     }
-  }, [isVoice, router, session.id]);
+  }, [candidateSpeaking, isVoice, router, session.id]);
 
   const coding = plan.usesCodeEditor ? session.codingProblem : null;
-  const candidateTurns = messages.filter(
-    (message) => message.role === "candidate",
+  const candidateTurns = transcript.filter(
+    (message) => message.role === "candidate" && message.content.trim(),
   ).length;
   const turnBudget = TURN_BUDGETS[session.config.length];
   const sessionProgress = Math.min(
@@ -405,7 +481,7 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
             aria-live="polite"
             aria-label="Interview transcript"
           >
-            {messages.map((message, index) => {
+            {transcript.map((message, index) => {
               const candidate = message.role === "candidate";
               return (
                 <div
@@ -432,8 +508,19 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
                           : "border-iron/90 bg-raised/80 text-canvas rounded-tl-md border shadow-[0_10px_24px_rgba(0,0,0,.14)]",
                       )}
                     >
-                      {message.content}
+                      {message.content ? (
+                        <span className={cn(message.pending && "opacity-70")}>
+                          {message.content}
+                        </span>
+                      ) : (
+                        <TypingDots />
+                      )}
                     </div>
+                    {message.cutOffAtMs !== undefined && (
+                      <p className="text-dust mt-1.5 px-1 text-[9px] tracking-[.08em] uppercase">
+                        Cut off
+                      </p>
+                    )}
                   </div>
                 </div>
               );
@@ -447,19 +534,13 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
                   <p className="text-dust mb-1.5 px-1 text-[9px] font-medium tracking-[.08em] uppercase">
                     Interviewer
                   </p>
-                  <div className="border-iron/90 bg-raised/80 flex h-11 items-center gap-1.5 rounded-2xl rounded-tl-md border px-4">
-                    {[0, 1, 2].map((dot) => (
-                      <span
-                        key={dot}
-                        className="bg-canvas size-1.5 animate-pulse rounded-full"
-                        style={{ animationDelay: `${dot * 140}ms` }}
-                      />
-                    ))}
+                  <div className="border-iron/90 bg-raised/80 flex h-11 items-center rounded-2xl rounded-tl-md border px-4">
+                    <TypingDots />
                   </div>
                 </div>
               </div>
             )}
-            {voiceLive && !messages.length && (
+            {voiceLive && !transcript.length && (
               <div className="flex min-h-full items-center justify-center py-10 text-center">
                 <div>
                   <VoiceOrb speaking={speaking} />
@@ -528,24 +609,126 @@ export function InterviewRoom({ session }: { session: InterviewSession }) {
                 </div>
               </>
             ) : (
-              <div className="flex items-center justify-center gap-4 py-2">
-                <VoiceOrb speaking={speaking} compact />
-                <div>
-                  <p className="text-linen text-xs font-medium">
-                    {speaking ? "Interviewer is speaking" : "Listening to you"}
-                  </p>
-                  <p className="text-dust mt-1 text-[10px]">
-                    {speaking
-                      ? "You can interrupt naturally at any time."
-                      : "Speak normally—no button press needed."}
-                  </p>
-                </div>
-              </div>
+              <VoiceControls
+                live={voiceLive}
+                turnMode={turnMode}
+                onTurnModeChange={changeTurnMode}
+                interviewerSpeaking={speaking}
+                candidateSpeaking={candidateSpeaking}
+                onToggleAnswer={toggleAnswer}
+              />
             )}
           </div>
         </section>
       </div>
     </div>
+  );
+}
+
+function VoiceControls({
+  live,
+  turnMode,
+  onTurnModeChange,
+  interviewerSpeaking,
+  candidateSpeaking,
+  onToggleAnswer,
+}: {
+  live: boolean;
+  turnMode: TurnMode;
+  onTurnModeChange: (mode: TurnMode) => void;
+  interviewerSpeaking: boolean;
+  candidateSpeaking: boolean;
+  onToggleAnswer: () => void;
+}) {
+  const pushToTalk = turnMode === "push_to_talk";
+  const [title, hint] = candidateSpeaking
+    ? pushToTalk
+      ? ["Answering", "Pause as long as you need. Tap I'm done when finished."]
+      : [
+          "Hearing you",
+          "Take your time. A pause to think won't end your answer.",
+        ]
+    : interviewerSpeaking
+      ? [
+          "Interviewer is speaking",
+          pushToTalk
+            ? "Tap Start answer to cut in."
+            : "You can interrupt naturally at any time.",
+        ]
+      : pushToTalk
+        ? ["Your turn", "Tap Start answer, then I'm done when you finish."]
+        : ["Listening to you", "Speak normally—no button press needed."];
+
+  return (
+    <div className="flex flex-col items-center gap-3 py-1">
+      <div
+        role="radiogroup"
+        aria-label="How you take turns"
+        className="border-iron bg-night/30 flex rounded-full border p-0.5"
+      >
+        {TURN_MODES.map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            role="radio"
+            aria-checked={turnMode === mode}
+            disabled={!live || candidateSpeaking}
+            onClick={() => onTurnModeChange(mode)}
+            className={cn(
+              "rounded-full px-3 py-1 text-[10px] font-medium transition disabled:cursor-not-allowed",
+              turnMode === mode
+                ? "bg-amber/[.12] text-amber"
+                : "text-dust hover:text-canvas",
+            )}
+          >
+            {TURN_MODE_LABELS[mode]}
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center justify-center gap-4">
+        {pushToTalk ? (
+          <button
+            type="button"
+            onClick={onToggleAnswer}
+            disabled={!live}
+            aria-pressed={candidateSpeaking}
+            className={cn(
+              "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-4 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40",
+              candidateSpeaking
+                ? "border-amber/30 bg-amber/[.1] text-amber border"
+                : "bg-amber text-night hover:bg-sunset shadow-[0_8px_20px_rgba(255,122,89,.16)]",
+            )}
+          >
+            {candidateSpeaking ? (
+              <Square className="size-3.5" />
+            ) : (
+              <Mic className="size-3.5" />
+            )}
+            {candidateSpeaking ? "I'm done" : "Start answer"}
+          </button>
+        ) : (
+          <VoiceOrb speaking={interviewerSpeaking} compact />
+        )}
+        <div>
+          <p className="text-linen text-xs font-medium">{title}</p>
+          <p className="text-dust mt-1 text-[10px]">{hint}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <span className="flex h-6 items-center gap-1.5" aria-label="Transcribing">
+      {[0, 1, 2].map((dot) => (
+        <span
+          key={dot}
+          className="bg-canvas size-1.5 animate-pulse rounded-full"
+          style={{ animationDelay: `${dot * 140}ms` }}
+        />
+      ))}
+    </span>
   );
 }
 
